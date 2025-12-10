@@ -24,7 +24,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
   };
 
   const handleRemove = () => {
-    if (quantity > product.minQuantity) {
+    if (quantity > 1) {
       updateQuantity(product.id, quantity - 1);
     } else if (quantity > 0) {
       removeItem(product.id);
@@ -35,15 +35,20 @@ export function ProductCard({ product, index }: ProductCardProps) {
     const numValue = parseInt(value, 10);
     if (isNaN(numValue) || numValue <= 0) {
       removeItem(product.id);
-    } else if (numValue >= product.minQuantity) {
+    } else {
       if (quantity === 0) {
         addItem(product);
-        updateQuantity(product.id, numValue);
+        if (numValue > 1) {
+          updateQuantity(product.id, numValue);
+        }
       } else {
         updateQuantity(product.id, numValue);
       }
     }
   };
+
+  // Price per pack/box = unit price × minQuantity
+  const packPrice = product.price * product.minQuantity;
 
   return (
     <motion.div
@@ -75,7 +80,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
       
       <div className="mt-3 pt-2 border-t border-border/50 space-y-2">
         <p className="text-base font-bold text-primary">
-          {product.price} <span className="text-[10px] font-normal text-muted-foreground">MT</span>
+          {packPrice} <span className="text-[10px] font-normal text-muted-foreground">MT/{product.minQuantity > 1 ? product.unitLabel.toLowerCase().includes('caixa') ? 'cx' : 'pack' : 'un'}</span>
         </p>
         
         <div className="flex items-center gap-1">

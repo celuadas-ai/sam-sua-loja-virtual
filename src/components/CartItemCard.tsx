@@ -33,7 +33,7 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
         <p className="text-xs text-muted-foreground">{item.volume}</p>
         <p className="text-[10px] text-accent font-medium mb-1">{item.unitLabel}</p>
         <p className="font-bold text-primary">
-          {item.price} <span className="text-xs font-normal text-muted-foreground">MT/un</span>
+          {item.price * item.minQuantity} <span className="text-xs font-normal text-muted-foreground">MT/{item.minQuantity > 1 ? item.unitLabel.toLowerCase().includes('caixa') ? 'cx' : 'pack' : 'un'}</span>
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
         </div>
 
         <p className="text-sm font-semibold text-foreground">
-          {item.price * item.quantity} MT
+          {item.price * item.minQuantity * item.quantity} MT
         </p>
       </div>
     </motion.div>

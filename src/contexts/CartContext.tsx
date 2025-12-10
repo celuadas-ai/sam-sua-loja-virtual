@@ -31,8 +31,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : item
         );
       }
-      // Start with minimum quantity for first add
-      return [...prev, { ...product, quantity: product.minQuantity }];
+      // Start with 1 pack/box (quantity represents number of packs, not units)
+      return [...prev, { ...product, quantity: 1 }];
     });
   };
 
@@ -41,11 +41,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    const item = items.find(i => i.id === productId);
-    if (!item) return;
-    
-    // Don't allow quantity below minimum
-    if (quantity < item.minQuantity) {
+    // Quantity represents number of packs/boxes, minimum is 1
+    if (quantity < 1) {
       removeItem(productId);
       return;
     }
@@ -60,7 +57,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Total = unit price × minQuantity (units per pack) × number of packs
+  const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const createOrder = (paymentMethod: PaymentMethod) => {
