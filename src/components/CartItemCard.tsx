@@ -30,9 +30,10 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
       <div className="flex-1 min-w-0">
         <p className="text-xs text-muted-foreground">{item.brand}</p>
         <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
-        <p className="text-xs text-muted-foreground mb-2">{item.volume}</p>
+        <p className="text-xs text-muted-foreground">{item.volume}</p>
+        <p className="text-[10px] text-accent font-medium mb-1">{item.unitLabel}</p>
         <p className="font-bold text-primary">
-          {item.price} <span className="text-xs font-normal text-muted-foreground">MT</span>
+          {item.price} <span className="text-xs font-normal text-muted-foreground">MT/un</span>
         </p>
       </div>
 

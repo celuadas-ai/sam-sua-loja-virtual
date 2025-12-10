@@ -27,13 +27,13 @@ export function ProductCard({ product, index }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
-      className="sam-card p-4 flex flex-col"
+      className="sam-card p-3 flex flex-col"
     >
-      <div className="relative aspect-square mb-3 bg-gradient-to-b from-sam-light-blue to-background rounded-xl overflow-hidden">
+      <div className="relative aspect-square mb-2 bg-gradient-to-b from-sam-light-blue/50 to-background rounded-xl overflow-hidden">
         <img
           src={product.image}
           alt={`${product.name} ${product.volume}`}
-          className="w-full h-full object-contain p-4 transition-transform hover:scale-105"
+          className="w-full h-full object-contain p-2 transition-transform hover:scale-105"
         />
         {quantity > 0 && (
           <motion.div
@@ -46,31 +46,34 @@ export function ProductCard({ product, index }: ProductCardProps) {
         )}
       </div>
       
-      <div className="flex-1">
-        <p className="text-xs text-muted-foreground font-medium mb-1">
+      <div className="flex-1 space-y-1">
+        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
           {product.brand}
         </p>
-        <h3 className="font-semibold text-foreground text-sm mb-1">
+        <h3 className="font-semibold text-foreground text-sm leading-tight">
           {product.name}
         </h3>
-        <p className="text-xs text-muted-foreground mb-2">{product.volume}</p>
+        <p className="text-xs text-muted-foreground">{product.volume}</p>
+        <p className="text-[10px] text-accent font-medium">
+          {product.unitLabel}
+        </p>
       </div>
       
-      <div className="flex items-center justify-between mt-2">
-        <p className="text-lg font-bold text-primary">
-          {product.price} <span className="text-xs font-normal text-muted-foreground">MT</span>
+      <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
+        <p className="text-base font-bold text-primary">
+          {product.price} <span className="text-[10px] font-normal text-muted-foreground">MT</span>
         </p>
         
         <motion.button
           onClick={handleAdd}
           whileTap={{ scale: 0.9 }}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
             isAdded
-              ? 'bg-sam-success text-accent-foreground'
+              ? 'bg-sam-success text-white'
               : 'bg-accent text-accent-foreground hover:shadow-sam-glow'
           }`}
         >
-          {isAdded ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+          {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         </motion.button>
       </div>
     </motion.div>

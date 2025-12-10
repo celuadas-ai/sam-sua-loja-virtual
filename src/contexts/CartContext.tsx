@@ -31,7 +31,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      // Start with minimum quantity for first add
+      return [...prev, { ...product, quantity: product.minQuantity }];
     });
   };
 
@@ -40,13 +41,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
+    const item = items.find(i => i.id === productId);
+    if (!item) return;
+    
+    // Don't allow quantity below minimum
+    if (quantity < item.minQuantity) {
       removeItem(productId);
       return;
     }
     setItems(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
+      prev.map(i =>
+        i.id === productId ? { ...i, quantity } : i
       )
     );
   };
