@@ -1,7 +1,13 @@
 import { Product } from '@/types';
-import waterBottleSmall from '@/assets/water-bottle-small.png';
-import waterBottleMedium from '@/assets/water-bottle-medium.png';
-import waterGallon from '@/assets/water-gallon.png';
+import namaacha500ml from '@/assets/namaacha-500ml.png';
+import namaacha15l from '@/assets/namaacha-1.5l.png';
+import namaacha5l from '@/assets/namaacha-5l.png';
+import aguaGas330ml from '@/assets/agua-gas-330ml.png';
+import ff500ml from '@/assets/ff-500ml.png';
+import ff15l from '@/assets/ff-1.5l.png';
+import ff7l from '@/assets/ff-7l.png';
+import natura189l from '@/assets/natura-18.9l.png';
+import escolhaCerta7l from '@/assets/escolha-certa-7l.png';
 
 export const products: Product[] = [
   // Água da Namaacha
@@ -11,7 +17,7 @@ export const products: Product[] = [
     brand: 'Água da Namaacha',
     volume: '0.5L',
     price: 25,
-    image: waterBottleSmall,
+    image: namaacha500ml,
   },
   {
     id: 'namaacha-15',
@@ -19,7 +25,7 @@ export const products: Product[] = [
     brand: 'Água da Namaacha',
     volume: '1.5L',
     price: 45,
-    image: waterBottleMedium,
+    image: namaacha15l,
   },
   {
     id: 'namaacha-25',
@@ -27,7 +33,7 @@ export const products: Product[] = [
     brand: 'Água da Namaacha',
     volume: '2.5L',
     price: 65,
-    image: waterBottleMedium,
+    image: namaacha15l,
   },
   {
     id: 'namaacha-5',
@@ -35,7 +41,16 @@ export const products: Product[] = [
     brand: 'Água da Namaacha',
     volume: '5L',
     price: 95,
-    image: waterGallon,
+    image: namaacha5l,
+  },
+  // Água com Gás
+  {
+    id: 'namaacha-gas-330',
+    name: 'Água com Gás',
+    brand: 'Água da Namaacha',
+    volume: '330ml',
+    price: 30,
+    image: aguaGas330ml,
   },
   // Fonte Fresca
   {
@@ -44,7 +59,7 @@ export const products: Product[] = [
     brand: 'Fonte Fresca',
     volume: '0.5L',
     price: 20,
-    image: waterBottleSmall,
+    image: ff500ml,
   },
   {
     id: 'fonte-15',
@@ -52,7 +67,7 @@ export const products: Product[] = [
     brand: 'Fonte Fresca',
     volume: '1.5L',
     price: 40,
-    image: waterBottleMedium,
+    image: ff15l,
   },
   {
     id: 'fonte-7',
@@ -60,7 +75,7 @@ export const products: Product[] = [
     brand: 'Fonte Fresca',
     volume: '7L',
     price: 120,
-    image: waterGallon,
+    image: ff7l,
   },
   // Natura / Ges20
   {
@@ -69,7 +84,7 @@ export const products: Product[] = [
     brand: 'Natura / Ges20',
     volume: '18.9L',
     price: 250,
-    image: waterGallon,
+    image: natura189l,
   },
   // Escolha Certa
   {
@@ -78,7 +93,7 @@ export const products: Product[] = [
     brand: 'Escolha Certa',
     volume: '7L',
     price: 100,
-    image: waterGallon,
+    image: escolhaCerta7l,
   },
 ];
 
