@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
-import { useState } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface ProductCardProps {
   product: Product;
@@ -10,16 +10,39 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index }: ProductCardProps) {
-  const { addItem, items } = useCart();
-  const [isAdded, setIsAdded] = useState(false);
+  const { addItem, items, updateQuantity, removeItem } = useCart();
   
   const cartItem = items.find(item => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
   const handleAdd = () => {
-    addItem(product);
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1000);
+    if (quantity === 0) {
+      addItem(product);
+    } else {
+      updateQuantity(product.id, quantity + 1);
+    }
+  };
+
+  const handleRemove = () => {
+    if (quantity > product.minQuantity) {
+      updateQuantity(product.id, quantity - 1);
+    } else if (quantity > 0) {
+      removeItem(product.id);
+    }
+  };
+
+  const handleQuantityChange = (value: string) => {
+    const numValue = parseInt(value, 10);
+    if (isNaN(numValue) || numValue <= 0) {
+      removeItem(product.id);
+    } else if (numValue >= product.minQuantity) {
+      if (quantity === 0) {
+        addItem(product);
+        updateQuantity(product.id, numValue);
+      } else {
+        updateQuantity(product.id, numValue);
+      }
+    }
   };
 
   return (
@@ -35,15 +58,6 @@ export function ProductCard({ product, index }: ProductCardProps) {
           alt={`${product.name} ${product.volume}`}
           className="w-full h-full object-contain p-2 transition-transform hover:scale-105"
         />
-        {quantity > 0 && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute top-2 right-2 w-6 h-6 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center"
-          >
-            {quantity}
-          </motion.div>
-        )}
       </div>
       
       <div className="flex-1 space-y-1">
@@ -59,22 +73,38 @@ export function ProductCard({ product, index }: ProductCardProps) {
         </p>
       </div>
       
-      <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
+      <div className="mt-3 pt-2 border-t border-border/50 space-y-2">
         <p className="text-base font-bold text-primary">
           {product.price} <span className="text-[10px] font-normal text-muted-foreground">MT</span>
         </p>
         
-        <motion.button
-          onClick={handleAdd}
-          whileTap={{ scale: 0.9 }}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-            isAdded
-              ? 'bg-sam-success text-white'
-              : 'bg-accent text-accent-foreground hover:shadow-sam-glow'
-          }`}
-        >
-          {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-        </motion.button>
+        <div className="flex items-center gap-1">
+          <motion.button
+            onClick={handleRemove}
+            whileTap={{ scale: 0.9 }}
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+            disabled={quantity === 0}
+          >
+            <Minus className="w-4 h-4" />
+          </motion.button>
+          
+          <Input
+            type="number"
+            value={quantity || ''}
+            onChange={(e) => handleQuantityChange(e.target.value)}
+            placeholder="0"
+            className="h-8 w-full text-center text-sm font-medium px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min={0}
+          />
+          
+          <motion.button
+            onClick={handleAdd}
+            whileTap={{ scale: 0.9 }}
+            className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground hover:shadow-sam-glow transition-all"
+          >
+            <Plus className="w-4 h-4" />
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );
