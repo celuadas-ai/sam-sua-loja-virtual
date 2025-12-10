@@ -5,6 +5,8 @@ export interface Product {
   volume: string;
   price: number;
   image: string;
+  minQuantity: number;
+  unitLabel: string;
 }
 
 export interface CartItem extends Product {

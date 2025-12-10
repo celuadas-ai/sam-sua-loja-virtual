@@ -18,6 +18,8 @@ export const products: Product[] = [
     volume: '0.5L',
     price: 25,
     image: namaacha500ml,
+    minQuantity: 24,
+    unitLabel: '1 caixa (24un)',
   },
   {
     id: 'namaacha-15',
@@ -26,6 +28,8 @@ export const products: Product[] = [
     volume: '1.5L',
     price: 45,
     image: namaacha15l,
+    minQuantity: 12,
+    unitLabel: '1 caixa (12un)',
   },
   {
     id: 'namaacha-25',
@@ -34,6 +38,8 @@ export const products: Product[] = [
     volume: '2.5L',
     price: 65,
     image: namaacha15l,
+    minQuantity: 6,
+    unitLabel: '1 pack (6un)',
   },
   {
     id: 'namaacha-5',
@@ -42,6 +48,8 @@ export const products: Product[] = [
     volume: '5L',
     price: 95,
     image: namaacha5l,
+    minQuantity: 5,
+    unitLabel: 'Mín. 5 garrafões',
   },
   // Água com Gás
   {
@@ -51,6 +59,8 @@ export const products: Product[] = [
     volume: '330ml',
     price: 30,
     image: aguaGas330ml,
+    minQuantity: 6,
+    unitLabel: '1 pack (6un)',
   },
   // Fonte Fresca
   {
@@ -60,6 +70,8 @@ export const products: Product[] = [
     volume: '0.5L',
     price: 20,
     image: ff500ml,
+    minQuantity: 12,
+    unitLabel: '1 pack (12un)',
   },
   {
     id: 'fonte-15',
@@ -68,6 +80,8 @@ export const products: Product[] = [
     volume: '1.5L',
     price: 40,
     image: ff15l,
+    minQuantity: 12,
+    unitLabel: '1 pack (12un)',
   },
   {
     id: 'fonte-7',
@@ -76,6 +90,8 @@ export const products: Product[] = [
     volume: '7L',
     price: 120,
     image: ff7l,
+    minQuantity: 5,
+    unitLabel: 'Mín. 5 garrafões',
   },
   // Natura / Ges20
   {
@@ -85,6 +101,8 @@ export const products: Product[] = [
     volume: '18.9L',
     price: 250,
     image: natura189l,
+    minQuantity: 1,
+    unitLabel: 'Mín. 1 galão',
   },
   // Escolha Certa
   {
@@ -94,6 +112,8 @@ export const products: Product[] = [
     volume: '7L',
     price: 100,
     image: escolhaCerta7l,
+    minQuantity: 5,
+    unitLabel: 'Mín. 5 garrafões',
   },
 ];
 

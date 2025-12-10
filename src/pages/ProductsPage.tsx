@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, ArrowRight } from 'lucide-react';
-import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { ProductCard } from '@/components/ProductCard';
 import { products, brands } from '@/data/products';
 import { useCart } from '@/contexts/CartContext';
+import samLogo from '@/assets/sam-logo.png';
 
 export default function ProductsPage() {
   const navigate = useNavigate();
@@ -26,7 +26,18 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <Header title="Produtos" showMenu />
+      {/* Header with Logo */}
+      <header className="sticky top-0 z-40 bg-primary safe-area-top">
+        <div className="flex items-center justify-center py-4 px-4">
+          <motion.img
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            src={samLogo}
+            alt="SAM - Sua loja virtual"
+            className="h-12 object-contain"
+          />
+        </div>
+      </header>
 
       {/* Search */}
       <div className="px-4 py-4">
