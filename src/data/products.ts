@@ -1,6 +1,9 @@
 import { Product } from '@/types';
 import namaacha500ml from '@/assets/namaacha-500ml.png';
+import namaacha500mlPack6 from '@/assets/namaacha-500ml-pack6.png';
+import namaacha500mlPack12 from '@/assets/namaacha-500ml-pack12.png';
 import namaacha15l from '@/assets/namaacha-1.5l.png';
+import namaacha15lPack6 from '@/assets/namaacha-1.5l-pack6.png';
 import namaacha25l from '@/assets/namaacha-2.5l.png';
 import namaacha5l from '@/assets/namaacha-5l.png';
 import aguaGas330ml from '@/assets/agua-gas-330ml.png';
@@ -13,6 +16,26 @@ import escolhaCerta7l from '@/assets/escolha-certa-7l.png';
 export const products: Product[] = [
   // Água da Namaacha
   {
+    id: 'namaacha-05-pack6',
+    name: 'Água Namaacha',
+    brand: 'Água da Namaacha',
+    volume: '0.5L',
+    price: 25,
+    image: namaacha500mlPack6,
+    minQuantity: 6,
+    unitLabel: '1 pack (6un)',
+  },
+  {
+    id: 'namaacha-05-pack12',
+    name: 'Água Namaacha',
+    brand: 'Água da Namaacha',
+    volume: '0.5L',
+    price: 25,
+    image: namaacha500mlPack12,
+    minQuantity: 12,
+    unitLabel: '1 pack (12un)',
+  },
+  {
     id: 'namaacha-05',
     name: 'Água Namaacha',
     brand: 'Água da Namaacha',
@@ -21,6 +44,16 @@ export const products: Product[] = [
     image: namaacha500ml,
     minQuantity: 24,
     unitLabel: '1 caixa (24un)',
+  },
+  {
+    id: 'namaacha-15-pack6',
+    name: 'Água Namaacha',
+    brand: 'Água da Namaacha',
+    volume: '1.5L',
+    price: 45,
+    image: namaacha15lPack6,
+    minQuantity: 6,
+    unitLabel: '1 pack (6un)',
   },
   {
     id: 'namaacha-15',
