@@ -1,6 +1,7 @@
 import { Product } from '@/types';
 import namaacha500ml from '@/assets/namaacha-500ml.png';
 import namaacha15l from '@/assets/namaacha-1.5l.png';
+import namaacha25l from '@/assets/namaacha-2.5l.png';
 import namaacha5l from '@/assets/namaacha-5l.png';
 import aguaGas330ml from '@/assets/agua-gas-330ml.png';
 import ff500ml from '@/assets/ff-500ml.png';
@@ -37,7 +38,7 @@ export const products: Product[] = [
     brand: 'Água da Namaacha',
     volume: '2.5L',
     price: 65,
-    image: namaacha15l,
+    image: namaacha25l,
     minQuantity: 6,
     unitLabel: '1 pack (6un)',
   },
