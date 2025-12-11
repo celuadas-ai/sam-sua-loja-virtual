@@ -19,9 +19,12 @@ export interface Order {
   total: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   createdAt: Date;
   estimatedDelivery?: Date;
 }
+
+export type PaymentStatus = 'pending' | 'paid';
 
 export type OrderStatus = 
   | 'received'

@@ -12,6 +12,7 @@ interface CartContextType {
   currentOrder: Order | null;
   createOrder: (paymentMethod: PaymentMethod) => void;
   updateOrderStatus: (status: OrderStatus) => void;
+  processPayment: () => void;
   completeOrder: () => void;
 }
 
@@ -68,11 +69,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       total,
       status: 'received',
       paymentMethod,
+      paymentStatus: 'pending',
       createdAt: new Date(),
       estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
     };
     setCurrentOrder(order);
     clearCart();
+  };
+
+  const processPayment = () => {
+    if (currentOrder) {
+      setCurrentOrder({ ...currentOrder, paymentStatus: 'paid' });
+    }
   };
 
   const updateOrderStatus = (status: OrderStatus) => {
@@ -98,6 +106,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         currentOrder,
         createOrder,
         updateOrderStatus,
+        processPayment,
         completeOrder,
       }}
     >

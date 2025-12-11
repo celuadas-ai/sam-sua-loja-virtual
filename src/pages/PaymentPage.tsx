@@ -26,7 +26,7 @@ export default function PaymentPage() {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handlePayment = async () => {
+  const handleConfirmOrder = async () => {
     if (!selectedMethod) {
       toast({
         title: 'Selecione um método de pagamento',
@@ -37,14 +37,14 @@ export default function PaymentPage() {
 
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Simulate order processing
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     createOrder(selectedMethod);
 
     toast({
-      title: 'Pagamento confirmado!',
-      description: 'A sua encomenda está a ser processada.',
+      title: 'Encomenda confirmada!',
+      description: 'O pagamento será efetuado na entrega.',
     });
 
     navigate('/tracking');
@@ -143,12 +143,12 @@ export default function PaymentPage() {
       >
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
           <Lock className="w-4 h-4" />
-          <span>Pagamento seguro e protegido</span>
+          <span>Pagamento na entrega</span>
         </div>
 
         <motion.button
           whileTap={{ scale: 0.98 }}
-          onClick={handlePayment}
+          onClick={handleConfirmOrder}
           disabled={!selectedMethod || isProcessing}
           className="sam-button-accent w-full py-4 rounded-2xl disabled:opacity-50"
         >
@@ -164,7 +164,7 @@ export default function PaymentPage() {
           ) : (
             <>
               <CreditCard className="w-5 h-5" />
-              <span>Pagar {total} MT</span>
+              <span>Confirmar Encomenda - {total} MT</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}
