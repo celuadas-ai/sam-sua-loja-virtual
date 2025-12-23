@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,19 +21,34 @@ export default function AuthPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    toast({
-      title: isLogin ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!',
-      description: 'A redirecionar para os produtos...',
-    });
+    const user = login(formData.emailOrPhone, formData.password);
+    
+    if (user) {
+      toast({
+        title: isLogin ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!',
+        description: `A redirecionar para ${user.role === 'admin' ? 'o painel admin' : user.role === 'operator' ? 'o painel de operador' : 'os produtos'}...`,
+      });
 
-    setTimeout(() => {
-      navigate('/products');
-    }, 1000);
+      setTimeout(() => {
+        if (user.role === 'admin') {
+          navigate('/admin');
+        } else if (user.role === 'operator') {
+          navigate('/operator');
+        } else {
+          navigate('/products');
+        }
+      }, 1000);
+    } else {
+      toast({
+        title: 'Bem-vindo!',
+        description: 'A redirecionar...',
+      });
+      setTimeout(() => navigate('/products'), 1000);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <div className="pt-12 pb-8 px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -60,9 +77,17 @@ export default function AuthPage() {
             ? 'Entre na sua conta para continuar'
             : 'Registe-se para começar a encomendar'}
         </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-xs text-muted-foreground mt-4 bg-muted p-2 rounded-lg"
+        >
+          Demo: use "admin" para admin, "operador" para operador
+        </motion.p>
       </div>
 
-      {/* Form */}
       <motion.form
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,9 +106,7 @@ export default function AuthPage() {
                   type="text"
                   placeholder="O seu nome"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="sam-input pl-12"
                 />
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -102,17 +125,11 @@ export default function AuthPage() {
                 type="text"
                 placeholder="exemplo@email.com ou 84XXXXXXX"
                 value={formData.emailOrPhone}
-                onChange={(e) =>
-                  setFormData({ ...formData, emailOrPhone: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, emailOrPhone: e.target.value })}
                 className="sam-input pl-12"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {formData.emailOrPhone.includes('@') ? (
-                  <Mail className="w-5 h-5" />
-                ) : (
-                  <Phone className="w-5 h-5" />
-                )}
+                {formData.emailOrPhone.includes('@') ? <Mail className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
               </div>
             </div>
           </div>
@@ -126,9 +143,7 @@ export default function AuthPage() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="sam-input pl-12 pr-12"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -139,32 +154,21 @@ export default function AuthPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
           {isLogin && (
             <div className="text-right">
-              <button
-                type="button"
-                className="text-sm text-accent hover:underline"
-              >
+              <button type="button" className="text-sm text-accent hover:underline">
                 Recuperar palavra-passe
               </button>
             </div>
           )}
         </div>
 
-        <motion.button
-          type="submit"
-          whileTap={{ scale: 0.98 }}
-          className="sam-button-accent w-full mt-8"
-        >
+        <motion.button type="submit" whileTap={{ scale: 0.98 }} className="sam-button-accent w-full mt-8">
           {isLogin ? 'Entrar' : 'Criar conta'}
           <ArrowRight className="w-5 h-5" />
         </motion.button>
@@ -172,11 +176,7 @@ export default function AuthPage() {
         <div className="mt-8 text-center">
           <p className="text-muted-foreground">
             {isLogin ? 'Não tem conta?' : 'Já tem conta?'}{' '}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-accent font-semibold hover:underline"
-            >
+            <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-accent font-semibold hover:underline">
               {isLogin ? 'Criar nova conta' : 'Entrar'}
             </button>
           </p>
