@@ -14,6 +14,10 @@ import TrackingPage from "./pages/TrackingPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import AddressesPage from "./pages/AddressesPage";
+import PaymentMethodsPage from "./pages/PaymentMethodsPage";
+import HelpPage from "./pages/HelpPage";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -51,6 +55,10 @@ const App = () => (
               <Route path="/confirmation" element={<ConfirmationPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/addresses" element={<AddressesPage />} />
+              <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="/help" element={<HelpPage />} />
               
               {/* Admin */}
               <Route path="/admin" element={<AdminDashboard />} />
