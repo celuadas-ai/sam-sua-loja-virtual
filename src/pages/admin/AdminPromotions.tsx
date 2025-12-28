@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Tag, Calendar, Percent } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { mockPromotions } from '@/data/mockUsers';
+import { usePromotions } from '@/hooks/usePromotions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,24 +11,126 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Promotion } from '@/types';
 
 export default function AdminPromotions() {
-  const [promotions, setPromotions] = useState<Promotion[]>(mockPromotions);
+  const { promotions, addPromotion, updatePromotion, deletePromotion, togglePromotion } = usePromotions();
   const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    discountPercent: '',
+    startDate: '',
+    endDate: '',
+  });
 
-  const togglePromotion = (promoId: string) => {
-    setPromotions((prev) =>
-      prev.map((p) =>
-        p.id === promoId ? { ...p, isActive: !p.isActive } : p
-      )
-    );
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      discountPercent: '',
+      startDate: '',
+      endDate: '',
+    });
+    setEditingPromotion(null);
+  };
+
+  const openCreateDialog = () => {
+    resetForm();
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (promo: Promotion) => {
+    setEditingPromotion(promo);
+    setFormData({
+      name: promo.name,
+      description: promo.description,
+      discountPercent: promo.discountPercent.toString(),
+      startDate: promo.startDate.toISOString().split('T')[0],
+      endDate: promo.endDate.toISOString().split('T')[0],
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.discountPercent || !formData.startDate || !formData.endDate) {
+      toast({
+        title: 'Erro',
+        description: 'Preencha todos os campos obrigatórios',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const discount = parseInt(formData.discountPercent);
+    if (isNaN(discount) || discount < 1 || discount > 100) {
+      toast({
+        title: 'Erro',
+        description: 'O desconto deve ser entre 1 e 100%',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const promotionData = {
+      name: formData.name,
+      description: formData.description,
+      discountPercent: discount,
+      productIds: editingPromotion?.productIds || [],
+      startDate: new Date(formData.startDate),
+      endDate: new Date(formData.endDate),
+      isActive: editingPromotion?.isActive ?? true,
+    };
+
+    if (editingPromotion) {
+      updatePromotion(editingPromotion.id, promotionData);
+      toast({
+        title: 'Promoção atualizada',
+        description: `A promoção "${formData.name}" foi atualizada com sucesso`,
+      });
+    } else {
+      addPromotion(promotionData);
+      toast({
+        title: 'Promoção criada',
+        description: `A promoção "${formData.name}" foi criada com sucesso`,
+      });
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
+  const handleDelete = (promo: Promotion) => {
+    deletePromotion(promo.id);
+    toast({
+      title: 'Promoção eliminada',
+      description: `A promoção "${promo.name}" foi eliminada`,
+    });
+  };
+
+  const handleToggle = (promo: Promotion) => {
+    togglePromotion(promo.id);
     toast({
       title: 'Promoção atualizada',
-      description: 'O estado da promoção foi alterado',
+      description: promo.isActive ? 'Promoção desativada' : 'Promoção ativada',
     });
   };
 
@@ -49,36 +151,81 @@ export default function AdminPromotions() {
     >
       {/* Actions */}
       <div className="flex justify-end mb-6">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={openCreateDialog}>
               <Plus className="w-4 h-4" />
               Nova Promoção
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Criar Promoção</DialogTitle>
+              <DialogTitle>
+                {editingPromotion ? 'Editar Promoção' : 'Criar Promoção'}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Input placeholder="Nome da promoção" />
-              <Input placeholder="Descrição" />
-              <Input placeholder="Desconto (%)" type="number" min="1" max="100" />
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">
+                  Nome da promoção *
+                </label>
+                <Input
+                  placeholder="Ex: Desconto Verão"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">
+                  Descrição
+                </label>
+                <Input
+                  placeholder="Ex: 15% de desconto em toda a linha"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">
+                  Desconto (%) *
+                </label>
+                <Input
+                  placeholder="Ex: 15"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.discountPercent}
+                  onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">
-                    Data início
+                    Data início *
                   </label>
-                  <Input type="date" />
+                  <Input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">
-                    Data fim
+                    Data fim *
                   </label>
-                  <Input type="date" />
+                  <Input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  />
                 </div>
               </div>
-              <Button className="w-full">Criar Promoção</Button>
+              <Button className="w-full" onClick={handleSubmit}>
+                {editingPromotion ? 'Guardar Alterações' : 'Criar Promoção'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -139,19 +286,37 @@ export default function AdminPromotions() {
               <div className="flex items-center gap-2">
                 <Switch
                   checked={promo.isActive}
-                  onCheckedChange={() => togglePromotion(promo.id)}
+                  onCheckedChange={() => handleToggle(promo)}
                 />
                 <span className="text-sm text-muted-foreground">
                   {promo.isActive ? 'Desativar' : 'Ativar'}
                 </span>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => openEditDialog(promo)}>
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="text-destructive">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Eliminar promoção?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja eliminar a promoção "{promo.name}"? Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(promo)}>
+                        Eliminar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </motion.div>
