@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search, Edit, Trash2, UserCheck, UserX } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { mockOperators } from '@/data/mockUsers';
+import { useOperators } from '@/hooks/useOperators';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,30 +10,127 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Operator } from '@/types';
 
 export default function AdminOperators() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [operators, setOperators] = useState<Operator[]>(mockOperators);
+  const { operators, addOperator, updateOperator, deleteOperator, toggleStatus } = useOperators();
   const { toast } = useToast();
+  
+  // Form states
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingOperator, setEditingOperator] = useState<Operator | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+  });
 
   const filteredOperators = operators.filter((op) =>
     op.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     op.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleStatus = (operatorId: string) => {
-    setOperators((prev) =>
-      prev.map((op) =>
-        op.id === operatorId ? { ...op, isActive: !op.isActive } : op
-      )
-    );
+  const resetForm = () => {
+    setFormData({ name: '', email: '', phone: '', password: '' });
+  };
+
+  const handleAddOperator = () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: 'Erro',
+        description: 'Preencha todos os campos obrigatórios',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    addOperator({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      isActive: true,
+    });
+
+    toast({
+      title: 'Operador registrado',
+      description: `${formData.name} foi adicionado com sucesso`,
+    });
+    
+    resetForm();
+    setIsAddOpen(false);
+  };
+
+  const handleEditClick = (operator: Operator) => {
+    setEditingOperator(operator);
+    setFormData({
+      name: operator.name,
+      email: operator.email,
+      phone: operator.phone,
+      password: '',
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateOperator = () => {
+    if (!editingOperator) return;
+    
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: 'Erro',
+        description: 'Preencha todos os campos obrigatórios',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    updateOperator(editingOperator.id, {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+    });
+
+    toast({
+      title: 'Operador atualizado',
+      description: `${formData.name} foi atualizado com sucesso`,
+    });
+    
+    resetForm();
+    setIsEditOpen(false);
+    setEditingOperator(null);
+  };
+
+  const handleDeleteOperator = (operator: Operator) => {
+    deleteOperator(operator.id);
+    toast({
+      title: 'Operador removido',
+      description: `${operator.name} foi removido com sucesso`,
+    });
+  };
+
+  const handleToggleStatus = (operator: Operator) => {
+    toggleStatus(operator.id);
     toast({
       title: 'Estado atualizado',
-      description: 'O estado do operador foi atualizado',
+      description: `${operator.name} foi ${operator.isActive ? 'desativado' : 'ativado'}`,
     });
   };
 
@@ -57,7 +154,7 @@ export default function AdminOperators() {
           />
         </div>
 
-        <Dialog>
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
@@ -69,15 +166,93 @@ export default function AdminOperators() {
               <DialogTitle>Registrar Operador</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Input placeholder="Nome completo" />
-              <Input placeholder="Email" type="email" />
-              <Input placeholder="Telefone" />
-              <Input placeholder="Palavra-passe" type="password" />
-              <Button className="w-full">Registrar Operador</Button>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome completo *</Label>
+                <Input 
+                  id="name"
+                  placeholder="Nome completo" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input 
+                  id="email"
+                  placeholder="Email" 
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone *</Label>
+                <Input 
+                  id="phone"
+                  placeholder="Telefone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Palavra-passe</Label>
+                <Input 
+                  id="password"
+                  placeholder="Palavra-passe" 
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+              <Button className="w-full" onClick={handleAddOperator}>
+                Registrar Operador
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Operador</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome completo *</Label>
+              <Input 
+                id="edit-name"
+                placeholder="Nome completo" 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email *</Label>
+              <Input 
+                id="edit-email"
+                placeholder="Email" 
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-phone">Telefone *</Label>
+              <Input 
+                id="edit-phone"
+                placeholder="Telefone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              />
+            </div>
+            <Button className="w-full" onClick={handleUpdateOperator}>
+              Salvar Alterações
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Operators Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -132,7 +307,7 @@ export default function AdminOperators() {
                 variant="outline"
                 size="sm"
                 className="flex-1 gap-1"
-                onClick={() => toggleStatus(operator.id)}
+                onClick={() => handleToggleStatus(operator)}
               >
                 {operator.isActive ? (
                   <>
@@ -146,12 +321,34 @@ export default function AdminOperators() {
                   </>
                 )}
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => handleEditClick(operator)}
+              >
                 <Edit className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-destructive">
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remover operador?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação não pode ser desfeita. O operador {operator.name} será removido permanentemente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDeleteOperator(operator)}>
+                      Remover
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </motion.div>
         ))}

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { products, brands } from '@/data/products';
+import { brands } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,13 +12,47 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/types';
 
 export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('Todos');
+  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
   const { toast } = useToast();
+
+  // Form states
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    brand: '',
+    volume: '',
+    price: '',
+    minQuantity: '',
+    unitLabel: 'unidade',
+  });
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand = selectedBrand === 'Todos' || product.brand === selectedBrand;
@@ -27,12 +62,99 @@ export default function AdminProducts() {
     return matchesBrand && matchesSearch;
   });
 
-  const handleDelete = (productId: string) => {
-    toast({
-      title: 'Produto removido',
-      description: 'O produto foi removido com sucesso (simulado)',
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      brand: '',
+      volume: '',
+      price: '',
+      minQuantity: '',
+      unitLabel: 'unidade',
     });
   };
+
+  const handleAddProduct = () => {
+    if (!formData.name || !formData.brand || !formData.volume || !formData.price || !formData.minQuantity) {
+      toast({
+        title: 'Erro',
+        description: 'Preencha todos os campos obrigatórios',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    addProduct({
+      name: formData.name,
+      brand: formData.brand,
+      volume: formData.volume,
+      price: parseFloat(formData.price),
+      minQuantity: parseInt(formData.minQuantity),
+      unitLabel: formData.unitLabel,
+      image: '/placeholder.svg',
+    });
+
+    toast({
+      title: 'Produto adicionado',
+      description: `${formData.name} foi adicionado com sucesso`,
+    });
+
+    resetForm();
+    setIsAddOpen(false);
+  };
+
+  const handleEditClick = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      brand: product.brand,
+      volume: product.volume,
+      price: product.price.toString(),
+      minQuantity: product.minQuantity.toString(),
+      unitLabel: product.unitLabel,
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateProduct = () => {
+    if (!editingProduct) return;
+
+    if (!formData.name || !formData.brand || !formData.volume || !formData.price || !formData.minQuantity) {
+      toast({
+        title: 'Erro',
+        description: 'Preencha todos os campos obrigatórios',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    updateProduct(editingProduct.id, {
+      name: formData.name,
+      brand: formData.brand,
+      volume: formData.volume,
+      price: parseFloat(formData.price),
+      minQuantity: parseInt(formData.minQuantity),
+      unitLabel: formData.unitLabel,
+    });
+
+    toast({
+      title: 'Produto atualizado',
+      description: `${formData.name} foi atualizado com sucesso`,
+    });
+
+    resetForm();
+    setIsEditOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = (product: Product) => {
+    deleteProduct(product.id);
+    toast({
+      title: 'Produto removido',
+      description: `${product.name} foi removido com sucesso`,
+    });
+  };
+
+  const availableBrands = brands.filter(b => b !== 'Todos');
 
   return (
     <AdminLayout title="Produtos" subtitle={`${products.length} produtos cadastrados`}>
@@ -64,7 +186,7 @@ export default function AdminProducts() {
           ))}
         </div>
 
-        <Dialog>
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
@@ -76,16 +198,177 @@ export default function AdminProducts() {
               <DialogTitle>Adicionar Produto</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Input placeholder="Nome do produto" />
-              <Input placeholder="Marca" />
-              <Input placeholder="Volume (ex: 0.5L)" />
-              <Input placeholder="Preço (MZN)" type="number" />
-              <Input placeholder="Quantidade mínima" type="number" />
-              <Button className="w-full">Adicionar Produto</Button>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do produto *</Label>
+                <Input
+                  id="name"
+                  placeholder="Nome do produto"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="brand">Marca *</Label>
+                <Select
+                  value={formData.brand}
+                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a marca" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableBrands.map((brand) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="volume">Volume *</Label>
+                <Input
+                  id="volume"
+                  placeholder="Volume (ex: 0.5L)"
+                  value={formData.volume}
+                  onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Preço (MZN) *</Label>
+                  <Input
+                    id="price"
+                    placeholder="Preço"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="minQuantity">Qtd. Mínima *</Label>
+                  <Input
+                    id="minQuantity"
+                    placeholder="Quantidade"
+                    type="number"
+                    value={formData.minQuantity}
+                    onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unitLabel">Rótulo de unidade</Label>
+                <Select
+                  value={formData.unitLabel}
+                  onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unidade">Unidade</SelectItem>
+                    <SelectItem value="pack">Pack</SelectItem>
+                    <SelectItem value="caixa">Caixa</SelectItem>
+                    <SelectItem value="garrafão">Garrafão</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="w-full" onClick={handleAddProduct}>
+                Adicionar Produto
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Produto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome do produto *</Label>
+              <Input
+                id="edit-name"
+                placeholder="Nome do produto"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-brand">Marca *</Label>
+              <Select
+                value={formData.brand}
+                onValueChange={(value) => setFormData({ ...formData, brand: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a marca" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableBrands.map((brand) => (
+                    <SelectItem key={brand} value={brand}>
+                      {brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-volume">Volume *</Label>
+              <Input
+                id="edit-volume"
+                placeholder="Volume (ex: 0.5L)"
+                value={formData.volume}
+                onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">Preço (MZN) *</Label>
+                <Input
+                  id="edit-price"
+                  placeholder="Preço"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-minQuantity">Qtd. Mínima *</Label>
+                <Input
+                  id="edit-minQuantity"
+                  placeholder="Quantidade"
+                  type="number"
+                  value={formData.minQuantity}
+                  onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-unitLabel">Rótulo de unidade</Label>
+              <Select
+                value={formData.unitLabel}
+                onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unidade">Unidade</SelectItem>
+                  <SelectItem value="pack">Pack</SelectItem>
+                  <SelectItem value="caixa">Caixa</SelectItem>
+                  <SelectItem value="garrafão">Garrafão</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full" onClick={handleUpdateProduct}>
+              Salvar Alterações
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Products Table */}
       <motion.div
@@ -126,17 +409,38 @@ export default function AdminProducts() {
                   <td className="p-4 text-muted-foreground">{product.minQuantity}</td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(product.id)}
-                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleEditClick(product)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Edit className="w-4 h-4" />
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remover produto?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. O produto {product.name} será removido permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteProduct(product)}>
+                              Remover
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </td>
                 </tr>
