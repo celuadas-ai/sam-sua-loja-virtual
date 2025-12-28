@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Tag, Calendar, Percent } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Calendar, Percent, Package } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { usePromotions } from '@/hooks/usePromotions';
+import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,11 +25,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Promotion } from '@/types';
 
 export default function AdminPromotions() {
   const { promotions, addPromotion, updatePromotion, deletePromotion, togglePromotion } = usePromotions();
+  const { products } = useProducts();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
@@ -40,6 +44,7 @@ export default function AdminPromotions() {
     discountPercent: '',
     startDate: '',
     endDate: '',
+    selectedProducts: [] as string[],
   });
 
   const resetForm = () => {
@@ -49,6 +54,7 @@ export default function AdminPromotions() {
       discountPercent: '',
       startDate: '',
       endDate: '',
+      selectedProducts: [],
     });
     setEditingPromotion(null);
   };
@@ -66,8 +72,32 @@ export default function AdminPromotions() {
       discountPercent: promo.discountPercent.toString(),
       startDate: promo.startDate.toISOString().split('T')[0],
       endDate: promo.endDate.toISOString().split('T')[0],
+      selectedProducts: promo.productIds || [],
     });
     setIsDialogOpen(true);
+  };
+
+  const handleProductToggle = (productId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedProducts: prev.selectedProducts.includes(productId)
+        ? prev.selectedProducts.filter((id) => id !== productId)
+        : [...prev.selectedProducts, productId],
+    }));
+  };
+
+  const selectAllProducts = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedProducts: products.map((p) => p.id),
+    }));
+  };
+
+  const clearAllProducts = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedProducts: [],
+    }));
   };
 
   const handleSubmit = () => {
@@ -90,11 +120,20 @@ export default function AdminPromotions() {
       return;
     }
 
+    if (formData.selectedProducts.length === 0) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione pelo menos um produto',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const promotionData = {
       name: formData.name,
       description: formData.description,
       discountPercent: discount,
-      productIds: editingPromotion?.productIds || [],
+      productIds: formData.selectedProducts,
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
       isActive: editingPromotion?.isActive ?? true,
@@ -142,6 +181,17 @@ export default function AdminPromotions() {
     }).format(date);
   };
 
+  const getProductNames = (productIds: string[]) => {
+    return productIds
+      .map((id) => {
+        const product = products.find((p) => p.id === id);
+        return product ? `${product.name} ${product.volume}` : null;
+      })
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(', ');
+  };
+
   const activeCount = promotions.filter((p) => p.isActive).length;
 
   return (
@@ -161,23 +211,39 @@ export default function AdminPromotions() {
               Nova Promoção
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>
                 {editingPromotion ? 'Editar Promoção' : 'Criar Promoção'}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Nome da promoção *
-                </label>
-                <Input
-                  placeholder="Ex: Desconto Verão"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+            <div className="space-y-4 py-4 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">
+                    Nome da promoção *
+                  </label>
+                  <Input
+                    placeholder="Ex: Desconto Verão"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">
+                    Desconto (%) *
+                  </label>
+                  <Input
+                    placeholder="Ex: 15"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={formData.discountPercent}
+                    onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
+                  />
+                </div>
               </div>
+              
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
                   Descrição
@@ -188,19 +254,7 @@ export default function AdminPromotions() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">
-                  Desconto (%) *
-                </label>
-                <Input
-                  placeholder="Ex: 15"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.discountPercent}
-                  onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
-                />
-              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">
@@ -223,6 +277,62 @@ export default function AdminPromotions() {
                   />
                 </div>
               </div>
+
+              {/* Product Selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-muted-foreground">
+                    Produtos aplicáveis * ({formData.selectedProducts.length} selecionados)
+                  </label>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={selectAllProducts}
+                    >
+                      Selecionar todos
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={clearAllProducts}
+                    >
+                      Limpar
+                    </Button>
+                  </div>
+                </div>
+                <ScrollArea className="h-48 border rounded-lg p-3">
+                  <div className="space-y-2">
+                    {products.map((product) => (
+                      <label
+                        key={product.id}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      >
+                        <Checkbox
+                          checked={formData.selectedProducts.includes(product.id)}
+                          onCheckedChange={() => handleProductToggle(product.id)}
+                        />
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-10 h-10 object-contain rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {product.name} - {product.volume}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {product.brand} • {product.price.toLocaleString()} MT
+                          </p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
               <Button className="w-full" onClick={handleSubmit}>
                 {editingPromotion ? 'Guardar Alterações' : 'Criar Promoção'}
               </Button>
@@ -277,6 +387,15 @@ export default function AdminPromotions() {
                 <span className="text-muted-foreground">Período:</span>
                 <span className="text-foreground">
                   {formatDate(promo.startDate)} - {formatDate(promo.endDate)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Package className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Produtos:</span>
+                <span className="text-foreground truncate">
+                  {promo.productIds.length > 0 
+                    ? `${getProductNames(promo.productIds)}${promo.productIds.length > 3 ? ` +${promo.productIds.length - 3}` : ''}`
+                    : 'Nenhum produto'}
                 </span>
               </div>
             </div>
