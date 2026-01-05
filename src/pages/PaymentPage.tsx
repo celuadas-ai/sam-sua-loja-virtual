@@ -1,12 +1,20 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, ArrowRight, Lock, MapPin } from 'lucide-react';
+import { CreditCard, ArrowRight, Lock } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { PaymentMethodCard } from '@/components/PaymentMethodCard';
+import { AddressSelector } from '@/components/AddressSelector';
 import { useCart } from '@/contexts/CartContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+
+interface Address {
+  id: string;
+  label: string;
+  address: string;
+  isDefault: boolean;
+}
 
 const paymentMethods: {
   method: PaymentMethod;
@@ -24,9 +32,18 @@ export default function PaymentPage() {
   const { toast } = useToast();
   const { items, total, createOrder } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleConfirmOrder = async () => {
+    if (!selectedAddress) {
+      toast({
+        title: 'Selecione um endereço de entrega',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!selectedMethod) {
       toast({
         title: 'Selecione um método de pagamento',
@@ -54,31 +71,12 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-background pb-40">
       <Header title="Pagamento" showBack />
 
-      {/* Delivery Address */}
+      {/* Delivery Address Selector */}
       <div className="px-4 py-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="sam-card p-4"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sam-light-blue flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5 text-accent" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Entregar em</p>
-              <p className="font-semibold text-foreground">
-                Av. Julius Nyerere, 123
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Maputo, Moçambique
-              </p>
-            </div>
-            <button className="text-accent text-sm font-semibold">
-              Alterar
-            </button>
-          </div>
-        </motion.div>
+        <AddressSelector
+          selectedAddress={selectedAddress}
+          onAddressSelect={setSelectedAddress}
+        />
       </div>
 
       {/* Order Summary */}
