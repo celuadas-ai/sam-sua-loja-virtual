@@ -4,25 +4,27 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Star, ShoppingBag, CreditCard, Wallet } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const emojis = ['😞', '😐', '🙂', '😊', '🤩'];
-
-const paymentLabels: Record<string, string> = {
-  mpesa: 'M-Pesa',
-  emola: 'e-Mola',
-  pos: 'POS',
-  cash: 'Numerário',
-};
 
 export default function ConfirmationPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { currentOrder, processPayment, completeOrder } = useCart();
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
+
+  const paymentLabels: Record<string, string> = {
+    mpesa: 'M-Pesa',
+    emola: 'e-Mola',
+    pos: 'POS',
+    cash: t.payment.cash,
+  };
 
   const handlePayment = async () => {
     setPaymentProcessing(true);
@@ -35,8 +37,8 @@ export default function ConfirmationPage() {
     setPaymentProcessing(false);
 
     toast({
-      title: 'Pagamento confirmado!',
-      description: 'Obrigado pela sua compra.',
+      title: t.confirmation.paymentConfirmed,
+      description: t.confirmation.thankYouPurchase,
     });
   };
 
@@ -45,8 +47,8 @@ export default function ConfirmationPage() {
     completeOrder();
 
     toast({
-      title: 'Obrigado pela avaliação!',
-      description: 'A sua opinião é muito importante para nós.',
+      title: t.confirmation.thankYouReview,
+      description: t.confirmation.opinionMatters,
     });
 
     setTimeout(() => {
@@ -76,7 +78,7 @@ export default function ConfirmationPage() {
         transition={{ delay: 0.2 }}
         className="text-2xl font-bold text-foreground text-center mb-2"
       >
-        Pedido entregue com sucesso!
+        {t.confirmation.orderDelivered}
       </motion.h1>
 
       <motion.p
@@ -85,7 +87,7 @@ export default function ConfirmationPage() {
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-8"
       >
-        Esperamos que tenha gostado do serviço
+        {t.confirmation.hopeYouEnjoyed}
       </motion.p>
 
       {/* Payment Section */}
@@ -101,16 +103,16 @@ export default function ConfirmationPage() {
               <Wallet className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Efetuar Pagamento</h2>
+              <h2 className="font-semibold text-foreground">{t.confirmation.makePayment}</h2>
               <p className="text-sm text-muted-foreground">
-                Método: {paymentLabels[currentOrder.paymentMethod]}
+                {t.confirmation.method}: {paymentLabels[currentOrder.paymentMethod]}
               </p>
             </div>
           </div>
 
           <div className="bg-muted/50 rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total a pagar:</span>
+              <span className="text-muted-foreground">{t.confirmation.totalToPay}</span>
               <span className="text-xl font-bold text-primary">{currentOrder.total} MT</span>
             </div>
           </div>
@@ -128,12 +130,12 @@ export default function ConfirmationPage() {
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-5 h-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full"
                 />
-                <span>A processar pagamento...</span>
+                <span>{t.confirmation.processingPayment}</span>
               </>
             ) : (
               <>
                 <CreditCard className="w-5 h-5" />
-                <span>Confirmar Pagamento</span>
+                <span>{t.confirmation.confirmPayment}</span>
               </>
             )}
           </motion.button>
@@ -149,7 +151,7 @@ export default function ConfirmationPage() {
           className="w-full max-w-sm sam-card p-6"
         >
           <h2 className="font-semibold text-foreground text-center mb-4">
-            Como foi a sua experiência?
+            {t.confirmation.howWasExperience}
           </h2>
 
           {/* Star Rating */}
@@ -187,7 +189,7 @@ export default function ConfirmationPage() {
           <textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            placeholder="Deixe o seu comentário (opcional)"
+            placeholder={t.confirmation.leaveComment}
             className="sam-input resize-none h-24 mb-4"
           />
 
@@ -197,14 +199,14 @@ export default function ConfirmationPage() {
             disabled={rating === 0}
             className="sam-button-accent w-full mb-3 disabled:opacity-50"
           >
-            Enviar avaliação
+            {t.confirmation.sendReview}
           </motion.button>
 
           <button
             onClick={handleSkip}
             className="w-full text-muted-foreground text-sm hover:text-foreground transition-colors"
           >
-            Pular
+            {t.common.skip}
           </button>
         </motion.div>
       ) : paymentComplete && (
@@ -215,7 +217,7 @@ export default function ConfirmationPage() {
         >
           <p className="text-4xl mb-4">🎉</p>
           <p className="text-lg font-semibold text-foreground">
-            Obrigado pelo feedback!
+            {t.confirmation.thankYouFeedback}
           </p>
         </motion.div>
       )}
@@ -229,7 +231,7 @@ export default function ConfirmationPage() {
         className="sam-button-secondary mt-8"
       >
         <ShoppingBag className="w-5 h-5" />
-        Efetuar novo pedido
+        {t.confirmation.newOrder}
       </motion.button>
     </div>
   );
