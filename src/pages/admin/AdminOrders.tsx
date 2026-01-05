@@ -89,8 +89,8 @@ export default function AdminOrders() {
         animate={{ opacity: 1, y: 0 }}
         className="sam-card overflow-hidden"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 font-semibold text-foreground">ID</th>
