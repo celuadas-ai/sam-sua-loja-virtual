@@ -4,7 +4,6 @@ import {
   User,
   MapPin,
   CreditCard,
-  Bell,
   HelpCircle,
   Settings,
   LogOut,
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserProfile {
   name: string;
@@ -31,17 +31,11 @@ interface UserProfile {
   phone: string;
 }
 
-const menuItems = [
-  { icon: MapPin, label: 'Endereços', path: '/addresses' },
-  { icon: CreditCard, label: 'Métodos de pagamento', path: '/payment-methods' },
-  { icon: Settings, label: 'Definições', path: '/settings' },
-  { icon: HelpCircle, label: 'Ajuda', path: '/help' },
-];
-
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const [isEditOpen, setIsEditOpen] = useState(false);
   
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -60,26 +54,33 @@ export default function ProfilePage() {
     localStorage.setItem('user-profile', JSON.stringify(profile));
   }, [profile]);
 
+  const menuItems = [
+    { icon: MapPin, label: t.profile.addresses, path: '/addresses' },
+    { icon: CreditCard, label: t.profile.paymentMethods, path: '/payment-methods' },
+    { icon: Settings, label: t.profile.settings, path: '/settings' },
+    { icon: HelpCircle, label: t.profile.help, path: '/help' },
+  ];
+
   const handleSaveProfile = () => {
     if (!formData.name || !formData.email || !formData.phone) {
-      toast({ title: 'Erro', description: 'Preencha todos os campos', variant: 'destructive' });
+      toast({ title: t.common.error, description: t.toasts.fillAllFields, variant: 'destructive' });
       return;
     }
     setProfile(formData);
     setIsEditOpen(false);
-    toast({ title: 'Perfil atualizado com sucesso!' });
+    toast({ title: t.toasts.profileUpdated });
   };
 
   const handleLogout = () => {
     logout();
     localStorage.removeItem('user-profile');
-    toast({ title: 'Sessão terminada' });
+    toast({ title: t.toasts.sessionEnded });
     navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-background pb-24 sm:pb-20">
-      <Header title="Perfil" showMenu />
+      <Header title={t.profile.title} showMenu />
 
       {/* Profile Card */}
       <div className="px-4 py-6">
@@ -106,7 +107,7 @@ export default function ProfilePage() {
             className="sam-button-secondary mt-4"
           >
             <Edit2 className="w-4 h-4 mr-2" />
-            Editar perfil
+            {t.profile.editProfile}
           </motion.button>
         </motion.div>
       </div>
@@ -147,7 +148,7 @@ export default function ProfilePage() {
             <LogOut className="w-5 h-5 text-destructive" />
           </div>
           <span className="flex-1 text-left font-medium text-destructive">
-            Terminar sessão
+            {t.profile.logout}
           </span>
         </motion.button>
       </div>
@@ -156,23 +157,23 @@ export default function ProfilePage() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Perfil</DialogTitle>
+            <DialogTitle>{t.profile.editProfile}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Nome completo
+                {t.profile.fullName}
               </label>
               <Input
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="O seu nome"
+                placeholder={t.profile.fullName}
               />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Email
+                {t.profile.email}
               </label>
               <Input
                 type="email"
@@ -183,7 +184,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Telefone
+                {t.profile.phone}
               </label>
               <Input
                 value={formData.phone}
@@ -194,7 +195,7 @@ export default function ProfilePage() {
           </div>
 
           <Button onClick={handleSaveProfile} className="w-full">
-            Guardar Alterações
+            {t.profile.saveChanges}
           </Button>
         </DialogContent>
       </Dialog>

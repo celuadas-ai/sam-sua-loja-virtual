@@ -2,19 +2,21 @@ import { motion } from 'framer-motion';
 import { Home, ShoppingCart, MapPin, Package, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
-
-const navItems = [
-  { icon: Home, label: 'Produtos', path: '/products' },
-  { icon: ShoppingCart, label: 'Carrinho', path: '/cart' },
-  { icon: MapPin, label: 'Rastrear', path: '/tracking' },
-  { icon: Package, label: 'Entregas', path: '/orders' },
-  { icon: User, label: 'Perfil', path: '/profile' },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { itemCount } = useCart();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { icon: Home, label: t.nav.products, path: '/products' },
+    { icon: ShoppingCart, label: t.nav.cart, path: '/cart' },
+    { icon: MapPin, label: t.nav.track, path: '/tracking' },
+    { icon: Package, label: t.nav.orders, path: '/orders' },
+    { icon: User, label: t.nav.profile, path: '/profile' },
+  ];
 
   return (
     <nav className="sam-bottom-nav z-50">

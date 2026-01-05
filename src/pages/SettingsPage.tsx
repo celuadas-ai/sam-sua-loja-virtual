@@ -5,10 +5,12 @@ import { BottomNav } from '@/components/BottomNav';
 import { Switch } from '@/components/ui/switch';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SettingsPage() {
   const { settings, updateSettings, updateNotification } = useSettings();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     updateSettings({ theme });
@@ -17,22 +19,27 @@ export default function SettingsPage() {
       document.documentElement.classList.add(theme);
     }
     toast({
-      title: 'Tema atualizado',
-      description: `Tema alterado para ${theme === 'light' ? 'claro' : theme === 'dark' ? 'escuro' : 'automático'}`,
+      title: t.settings.themeUpdated,
+      description: `${t.settings.themeChangedTo} ${theme === 'light' ? t.settings.light.toLowerCase() : theme === 'dark' ? t.settings.dark.toLowerCase() : t.settings.auto.toLowerCase()}`,
     });
   };
 
   const handleNotificationToggle = (key: keyof typeof settings.notifications) => {
     updateNotification(key, !settings.notifications[key]);
     toast({
-      title: 'Notificação atualizada',
-      description: settings.notifications[key] ? 'Notificação desativada' : 'Notificação ativada',
+      title: t.settings.notificationUpdated,
+      description: settings.notifications[key] ? t.settings.notificationDisabled : t.settings.notificationEnabled,
     });
+  };
+
+  const handleLanguageChange = (lang: 'pt' | 'en') => {
+    updateSettings({ language: lang });
+    toast({ title: lang === 'pt' ? 'Idioma alterado para Português' : 'Language changed to English' });
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Definições" showBack />
+      <Header title={t.settings.title} showBack />
 
       <div className="px-4 py-4 space-y-4">
         {/* Notificações */}
@@ -45,14 +52,14 @@ export default function SettingsPage() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Bell className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="font-semibold text-foreground">Notificações</h2>
+            <h2 className="font-semibold text-foreground">{t.settings.notifications}</h2>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="font-medium text-foreground">Estado das encomendas</p>
-                <p className="text-sm text-muted-foreground">Atualizações sobre as suas encomendas</p>
+                <p className="font-medium text-foreground">{t.settings.orderStatus}</p>
+                <p className="text-sm text-muted-foreground">{t.settings.orderStatusDesc}</p>
               </div>
               <Switch
                 checked={settings.notifications.orders}
@@ -62,8 +69,8 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="font-medium text-foreground">Promoções</p>
-                <p className="text-sm text-muted-foreground">Ofertas e descontos especiais</p>
+                <p className="font-medium text-foreground">{t.settings.promotions}</p>
+                <p className="text-sm text-muted-foreground">{t.settings.promotionsDesc}</p>
               </div>
               <Switch
                 checked={settings.notifications.promotions}
@@ -73,8 +80,8 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="font-medium text-foreground">Entregas</p>
-                <p className="text-sm text-muted-foreground">Alertas quando o entregador está a caminho</p>
+                <p className="font-medium text-foreground">{t.settings.delivery}</p>
+                <p className="text-sm text-muted-foreground">{t.settings.deliveryDesc}</p>
               </div>
               <Switch
                 checked={settings.notifications.delivery}
@@ -95,7 +102,7 @@ export default function SettingsPage() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Sun className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="font-semibold text-foreground">Aparência</h2>
+            <h2 className="font-semibold text-foreground">{t.settings.appearance}</h2>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -108,7 +115,7 @@ export default function SettingsPage() {
               }`}
             >
               <Sun className="w-6 h-6 mx-auto mb-2 text-foreground" />
-              <p className="text-sm font-medium text-foreground">Claro</p>
+              <p className="text-sm font-medium text-foreground">{t.settings.light}</p>
             </button>
 
             <button
@@ -120,7 +127,7 @@ export default function SettingsPage() {
               }`}
             >
               <Moon className="w-6 h-6 mx-auto mb-2 text-foreground" />
-              <p className="text-sm font-medium text-foreground">Escuro</p>
+              <p className="text-sm font-medium text-foreground">{t.settings.dark}</p>
             </button>
 
             <button
@@ -132,7 +139,7 @@ export default function SettingsPage() {
               }`}
             >
               <Smartphone className="w-6 h-6 mx-auto mb-2 text-foreground" />
-              <p className="text-sm font-medium text-foreground">Auto</p>
+              <p className="text-sm font-medium text-foreground">{t.settings.auto}</p>
             </button>
           </div>
         </motion.div>
@@ -148,17 +155,14 @@ export default function SettingsPage() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Globe className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="font-semibold text-foreground">Idioma</h2>
+            <h2 className="font-semibold text-foreground">{t.settings.language}</h2>
           </div>
 
           <div className="space-y-2">
             <button
-              onClick={() => {
-                updateSettings({ language: 'pt' });
-                toast({ title: 'Idioma alterado para Português' });
-              }}
+              onClick={() => handleLanguageChange('pt')}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                settings.language === 'pt'
+                language === 'pt'
                   ? 'bg-primary/10 border-2 border-primary'
                   : 'bg-muted/50 border-2 border-transparent hover:border-primary/30'
               }`}
@@ -167,18 +171,15 @@ export default function SettingsPage() {
                 <span className="text-2xl">🇲🇿</span>
                 <span className="font-medium text-foreground">Português</span>
               </div>
-              {settings.language === 'pt' && (
+              {language === 'pt' && (
                 <ChevronRight className="w-5 h-5 text-primary" />
               )}
             </button>
 
             <button
-              onClick={() => {
-                updateSettings({ language: 'en' });
-                toast({ title: 'Language changed to English' });
-              }}
+              onClick={() => handleLanguageChange('en')}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                settings.language === 'en'
+                language === 'en'
                   ? 'bg-primary/10 border-2 border-primary'
                   : 'bg-muted/50 border-2 border-transparent hover:border-primary/30'
               }`}
@@ -187,7 +188,7 @@ export default function SettingsPage() {
                 <span className="text-2xl">🇬🇧</span>
                 <span className="font-medium text-foreground">English</span>
               </div>
-              {settings.language === 'en' && (
+              {language === 'en' && (
                 <ChevronRight className="w-5 h-5 text-primary" />
               )}
             </button>
@@ -202,7 +203,7 @@ export default function SettingsPage() {
           className="text-center py-4"
         >
           <p className="text-sm text-muted-foreground">SAM - Serviço de Água Móvel</p>
-          <p className="text-xs text-muted-foreground">Versão 1.0.0</p>
+          <p className="text-xs text-muted-foreground">{t.settings.version} 1.0.0</p>
         </motion.div>
       </div>
 

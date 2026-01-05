@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { OrderStatus } from '@/types';
 
 const statusSequence: OrderStatus[] = [
@@ -19,6 +20,7 @@ const statusSequence: OrderStatus[] = [
 export default function TrackingPage() {
   const navigate = useNavigate();
   const { currentOrder, updateOrderStatus } = useCart();
+  const { t } = useLanguage();
   const [eta, setEta] = useState(30);
 
   // Simulate order progress
@@ -47,7 +49,7 @@ export default function TrackingPage() {
   if (!currentOrder) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Rastreamento" showBack />
+        <Header title={t.tracking.title} showBack />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -58,17 +60,17 @@ export default function TrackingPage() {
             <MapPin className="w-12 h-12 text-muted-foreground" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">
-            Nenhuma encomenda ativa
+            {t.tracking.noActiveOrders}
           </h2>
           <p className="text-muted-foreground text-center mb-6">
-            Faça uma encomenda para acompanhar a entrega
+            {t.tracking.noActiveOrdersMessage}
           </p>
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/products')}
             className="sam-button-accent"
           >
-            Ver produtos
+            {t.tracking.orderNow}
           </motion.button>
         </motion.div>
 
@@ -79,7 +81,7 @@ export default function TrackingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title="Rastreamento" showBack />
+      <Header title={t.tracking.title} showBack />
 
       {/* Map Placeholder */}
       <div className="relative h-48 bg-sam-light-blue overflow-hidden">
@@ -101,7 +103,7 @@ export default function TrackingPage() {
               transition={{ duration: 1, repeat: Infinity }}
               className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-lg shadow-sam text-sm font-medium"
             >
-              🛵 A caminho
+              🛵 {t.status.on_the_way}
             </motion.div>
           </div>
         </motion.div>
@@ -142,7 +144,7 @@ export default function TrackingPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Tempo estimado
+                  {t.tracking.estimatedArrival}
                 </p>
                 <p className="text-2xl font-bold text-foreground">
                   {eta} min
@@ -171,7 +173,7 @@ export default function TrackingPage() {
       {/* Order ID */}
       <div className="px-4 py-4">
         <p className="text-sm text-muted-foreground">
-          Pedido: <span className="font-mono font-semibold text-foreground">{currentOrder.id}</span>
+          Order: <span className="font-mono font-semibold text-foreground">{currentOrder.id}</span>
         </p>
       </div>
 
