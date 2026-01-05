@@ -78,7 +78,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24 sm:pb-20">
       <Header title="Perfil" showMenu />
 
       {/* Profile Card */}

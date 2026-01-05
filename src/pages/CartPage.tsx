@@ -45,7 +45,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-48">
+    <div className="min-h-screen bg-background pb-[280px] sm:pb-[260px]">
       <Header title="Carrinho" showBack />
 
       <div className="px-4 py-4 space-y-3">
@@ -60,7 +60,7 @@ export default function CartPage() {
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-20 left-0 right-0 bg-card border-t border-border p-4 space-y-4"
+        className="fixed bottom-[72px] left-0 right-0 bg-card border-t border-border p-4 pb-safe space-y-3 sm:space-y-4 shadow-lg z-40"
       >
         <div className="space-y-2">
           <div className="flex justify-between text-muted-foreground">
