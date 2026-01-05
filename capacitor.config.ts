@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.20e92bba4c2f454186f82b18fe587bce',
+  appId: 'com.sam.agua',
   appName: 'SAM Água',
   webDir: 'dist',
   server: {
