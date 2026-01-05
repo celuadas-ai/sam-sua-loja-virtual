@@ -173,7 +173,7 @@ export default function TrackingPage() {
       {/* Order ID */}
       <div className="px-4 py-4">
         <p className="text-sm text-muted-foreground">
-          Order: <span className="font-mono font-semibold text-foreground">{currentOrder.id}</span>
+          {t.tracking.order}: <span className="font-mono font-semibold text-foreground">{currentOrder.id}</span>
         </p>
       </div>
 

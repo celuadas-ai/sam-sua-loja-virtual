@@ -104,6 +104,13 @@ export const translations = {
       estimatedArrival: 'Chegada prevista',
       operator: 'Entregador',
       deliveryAddress: 'Endereço de entrega',
+      orderReceived: 'Pedido recebido',
+      inPreparation: 'Em preparação',
+      onTheWay: 'A caminho',
+      almostThere: 'Quase a chegar',
+      deliveredStatus: 'Entregue',
+      inProgress: 'Em progresso...',
+      order: 'Encomenda',
     },
     
     // Orders Page
@@ -324,6 +331,13 @@ export const translations = {
       estimatedArrival: 'Estimated arrival',
       operator: 'Delivery driver',
       deliveryAddress: 'Delivery address',
+      orderReceived: 'Order received',
+      inPreparation: 'In preparation',
+      onTheWay: 'On the way',
+      almostThere: 'Almost there',
+      deliveredStatus: 'Delivered',
+      inProgress: 'In progress...',
+      order: 'Order',
     },
     
     // Orders Page

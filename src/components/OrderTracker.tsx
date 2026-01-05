@@ -1,23 +1,25 @@
 import { motion } from 'framer-motion';
 import { Package, ChefHat, Truck, MapPin, CheckCircle2 } from 'lucide-react';
 import { OrderStatus } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface OrderTrackerProps {
   status: OrderStatus;
 }
 
-const steps = [
-  { status: 'received', label: 'Pedido recebido', icon: Package },
-  { status: 'preparing', label: 'Em preparação', icon: ChefHat },
-  { status: 'on_the_way', label: 'A caminho', icon: Truck },
-  { status: 'almost_there', label: 'Quase a chegar', icon: MapPin },
-  { status: 'delivered', label: 'Entregue', icon: CheckCircle2 },
-];
-
 const statusOrder: OrderStatus[] = ['received', 'preparing', 'on_the_way', 'almost_there', 'delivered'];
 
 export function OrderTracker({ status }: OrderTrackerProps) {
+  const { t } = useLanguage();
   const currentIndex = statusOrder.indexOf(status);
+
+  const steps = [
+    { status: 'received', label: t.tracking.orderReceived, icon: Package },
+    { status: 'preparing', label: t.tracking.inPreparation, icon: ChefHat },
+    { status: 'on_the_way', label: t.tracking.onTheWay, icon: Truck },
+    { status: 'almost_there', label: t.tracking.almostThere, icon: MapPin },
+    { status: 'delivered', label: t.tracking.deliveredStatus, icon: CheckCircle2 },
+  ];
 
   return (
     <div className="relative py-4">
@@ -79,7 +81,7 @@ export function OrderTracker({ status }: OrderTrackerProps) {
                     animate={{ opacity: 1 }}
                     className="text-sm text-accent"
                   >
-                    Em progresso...
+                    {t.tracking.inProgress}
                   </motion.p>
                 )}
               </div>
