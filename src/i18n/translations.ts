@@ -51,7 +51,7 @@ export const translations = {
       item: 'item',
       deliveryFee: 'Taxa de entrega',
       total: 'Total',
-      continueToPayment: 'Continuar para pagamento',
+      continueOrder: 'Continuar com a encomenda',
       viewCart: 'Ver carrinho',
     },
     
@@ -199,7 +199,7 @@ export const translations = {
       item: 'item',
       deliveryFee: 'Delivery fee',
       total: 'Total',
-      continueToPayment: 'Continue to payment',
+      continueOrder: 'Continue with order',
       viewCart: 'View cart',
     },
     
