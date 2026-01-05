@@ -10,6 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Address {
   id: string;
@@ -25,6 +26,7 @@ interface AddressSelectorProps {
 
 export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSelectorProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>(() => {
     const saved = localStorage.getItem('user-addresses');
@@ -57,7 +59,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
 
   const handleAddNew = () => {
     if (!formData.label || !formData.address) {
-      toast({ title: 'Preencha todos os campos', variant: 'destructive' });
+      toast({ title: t.toasts.fillAllFields, variant: 'destructive' });
       return;
     }
 
@@ -73,7 +75,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
     setFormData({ label: '', address: '' });
     setShowNewForm(false);
     setIsOpen(false);
-    toast({ title: 'Endereço adicionado' });
+    toast({ title: t.address.addressAdded });
   };
 
   return (
@@ -89,14 +91,14 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
             <MapPin className="w-5 h-5 text-accent" />
           </div>
           <div className="flex-1">
-            <p className="text-sm text-muted-foreground">Entregar em</p>
+            <p className="text-sm text-muted-foreground">{t.address.deliverTo}</p>
             {selectedAddress ? (
               <>
                 <p className="font-semibold text-foreground">{selectedAddress.label}</p>
                 <p className="text-sm text-muted-foreground">{selectedAddress.address}</p>
               </>
             ) : (
-              <p className="font-semibold text-primary">Selecionar endereço</p>
+              <p className="font-semibold text-primary">{t.address.selectAddress}</p>
             )}
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -106,7 +108,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Selecionar Endereço de Entrega</DialogTitle>
+            <DialogTitle>{t.address.selectDeliveryAddress}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
@@ -134,7 +136,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                       <p className="font-semibold text-foreground">{address.label}</p>
                       {address.isDefault && (
                         <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                          Padrão
+                          {t.address.default}
                         </span>
                       )}
                     </div>
@@ -154,7 +156,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                 className="w-full p-4 rounded-xl border-2 border-dashed border-border flex items-center justify-center gap-2 hover:border-primary/50 transition-colors"
               >
                 <Plus className="w-5 h-5 text-primary" />
-                <span className="font-medium text-primary">Adicionar Novo Endereço</span>
+                <span className="font-medium text-primary">{t.address.addNewAddress}</span>
               </motion.button>
             ) : (
               <motion.div
@@ -164,7 +166,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
               >
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
-                    Nome (ex: Casa, Trabalho)
+                    {t.address.nameLabel}
                   </label>
                   <Input
                     value={formData.label}
@@ -174,7 +176,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
-                    Endereço completo
+                    {t.address.fullAddress}
                   </label>
                   <Input
                     value={formData.address}
@@ -191,10 +193,10 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                       setFormData({ label: '', address: '' });
                     }}
                   >
-                    Cancelar
+                    {t.common.cancel}
                   </Button>
                   <Button className="flex-1" onClick={handleAddNew}>
-                    Adicionar
+                    {t.common.add}
                   </Button>
                 </div>
               </motion.div>

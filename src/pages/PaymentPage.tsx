@@ -8,6 +8,7 @@ import { AddressSelector } from '@/components/AddressSelector';
 import { useCart } from '@/contexts/CartContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Address {
   id: string;
@@ -16,29 +17,30 @@ interface Address {
   isDefault: boolean;
 }
 
-const paymentMethods: {
-  method: PaymentMethod;
-  label: string;
-  description: string;
-}[] = [
-  { method: 'mpesa', label: 'M-Pesa', description: 'Pagar com M-Pesa' },
-  { method: 'emola', label: 'e-Mola', description: 'Pagar com e-Mola' },
-  { method: 'pos', label: 'POS', description: 'Cartão na entrega' },
-  { method: 'cash', label: 'Numerário', description: 'Pagar em dinheiro' },
-];
-
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { items, total, createOrder } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const paymentMethods: {
+    method: PaymentMethod;
+    label: string;
+    description: string;
+  }[] = [
+    { method: 'mpesa', label: 'M-Pesa', description: t.payment.payWithMpesa },
+    { method: 'emola', label: 'e-Mola', description: t.payment.payWithEmola },
+    { method: 'pos', label: 'POS', description: t.payment.cardOnDelivery },
+    { method: 'cash', label: t.payment.cash, description: t.payment.payCash },
+  ];
+
   const handleConfirmOrder = async () => {
     if (!selectedAddress) {
       toast({
-        title: 'Selecione um endereço de entrega',
+        title: t.payment.selectAddress,
         variant: 'destructive',
       });
       return;
@@ -46,7 +48,7 @@ export default function PaymentPage() {
 
     if (!selectedMethod) {
       toast({
-        title: 'Selecione um método de pagamento',
+        title: t.payment.selectPaymentMethod,
         variant: 'destructive',
       });
       return;
@@ -60,8 +62,8 @@ export default function PaymentPage() {
     createOrder(selectedMethod);
 
     toast({
-      title: 'Encomenda confirmada!',
-      description: 'O pagamento será efetuado na entrega.',
+      title: t.payment.orderConfirmed,
+      description: t.payment.paymentOnDeliveryDesc,
     });
 
     navigate('/tracking');
@@ -69,7 +71,7 @@ export default function PaymentPage() {
 
   return (
     <div className="min-h-screen bg-background pb-40">
-      <Header title="Pagamento" showBack />
+      <Header title={t.payment.title} showBack />
 
       {/* Delivery Address Selector */}
       <div className="px-4 py-4">
@@ -87,7 +89,7 @@ export default function PaymentPage() {
           transition={{ delay: 0.1 }}
           className="sam-card p-4"
         >
-          <h3 className="font-semibold text-foreground mb-3">Resumo do pedido</h3>
+          <h3 className="font-semibold text-foreground mb-3">{t.payment.orderSummary}</h3>
           <div className="space-y-2">
             {items.map((item) => (
               <div
@@ -102,7 +104,7 @@ export default function PaymentPage() {
             ))}
           </div>
           <div className="flex justify-between font-bold text-foreground pt-3 mt-3 border-t border-border">
-            <span>Total</span>
+            <span>{t.cart.total}</span>
             <span>{total} MT</span>
           </div>
         </motion.div>
@@ -111,7 +113,7 @@ export default function PaymentPage() {
       {/* Payment Methods */}
       <div className="px-4">
         <h3 className="font-semibold text-foreground mb-3">
-          Método de pagamento
+          {t.payment.paymentMethod}
         </h3>
         <div className="space-y-3">
           {paymentMethods.map((pm, index) => (
@@ -141,7 +143,7 @@ export default function PaymentPage() {
       >
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
           <Lock className="w-4 h-4" />
-          <span>Pagamento na entrega</span>
+          <span>{t.payment.payOnDelivery}</span>
         </div>
 
         <motion.button
@@ -157,12 +159,12 @@ export default function PaymentPage() {
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className="w-5 h-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full"
               />
-              <span>A processar...</span>
+              <span>{t.payment.processing}</span>
             </>
           ) : (
             <>
               <CreditCard className="w-5 h-5" />
-              <span>Confirmar Encomenda - {total} MT</span>
+              <span>{t.payment.confirmOrder} - {total} MT</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

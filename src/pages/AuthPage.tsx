@@ -5,11 +5,13 @@ import { Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,9 +26,15 @@ export default function AuthPage() {
     const user = login(formData.emailOrPhone, formData.password);
     
     if (user) {
+      const redirectText = user.role === 'admin' 
+        ? t.auth.adminPanel 
+        : user.role === 'operator' 
+          ? t.auth.operatorPanel 
+          : t.auth.productsPage;
+      
       toast({
-        title: isLogin ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!',
-        description: `A redirecionar para ${user.role === 'admin' ? 'o painel admin' : user.role === 'operator' ? 'o painel de operador' : 'os produtos'}...`,
+        title: isLogin ? `${t.auth.welcomeBack}!` : t.auth.accountCreated,
+        description: `${t.auth.redirectingTo} ${redirectText}...`,
       });
 
       setTimeout(() => {
@@ -40,8 +48,8 @@ export default function AuthPage() {
       }, 1000);
     } else {
       toast({
-        title: 'Bem-vindo!',
-        description: 'A redirecionar...',
+        title: t.auth.welcome,
+        description: t.auth.redirecting,
       });
       setTimeout(() => navigate('/products'), 1000);
     }
@@ -64,7 +72,7 @@ export default function AuthPage() {
           transition={{ delay: 0.1 }}
           className="text-3xl font-bold text-foreground mb-2"
         >
-          {isLogin ? 'Bem-vindo de volta' : 'Criar conta'}
+          {isLogin ? t.auth.welcomeBack : t.auth.createAccount}
         </motion.h1>
 
         <motion.p
@@ -74,8 +82,8 @@ export default function AuthPage() {
           className="text-muted-foreground"
         >
           {isLogin
-            ? 'Entre na sua conta para continuar'
-            : 'Registe-se para começar a encomendar'}
+            ? t.auth.loginToContinue
+            : t.auth.registerToOrder}
         </motion.p>
 
         <motion.p
@@ -84,7 +92,7 @@ export default function AuthPage() {
           transition={{ delay: 0.3 }}
           className="text-xs text-muted-foreground mt-4 bg-muted p-2 rounded-lg"
         >
-          Demo: use "admin" para admin, "operador" para operador
+          {t.auth.demoHint}
         </motion.p>
       </div>
 
@@ -99,12 +107,12 @@ export default function AuthPage() {
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Nome completo
+                {t.auth.fullName}
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="O seu nome"
+                  placeholder={t.auth.yourName}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="sam-input pl-12"
@@ -118,12 +126,12 @@ export default function AuthPage() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Email ou Telefone
+              {t.auth.emailOrPhone}
             </label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="exemplo@email.com ou 84XXXXXXX"
+                placeholder={t.auth.emailPlaceholder}
                 value={formData.emailOrPhone}
                 onChange={(e) => setFormData({ ...formData, emailOrPhone: e.target.value })}
                 className="sam-input pl-12"
@@ -136,7 +144,7 @@ export default function AuthPage() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Palavra-passe
+              {t.auth.password}
             </label>
             <div className="relative">
               <input
@@ -162,22 +170,22 @@ export default function AuthPage() {
           {isLogin && (
             <div className="text-right">
               <button type="button" className="text-sm text-accent hover:underline">
-                Recuperar palavra-passe
+                {t.auth.forgotPassword}
               </button>
             </div>
           )}
         </div>
 
         <motion.button type="submit" whileTap={{ scale: 0.98 }} className="sam-button-accent w-full mt-8">
-          {isLogin ? 'Entrar' : 'Criar conta'}
+          {isLogin ? t.auth.login : t.auth.createAccount}
           <ArrowRight className="w-5 h-5" />
         </motion.button>
 
         <div className="mt-8 text-center">
           <p className="text-muted-foreground">
-            {isLogin ? 'Não tem conta?' : 'Já tem conta?'}{' '}
+            {isLogin ? t.auth.noAccount : t.auth.hasAccount}{' '}
             <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-accent font-semibold hover:underline">
-              {isLogin ? 'Criar nova conta' : 'Entrar'}
+              {isLogin ? t.auth.createNewAccount : t.auth.login}
             </button>
           </p>
         </div>
