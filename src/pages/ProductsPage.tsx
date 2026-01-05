@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { ProductCard } from '@/components/ProductCard';
 import { products, brands } from '@/data/products';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import samLogo from '@/assets/sam-logo.png';
 import {
   Sheet,
@@ -25,23 +26,24 @@ import {
   User,
 } from 'lucide-react';
 
-const menuItems = [
-  { icon: MapPin, label: 'Endereços', path: '/addresses' },
-  { icon: CreditCard, label: 'Métodos de pagamento', path: '/payment-methods' },
-  { icon: Bell, label: 'Notificações', path: '/notifications' },
-  { icon: HelpCircle, label: 'Ajuda', path: '/help' },
-  { icon: Settings, label: 'Configurações', path: '/settings' },
-];
-
 export default function ProductsPage() {
   const navigate = useNavigate();
   const { itemCount, total } = useCart();
+  const { t } = useLanguage();
   const [selectedBrand, setSelectedBrand] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const menuItems = [
+    { icon: MapPin, label: t.profile.addresses, path: '/addresses' },
+    { icon: CreditCard, label: t.profile.paymentMethods, path: '/payment-methods' },
+    { icon: Bell, label: t.settings.notifications, path: '/notifications' },
+    { icon: HelpCircle, label: t.profile.help, path: '/help' },
+    { icon: Settings, label: t.profile.settings, path: '/settings' },
+  ];
+
   const filteredProducts = products.filter((product) => {
     const matchesBrand =
-      selectedBrand === 'Todos' || product.brand === selectedBrand;
+      selectedBrand === 'Todos' || selectedBrand === 'All' || product.brand === selectedBrand;
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,7 +101,7 @@ export default function ProductsPage() {
                   >
                     <LogOut className="w-5 h-5 text-destructive" />
                     <span className="flex-1 text-left font-medium text-destructive">
-                      Terminar sessão
+                      {t.profile.logout}
                     </span>
                   </button>
                 </div>
@@ -124,7 +126,7 @@ export default function ProductsPage() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Pesquisar produtos..."
+            placeholder={t.products.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="sam-input pl-10 sm:pl-12 text-sm sm:text-base"
@@ -147,7 +149,7 @@ export default function ProductsPage() {
                   : 'bg-secondary text-secondary-foreground hover:bg-muted'
               }`}
             >
-              {brand}
+              {brand === 'Todos' ? t.common.all : brand}
             </motion.button>
           ))}
         </div>
@@ -167,7 +169,7 @@ export default function ProductsPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <p className="text-muted-foreground">Nenhum produto encontrado</p>
+            <p className="text-muted-foreground">{t.products.noProducts}</p>
           </motion.div>
         )}
       </div>
@@ -186,7 +188,7 @@ export default function ProductsPage() {
           >
             <ShoppingCart className="w-5 h-5" />
             <span className="flex-1 text-left">
-              Ver carrinho ({itemCount} {itemCount === 1 ? 'item' : 'itens'})
+              {t.cart.viewCart} ({itemCount} {itemCount === 1 ? t.cart.item : t.cart.items})
             </span>
             <span className="font-bold">{total} MT</span>
             <ArrowRight className="w-5 h-5" />

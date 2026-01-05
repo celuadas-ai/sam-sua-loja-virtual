@@ -5,15 +5,17 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { CartItemCard } from '@/components/CartItemCard';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { items, total, itemCount } = useCart();
+  const { t } = useLanguage();
 
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header title="Carrinho" showBack />
+        <Header title={t.cart.title} showBack />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -24,17 +26,17 @@ export default function CartPage() {
             <ShoppingBag className="w-12 h-12 text-muted-foreground" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">
-            Carrinho vazio
+            {t.cart.empty}
           </h2>
           <p className="text-muted-foreground text-center mb-6">
-            Adicione produtos para começar a sua encomenda
+            {t.cart.emptyMessage}
           </p>
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/products')}
             className="sam-button-accent"
           >
-            Ver produtos
+            {t.cart.viewProducts}
             <ArrowRight className="w-5 h-5" />
           </motion.button>
         </motion.div>
@@ -46,7 +48,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-background pb-[280px] sm:pb-[260px]">
-      <Header title="Carrinho" showBack />
+      <Header title={t.cart.title} showBack />
 
       <div className="px-4 py-4 space-y-3">
         <AnimatePresence mode="popLayout">
@@ -64,15 +66,15 @@ export default function CartPage() {
       >
         <div className="space-y-2">
           <div className="flex justify-between text-muted-foreground">
-            <span>Subtotal ({itemCount} itens)</span>
+            <span>{t.cart.subtotal} ({itemCount} {itemCount === 1 ? t.cart.item : t.cart.items})</span>
             <span>{total} MT</span>
           </div>
           <div className="flex justify-between text-muted-foreground">
-            <span>Taxa de entrega</span>
-            <span className="text-sam-success">Grátis</span>
+            <span>{t.cart.deliveryFee}</span>
+            <span className="text-sam-success">{t.common.free}</span>
           </div>
           <div className="flex justify-between text-lg font-bold text-foreground pt-2 border-t border-border">
-            <span>Total</span>
+            <span>{t.cart.total}</span>
             <span>{total} MT</span>
           </div>
         </div>
@@ -82,7 +84,7 @@ export default function CartPage() {
           onClick={() => navigate('/payment')}
           className="sam-button-accent w-full py-4 rounded-2xl"
         >
-          Continuar para pagamento
+          {t.cart.continueToPayment}
           <ArrowRight className="w-5 h-5" />
         </motion.button>
       </motion.div>
