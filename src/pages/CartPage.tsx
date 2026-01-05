@@ -84,7 +84,7 @@ export default function CartPage() {
           onClick={() => navigate('/payment')}
           className="sam-button-accent w-full py-4 rounded-2xl"
         >
-          {t.cart.continueToPayment}
+          {t.cart.continueOrder}
           <ArrowRight className="w-5 h-5" />
         </motion.button>
       </motion.div>
