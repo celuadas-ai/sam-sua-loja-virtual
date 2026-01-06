@@ -56,17 +56,30 @@ export default function PaymentPage() {
 
     setIsProcessing(true);
 
-    // Simulate order processing
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Create order with customer details
+      await createOrder(
+        selectedMethod,
+        undefined, // customerName - will use from user profile
+        undefined, // customerPhone - will use from user profile
+        selectedAddress.address // customerAddress
+      );
 
-    createOrder(selectedMethod);
+      toast({
+        title: t.payment.orderConfirmed,
+        description: t.payment.paymentOnDeliveryDesc,
+      });
 
-    toast({
-      title: t.payment.orderConfirmed,
-      description: t.payment.paymentOnDeliveryDesc,
-    });
-
-    navigate('/tracking');
+      navigate('/tracking');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: 'Erro ao criar encomenda',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
