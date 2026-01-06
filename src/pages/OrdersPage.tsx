@@ -1,39 +1,32 @@
 import { motion } from 'framer-motion';
-import { Package, ChevronRight, ShoppingBag } from 'lucide-react';
+import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const mockOrders = [
-  {
-    id: 'ORD-001',
-    date: '08 Dez 2025',
-    total: 295,
-    items: 4,
-    status: 'delivered',
-  },
-  {
-    id: 'ORD-002',
-    date: '05 Dez 2025',
-    total: 180,
-    items: 2,
-    status: 'delivered',
-  },
-  {
-    id: 'ORD-003',
-    date: '01 Dez 2025',
-    total: 450,
-    items: 6,
-    status: 'delivered',
-  },
-];
+import { useOrders } from '@/hooks/useOrders';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 export default function OrdersPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { orders, loading } = useOrders();
 
-  if (mockOrders.length === 0) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title={t.orders.title} showBack />
+        <div className="flex flex-col items-center justify-center px-6 py-20">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+          <p className="text-muted-foreground">A carregar encomendas...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title={t.orders.title} showBack />
@@ -66,12 +59,26 @@ export default function OrdersPage() {
     );
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'bg-sam-success/10 text-sam-success';
+      case 'on_the_way':
+      case 'almost_there':
+        return 'bg-orange-500/10 text-orange-500';
+      case 'preparing':
+        return 'bg-yellow-500/10 text-yellow-500';
+      default:
+        return 'bg-blue-500/10 text-blue-500';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header title={t.orders.title} showBack />
 
       <div className="px-4 py-4 space-y-3">
-        {mockOrders.map((order, index) => (
+        {orders.map((order, index) => (
           <motion.div
             key={order.id}
             initial={{ opacity: 0, y: 20 }}
@@ -80,23 +87,38 @@ export default function OrdersPage() {
             className="sam-card p-4"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-sam-success/10 flex items-center justify-center flex-shrink-0">
-                <Package className="w-6 h-6 text-sam-success" />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                order.status === 'delivered' ? 'bg-sam-success/10' : 'bg-primary/10'
+              }`}>
+                <Package className={`w-6 h-6 ${
+                  order.status === 'delivered' ? 'text-sam-success' : 'text-primary'
+                }`} />
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="font-semibold text-foreground">{order.id}</p>
-                  <span className="text-xs bg-sam-success/10 text-sam-success px-2 py-1 rounded-full">
-                    {t.status[order.status as keyof typeof t.status]}
+                  <p className="font-semibold text-foreground text-sm">
+                    {order.id.slice(0, 8)}...
+                  </p>
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
+                    {t.status[order.status as keyof typeof t.status] || order.status}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {order.date} • {order.items} {order.items === 1 ? t.cart.item : t.cart.items}
+                  {format(new Date(order.createdAt), "dd MMM yyyy", { locale: pt })} • {order.items.length} {order.items.length === 1 ? t.cart.item : t.cart.items}
                 </p>
-                <p className="text-sm font-semibold text-primary mt-1">
-                  {order.total} MT
-                </p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-sm font-semibold text-primary">
+                    {order.total.toLocaleString()} MT
+                  </p>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    order.paymentStatus === 'paid'
+                      ? 'bg-green-500/10 text-green-600'
+                      : 'bg-amber-500/10 text-amber-600'
+                  }`}>
+                    {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
+                  </span>
+                </div>
               </div>
 
               <ChevronRight className="w-5 h-5 text-muted-foreground" />

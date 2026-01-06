@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockOrders } from '@/data/mockUsers';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Order, OrderStatus } from '@/types';
+import { OrderStatus } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import samLogo from '@/assets/sam-logo.png';
 import { toast } from 'sonner';
+import { useOrders } from '@/hooks/useOrders';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -22,35 +22,40 @@ export default function OperatorDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { t } = useLanguage();
-  const [orders, setOrders] = useState<Order[]>(
-    mockOrders.filter((o) => o.status !== 'delivered')
-  );
+  const { orders: allOrders, loading, updateOrderStatus, confirmPayment } = useOrders();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
-  const handleAdvanceStatus = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (order.id === orderId) {
-          const nextStatus = statusConfig[order.status].next;
-          if (nextStatus) {
-            return { ...order, status: nextStatus };
-          }
-        }
-        return order;
-      }).filter((o) => o.status !== 'delivered')
-    );
+  // Filter to show only non-delivered orders
+  const orders = allOrders.filter((o) => o.status !== 'delivered');
+  const deliveredToday = allOrders.filter((o) => {
+    const today = new Date();
+    const orderDate = new Date(o.createdAt);
+    return o.status === 'delivered' && 
+      orderDate.toDateString() === today.toDateString();
+  }).length;
+
+  const handleAdvanceStatus = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const nextStatus = statusConfig[order.status].next;
+    if (nextStatus) {
+      const success = await updateOrderStatus(orderId, nextStatus);
+      if (success) {
+        toast.success(`Estado atualizado para: ${statusConfig[nextStatus].label}`);
+      } else {
+        toast.error('Erro ao atualizar estado');
+      }
+    }
   };
 
-  const handleConfirmPayment = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (order.id === orderId) {
-          return { ...order, paymentStatus: 'paid' as const };
-        }
-        return order;
-      })
-    );
-    toast.success('Pagamento confirmado com sucesso!');
+  const handleConfirmPayment = async (orderId: string) => {
+    const success = await confirmPayment(orderId);
+    if (success) {
+      toast.success('Pagamento confirmado com sucesso!');
+    } else {
+      toast.error('Erro ao confirmar pagamento');
+    }
   };
 
   const toggleOrderExpand = (orderId: string) => {
@@ -91,7 +96,7 @@ export default function OperatorDashboard() {
         </div>
         <div className="sam-card p-4 text-center">
           <CheckCircle className="w-6 h-6 mx-auto text-sam-success mb-2" />
-          <p className="text-2xl font-bold text-foreground">12</p>
+          <p className="text-2xl font-bold text-foreground">{deliveredToday}</p>
           <p className="text-xs text-muted-foreground">Hoje</p>
         </div>
       </div>
@@ -100,7 +105,12 @@ export default function OperatorDashboard() {
       <div className="p-4 space-y-4">
         <h2 className="font-semibold text-foreground">Encomendas Ativas</h2>
         
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="sam-card p-8 text-center">
+            <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-4" />
+            <p className="text-muted-foreground">A carregar encomendas...</p>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="sam-card p-8 text-center">
             <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Sem encomendas pendentes</p>
@@ -123,7 +133,7 @@ export default function OperatorDashboard() {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-mono font-semibold text-foreground">{order.id}</p>
+                      <p className="font-mono font-semibold text-foreground text-sm">{order.id.slice(0, 8)}...</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs text-white ${status.color}`}>
                           {status.label}
@@ -143,15 +153,15 @@ export default function OperatorDashboard() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm">
                       <Package className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-foreground">{order.customerName}</span>
+                      <span className="text-foreground">{order.customerName || 'Cliente'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{order.customerPhone}</span>
+                      <span className="text-muted-foreground">{order.customerPhone || 'N/A'}</span>
                     </div>
                     <div className="flex items-start gap-2 text-sm">
                       <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground">{order.customerAddress}</span>
+                      <span className="text-muted-foreground">{order.customerAddress || 'N/A'}</span>
                     </div>
                   </div>
 
@@ -179,14 +189,18 @@ export default function OperatorDashboard() {
                       <div className="bg-muted/30 p-4 border-t border-border">
                         <h4 className="text-sm font-semibold text-foreground mb-3">Produtos da Encomenda</h4>
                         <div className="space-y-3">
-                          {order.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-3 bg-card rounded-lg p-2">
-                              <div className="w-12 h-12 bg-background rounded-lg overflow-hidden flex-shrink-0">
-                                <img 
-                                  src={item.image} 
-                                  alt={item.name} 
-                                  className="w-full h-full object-contain"
-                                />
+                          {order.items.map((item, idx) => (
+                            <div key={`${item.id}-${idx}`} className="flex items-center gap-3 bg-card rounded-lg p-2">
+                              <div className="w-12 h-12 bg-background rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                {item.image ? (
+                                  <img 
+                                    src={item.image} 
+                                    alt={item.name} 
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <Package className="w-6 h-6 text-muted-foreground" />
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-foreground truncate">{item.name}</p>

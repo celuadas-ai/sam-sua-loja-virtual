@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { CartItem, Product, Order, OrderStatus, PaymentMethod } from '@/types';
+import { useOrders } from '@/hooks/useOrders';
 
 interface CartContextType {
   items: CartItem[];
@@ -10,7 +11,7 @@ interface CartContextType {
   total: number;
   itemCount: number;
   currentOrder: Order | null;
-  createOrder: (paymentMethod: PaymentMethod) => void;
+  createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string) => Promise<void>;
   updateOrderStatus: (status: OrderStatus) => void;
   processPayment: () => void;
   completeOrder: () => void;
@@ -21,6 +22,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const { createOrder: createDbOrder, updateOrderStatus: updateDbOrderStatus, confirmPayment } = useOrders();
 
   const addItem = (product: Product) => {
     setItems(prev => {
@@ -62,29 +64,57 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  const createOrder = (paymentMethod: PaymentMethod) => {
-    const order: Order = {
-      id: `ORD-${Date.now()}`,
-      items: [...items],
+  const createOrder = async (
+    paymentMethod: PaymentMethod,
+    customerName?: string,
+    customerPhone?: string,
+    customerAddress?: string
+  ) => {
+    // Try to create order in database
+    const dbOrder = await createDbOrder(
+      items,
       total,
-      status: 'received',
       paymentMethod,
-      paymentStatus: 'pending',
-      createdAt: new Date(),
-      estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
-    };
-    setCurrentOrder(order);
-    clearCart();
-  };
+      customerName,
+      customerPhone,
+      customerAddress
+    );
 
-  const processPayment = () => {
-    if (currentOrder) {
-      setCurrentOrder({ ...currentOrder, paymentStatus: 'paid' });
+    if (dbOrder) {
+      setCurrentOrder(dbOrder);
+      clearCart();
+    } else {
+      // Fallback to local order if database fails
+      const order: Order = {
+        id: `ORD-${Date.now()}`,
+        items: [...items],
+        total,
+        status: 'received',
+        paymentMethod,
+        paymentStatus: 'pending',
+        createdAt: new Date(),
+        estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000),
+        customerName,
+        customerPhone,
+        customerAddress,
+      };
+      setCurrentOrder(order);
+      clearCart();
     }
   };
 
-  const updateOrderStatus = (status: OrderStatus) => {
+  const processPayment = async () => {
     if (currentOrder) {
+      const success = await confirmPayment(currentOrder.id);
+      if (success) {
+        setCurrentOrder({ ...currentOrder, paymentStatus: 'paid' });
+      }
+    }
+  };
+
+  const updateOrderStatus = async (status: OrderStatus) => {
+    if (currentOrder) {
+      await updateDbOrderStatus(currentOrder.id, status);
       setCurrentOrder({ ...currentOrder, status });
     }
   };
