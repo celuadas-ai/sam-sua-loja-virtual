@@ -23,22 +23,18 @@ export default function AuthPage() {
     phone: '',
   });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - wait for userRole to be loaded
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      redirectByRole();
+    if (isAuthenticated && !isLoading && userRole) {
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else if (userRole === 'operator') {
+        navigate('/operator');
+      } else {
+        navigate('/products');
+      }
     }
-  }, [isAuthenticated, userRole, isLoading]);
-
-  const redirectByRole = () => {
-    if (userRole === 'admin') {
-      navigate('/admin');
-    } else if (userRole === 'operator') {
-      navigate('/operator');
-    } else {
-      navigate('/products');
-    }
-  };
+  }, [isAuthenticated, userRole, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
