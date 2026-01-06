@@ -1,50 +1,55 @@
 import { motion } from 'framer-motion';
-import { Package, Users, Truck, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Package, Users, Truck, TrendingUp, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { mockOrders, mockOperators } from '@/data/mockUsers';
-import { products } from '@/data/products';
-
-const stats = [
-  {
-    icon: Truck,
-    label: 'Encomendas Hoje',
-    value: '24',
-    change: '+12%',
-    color: 'bg-accent',
-  },
-  {
-    icon: TrendingUp,
-    label: 'Vendas (MZN)',
-    value: '45.600',
-    change: '+8%',
-    color: 'bg-sam-success',
-  },
-  {
-    icon: Package,
-    label: 'Produtos',
-    value: products.length.toString(),
-    change: '',
-    color: 'bg-sam-warning',
-  },
-  {
-    icon: Users,
-    label: 'Operadores Ativos',
-    value: mockOperators.filter(o => o.isActive).length.toString(),
-    change: '',
-    color: 'bg-primary',
-  },
-];
-
-const statusLabels: Record<string, { label: string; color: string }> = {
-  received: { label: 'Recebido', color: 'bg-blue-500' },
-  preparing: { label: 'Preparando', color: 'bg-yellow-500' },
-  on_the_way: { label: 'Em Rota', color: 'bg-orange-500' },
-  delivered: { label: 'Entregue', color: 'bg-green-500' },
-};
+import { useProducts } from '@/hooks/useProducts';
+import { useOperators } from '@/hooks/useOperators';
 
 export default function AdminDashboard() {
+  const { products, isLoading: productsLoading } = useProducts();
+  const { operators, isLoading: operatorsLoading } = useOperators();
+  
+  const activeOperators = operators.filter(o => o.isActive).length;
   const pendingOrders = mockOrders.filter(o => o.status !== 'delivered').length;
   const completedOrders = mockOrders.filter(o => o.status === 'delivered').length;
+
+  const stats = [
+    {
+      icon: Truck,
+      label: 'Encomendas Hoje',
+      value: '24',
+      change: '+12%',
+      color: 'bg-accent',
+    },
+    {
+      icon: TrendingUp,
+      label: 'Vendas (MZN)',
+      value: '45.600',
+      change: '+8%',
+      color: 'bg-sam-success',
+    },
+    {
+      icon: Package,
+      label: 'Produtos',
+      value: productsLoading ? '...' : products.length.toString(),
+      change: '',
+      color: 'bg-sam-warning',
+    },
+    {
+      icon: Users,
+      label: 'Operadores Ativos',
+      value: operatorsLoading ? '...' : activeOperators.toString(),
+      change: '',
+      color: 'bg-primary',
+    },
+  ];
+
+  const statusLabels: Record<string, { label: string; color: string }> = {
+    received: { label: 'Recebido', color: 'bg-blue-500' },
+    preparing: { label: 'Preparando', color: 'bg-yellow-500' },
+    on_the_way: { label: 'Em Rota', color: 'bg-orange-500' },
+    delivered: { label: 'Entregue', color: 'bg-green-500' },
+  };
 
   return (
     <AdminLayout title="Dashboard" subtitle="Visão geral do sistema">
@@ -135,34 +140,40 @@ export default function AdminDashboard() {
           </h2>
 
           <div className="space-y-4">
-            {mockOperators.map((operator) => (
-              <div
-                key={operator.id}
-                className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                      operator.isActive ? 'bg-primary' : 'bg-muted-foreground'
-                    }`}
-                  >
-                    {operator.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">{operator.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {operator.isActive ? 'Ativo' : 'Inativo'}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-foreground">
-                    {operator.deliveriesCompleted}
-                  </p>
-                  <p className="text-xs text-muted-foreground">entregas</p>
-                </div>
+            {operatorsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-            ))}
+            ) : (
+              operators.slice(0, 4).map((operator) => (
+                <div
+                  key={operator.id}
+                  className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        operator.isActive ? 'bg-primary' : 'bg-muted-foreground'
+                      }`}
+                    >
+                      {operator.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{operator.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {operator.isActive ? 'Ativo' : 'Inativo'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-foreground">
+                      {operator.deliveriesCompleted}
+                    </p>
+                    <p className="text-xs text-muted-foreground">entregas</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

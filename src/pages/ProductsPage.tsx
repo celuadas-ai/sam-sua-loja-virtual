@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, ArrowRight, Menu } from 'lucide-react';
+import { Search, ShoppingCart, ArrowRight, Menu, Loader2 } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { ProductCard } from '@/components/ProductCard';
-import { products, brands } from '@/data/products';
+import { useProducts, brands } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +32,7 @@ export default function ProductsPage() {
   const { itemCount, total } = useCart();
   const { t } = useLanguage();
   const { user, logout } = useAuth();
+  const { products, isLoading } = useProducts();
   const [selectedBrand, setSelectedBrand] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -165,20 +166,28 @@ export default function ProductsPage() {
 
       {/* Products Grid */}
       <div className="px-2 sm:px-4">
-        <div className="grid grid-cols-2 gap-2 sm:gap-4">
-          {filteredProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              {filteredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </div>
 
-        {filteredProducts.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <p className="text-muted-foreground">{t.products.noProducts}</p>
-          </motion.div>
+            {filteredProducts.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <p className="text-muted-foreground">{t.products.noProducts}</p>
+              </motion.div>
+            )}
+          </>
         )}
       </div>
 
