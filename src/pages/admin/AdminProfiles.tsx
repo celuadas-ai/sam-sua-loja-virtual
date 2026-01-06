@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Edit, User, Phone, MapPin, Trash2 } from 'lucide-react';
+import { Search, Edit, User, Phone, MapPin, Trash2, Shield } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,10 +19,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+type AppRole = Database['public']['Enums']['app_role'];
 
 interface Profile {
   id: string;
@@ -51,6 +61,7 @@ export default function AdminProfiles() {
     name: '',
     phone: '',
     address: '',
+    role: 'customer' as AppRole,
   });
 
   // Fetch profiles
@@ -111,6 +122,7 @@ export default function AdminProfiles() {
       name: profile.name || '',
       phone: profile.phone || '',
       address: profile.address || '',
+      role: (profile.role as AppRole) || 'customer',
     });
     setIsEditOpen(true);
   };
@@ -121,7 +133,8 @@ export default function AdminProfiles() {
     setIsSaving(true);
 
     try {
-      const { error } = await supabase
+      // Update profile
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           name: formData.name,
@@ -130,10 +143,42 @@ export default function AdminProfiles() {
         })
         .eq('id', editingProfile.id);
 
-      if (error) {
-        console.error('Error updating profile:', error);
-        toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+        toast({ title: 'Erro', description: profileError.message, variant: 'destructive' });
         return;
+      }
+
+      // Update role - first check if role exists
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', editingProfile.id)
+        .maybeSingle();
+
+      if (existingRole) {
+        // Update existing role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: formData.role })
+          .eq('user_id', editingProfile.id);
+
+        if (roleError) {
+          console.error('Error updating role:', roleError);
+          toast({ title: 'Erro', description: roleError.message, variant: 'destructive' });
+          return;
+        }
+      } else {
+        // Insert new role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: editingProfile.id, role: formData.role });
+
+        if (roleError) {
+          console.error('Error inserting role:', roleError);
+          toast({ title: 'Erro', description: roleError.message, variant: 'destructive' });
+          return;
+        }
       }
 
       toast({
@@ -271,6 +316,37 @@ export default function AdminProfiles() {
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Função</Label>
+              <Select 
+                value={formData.role} 
+                onValueChange={(value: AppRole) => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger id="edit-role">
+                  <SelectValue placeholder="Selecionar função" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Cliente
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="operator">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Operador
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-destructive" />
+                      Admin
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button className="w-full" onClick={handleUpdateProfile} disabled={isSaving}>
               {isSaving ? (
