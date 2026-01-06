@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItem, Product, Order, OrderStatus, PaymentMethod } from '@/types';
-import { useOrders } from '@/hooks/useOrders';
+import { CartItem, Product, Order, OrderStatus, PaymentMethod, PaymentStatus } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -20,9 +21,9 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const { createOrder: createDbOrder, updateOrderStatus: updateDbOrderStatus, confirmPayment } = useOrders();
 
   const addItem = (product: Product) => {
     setItems(prev => {
@@ -34,7 +35,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : item
         );
       }
-      // Start with 1 pack/box (quantity represents number of packs, not units)
       return [...prev, { ...product, quantity: 1 }];
     });
   };
@@ -44,7 +44,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    // Quantity represents number of packs/boxes, minimum is 1
     if (quantity < 1) {
       removeItem(productId);
       return;
@@ -60,7 +59,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  // Total = unit price × minQuantity (units per pack) × number of packs
   const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -70,21 +68,67 @@ export function CartProvider({ children }: { children: ReactNode }) {
     customerPhone?: string,
     customerAddress?: string
   ) => {
-    // Try to create order in database
-    const dbOrder = await createDbOrder(
-      items,
-      total,
-      paymentMethod,
-      customerName,
-      customerPhone,
-      customerAddress
-    );
+    let dbOrder: Order | null = null;
+
+    // Try to create order in database if user is authenticated
+    if (user) {
+      try {
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: user.id,
+            total,
+            payment_method: paymentMethod,
+            payment_status: 'pending',
+            status: 'received',
+            customer_name: customerName || user.user_metadata?.full_name || user.email,
+            customer_phone: customerPhone || user.user_metadata?.phone,
+            customer_address: customerAddress,
+            estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+          })
+          .select()
+          .single();
+
+        if (!orderError && orderData) {
+          // Insert order items
+          const orderItems = items.map(item => ({
+            order_id: orderData.id,
+            product_id: item.id,
+            product_name: item.name,
+            product_brand: item.brand,
+            product_volume: item.volume,
+            product_price: item.price,
+            quantity: item.quantity,
+            min_quantity: item.minQuantity,
+            unit_label: item.unitLabel,
+          }));
+
+          await supabase.from('order_items').insert(orderItems);
+
+          dbOrder = {
+            id: orderData.id,
+            items: [...items],
+            total: Number(orderData.total),
+            status: orderData.status as OrderStatus,
+            paymentMethod: orderData.payment_method as PaymentMethod,
+            paymentStatus: orderData.payment_status as PaymentStatus,
+            createdAt: new Date(orderData.created_at),
+            estimatedDelivery: orderData.estimated_delivery ? new Date(orderData.estimated_delivery) : undefined,
+            customerName: orderData.customer_name || undefined,
+            customerPhone: orderData.customer_phone || undefined,
+            customerAddress: orderData.customer_address || undefined,
+          };
+        }
+      } catch (err) {
+        console.error('Error creating order in database:', err);
+      }
+    }
 
     if (dbOrder) {
       setCurrentOrder(dbOrder);
       clearCart();
     } else {
-      // Fallback to local order if database fails
+      // Fallback to local order
       const order: Order = {
         id: `ORD-${Date.now()}`,
         items: [...items],
@@ -105,16 +149,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const processPayment = async () => {
     if (currentOrder) {
-      const success = await confirmPayment(currentOrder.id);
-      if (success) {
-        setCurrentOrder({ ...currentOrder, paymentStatus: 'paid' });
+      try {
+        await supabase
+          .from('orders')
+          .update({ payment_status: 'paid' })
+          .eq('id', currentOrder.id);
+      } catch (err) {
+        console.error('Error confirming payment:', err);
       }
+      setCurrentOrder({ ...currentOrder, paymentStatus: 'paid' });
     }
   };
 
   const updateOrderStatus = async (status: OrderStatus) => {
     if (currentOrder) {
-      await updateDbOrderStatus(currentOrder.id, status);
+      try {
+        await supabase
+          .from('orders')
+          .update({ status })
+          .eq('id', currentOrder.id);
+      } catch (err) {
+        console.error('Error updating order status:', err);
+      }
       setCurrentOrder({ ...currentOrder, status });
     }
   };
