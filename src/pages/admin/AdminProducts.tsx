@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { brands } from '@/data/products';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, brands } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -38,8 +37,9 @@ import { Product } from '@/types';
 export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('Todos');
-  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, isLoading, addProduct, updateProduct, deleteProduct } = useProducts();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -73,7 +73,7 @@ export default function AdminProducts() {
     });
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!formData.name || !formData.brand || !formData.volume || !formData.price || !formData.minQuantity) {
       toast({
         title: 'Erro',
@@ -83,7 +83,8 @@ export default function AdminProducts() {
       return;
     }
 
-    addProduct({
+    setIsSubmitting(true);
+    const result = await addProduct({
       name: formData.name,
       brand: formData.brand,
       volume: formData.volume,
@@ -92,14 +93,22 @@ export default function AdminProducts() {
       unitLabel: formData.unitLabel,
       image: '/placeholder.svg',
     });
+    setIsSubmitting(false);
 
-    toast({
-      title: 'Produto adicionado',
-      description: `${formData.name} foi adicionado com sucesso`,
-    });
-
-    resetForm();
-    setIsAddOpen(false);
+    if (result) {
+      toast({
+        title: 'Produto adicionado',
+        description: `${formData.name} foi adicionado com sucesso`,
+      });
+      resetForm();
+      setIsAddOpen(false);
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível adicionar o produto',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleEditClick = (product: Product) => {
@@ -115,7 +124,7 @@ export default function AdminProducts() {
     setIsEditOpen(true);
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!editingProduct) return;
 
     if (!formData.name || !formData.brand || !formData.volume || !formData.price || !formData.minQuantity) {
@@ -127,7 +136,8 @@ export default function AdminProducts() {
       return;
     }
 
-    updateProduct(editingProduct.id, {
+    setIsSubmitting(true);
+    const success = await updateProduct(editingProduct.id, {
       name: formData.name,
       brand: formData.brand,
       volume: formData.volume,
@@ -135,23 +145,39 @@ export default function AdminProducts() {
       minQuantity: parseInt(formData.minQuantity),
       unitLabel: formData.unitLabel,
     });
+    setIsSubmitting(false);
 
-    toast({
-      title: 'Produto atualizado',
-      description: `${formData.name} foi atualizado com sucesso`,
-    });
-
-    resetForm();
-    setIsEditOpen(false);
-    setEditingProduct(null);
+    if (success) {
+      toast({
+        title: 'Produto atualizado',
+        description: `${formData.name} foi atualizado com sucesso`,
+      });
+      resetForm();
+      setIsEditOpen(false);
+      setEditingProduct(null);
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o produto',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteProduct = (product: Product) => {
-    deleteProduct(product.id);
-    toast({
-      title: 'Produto removido',
-      description: `${product.name} foi removido com sucesso`,
-    });
+  const handleDeleteProduct = async (product: Product) => {
+    const success = await deleteProduct(product.id);
+    if (success) {
+      toast({
+        title: 'Produto removido',
+        description: `${product.name} foi removido com sucesso`,
+      });
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível remover o produto',
+        variant: 'destructive',
+      });
+    }
   };
 
   const availableBrands = brands.filter(b => b !== 'Todos');
