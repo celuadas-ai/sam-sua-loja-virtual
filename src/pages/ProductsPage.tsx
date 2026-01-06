@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { products, brands } from '@/data/products';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import samLogo from '@/assets/sam-logo.png';
 import {
   Sheet,
@@ -30,8 +31,12 @@ export default function ProductsPage() {
   const navigate = useNavigate();
   const { itemCount, total } = useCart();
   const { t } = useLanguage();
+  const { user, logout } = useAuth();
   const [selectedBrand, setSelectedBrand] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const userName = user?.user_metadata?.full_name || 'Utilizador';
+  const userEmail = user?.email || '';
 
   const menuItems = [
     { icon: MapPin, label: t.profile.addresses, path: '/addresses' },
@@ -72,8 +77,8 @@ export default function ProductsPage() {
                     <User className="w-7 h-7" />
                   </div>
                   <div className="text-left">
-                    <SheetTitle className="text-primary-foreground text-lg">João Silva</SheetTitle>
-                    <p className="text-primary-foreground/70 text-sm">joao.silva@email.com</p>
+                    <SheetTitle className="text-primary-foreground text-lg">{userName}</SheetTitle>
+                    <p className="text-primary-foreground/70 text-sm">{userEmail}</p>
                   </div>
                 </div>
               </SheetHeader>
@@ -96,7 +101,10 @@ export default function ProductsPage() {
                 })}
                 <div className="pt-4 border-t border-border mt-4">
                   <button
-                    onClick={() => navigate('/')}
+                    onClick={() => {
+                      logout();
+                      navigate('/');
+                    }}
                     className="w-full p-3 flex items-center gap-4 rounded-xl hover:bg-destructive/10 transition-colors"
                   >
                     <LogOut className="w-5 h-5 text-destructive" />

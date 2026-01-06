@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ export default function AuthPage() {
     email: '',
     password: '',
     name: '',
+    phone: '',
   });
 
   // Redirect if already authenticated
@@ -50,7 +51,7 @@ export default function AuthPage() {
       return;
     }
 
-    if (!isLogin && !formData.name) {
+    if (!isLogin && (!formData.name || !formData.phone)) {
       toast({
         title: t.auth.error || 'Erro',
         description: t.auth.fillAllFields || 'Por favor preencha todos os campos',
@@ -80,7 +81,7 @@ export default function AuthPage() {
           });
         }
       } else {
-        const { error } = await signup(formData.email, formData.password, formData.name);
+        const { error } = await signup(formData.email, formData.password, formData.name, formData.phone);
         
         if (error) {
           let errorMessage = error;
@@ -154,24 +155,44 @@ export default function AuthPage() {
       >
         <div className="space-y-4">
           {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                {t.auth.fullName}
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={t.auth.yourName}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="sam-input pl-12"
-                  disabled={isSubmitting}
-                />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <User className="w-5 h-5" />
+            <>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  {t.auth.fullName}
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={t.auth.yourName}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="sam-input pl-12"
+                    disabled={isSubmitting}
+                  />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <User className="w-5 h-5" />
+                  </div>
                 </div>
               </div>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  {t.auth.phone || 'Telefone'}
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    placeholder={t.auth.phonePlaceholder || '+258 84 000 0000'}
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="sam-input pl-12"
+                    disabled={isSubmitting}
+                  />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           <div>

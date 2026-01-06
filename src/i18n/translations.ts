@@ -212,6 +212,8 @@ export const translations = {
       fillAllFields: 'Por favor preencha todos os campos',
       invalidCredentials: 'Credenciais inválidas',
       emailAlreadyRegistered: 'Este email já está registado',
+      phone: 'Telefone',
+      phonePlaceholder: '+258 84 000 0000',
     },
     
     // Help Page
@@ -442,6 +444,8 @@ export const translations = {
       fillAllFields: 'Please fill all fields',
       invalidCredentials: 'Invalid credentials',
       emailAlreadyRegistered: 'This email is already registered',
+      phone: 'Phone',
+      phonePlaceholder: '+258 84 000 0000',
     },
     
     // Help Page
