@@ -18,6 +18,7 @@ export default function AuthPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
     phone: '',
   });
@@ -51,10 +52,19 @@ export default function AuthPage() {
       return;
     }
 
-    if (!isLogin && (!formData.name || !formData.phone)) {
+    if (!isLogin && (!formData.name || !formData.phone || !formData.confirmPassword)) {
       toast({
         title: t.auth.error || 'Erro',
         description: t.auth.fillAllFields || 'Por favor preencha todos os campos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      toast({
+        title: t.auth.error || 'Erro',
+        description: t.auth.passwordsDontMatch || 'As palavras-passe não coincidem',
         variant: 'destructive',
       });
       return;
@@ -176,12 +186,12 @@ export default function AuthPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  {t.auth.phone || 'Telefone'}
+                  {t.auth.mobilePhone || 'Número de Telemóvel'}
                 </label>
                 <div className="relative">
                   <input
                     type="tel"
-                    placeholder={t.auth.phonePlaceholder || '+258 84 000 0000'}
+                    placeholder={t.auth.mobilePhonePlaceholder || '+258 84 000 0000'}
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="sam-input pl-12"
@@ -240,6 +250,27 @@ export default function AuthPage() {
               </button>
             </div>
           </div>
+
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {t.auth.confirmPassword || 'Confirmar Palavra-passe'}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="sam-input pl-12 pr-12"
+                  disabled={isSubmitting}
+                />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Lock className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+          )}
 
           {isLogin && (
             <div className="text-right">

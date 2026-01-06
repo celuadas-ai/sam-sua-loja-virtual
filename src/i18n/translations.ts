@@ -214,6 +214,10 @@ export const translations = {
       emailAlreadyRegistered: 'Este email já está registado',
       phone: 'Telefone',
       phonePlaceholder: '+258 84 000 0000',
+      mobilePhone: 'Número de Telemóvel',
+      mobilePhonePlaceholder: '+258 84 000 0000',
+      confirmPassword: 'Confirmar Palavra-passe',
+      passwordsDontMatch: 'As palavras-passe não coincidem',
     },
     
     // Help Page
@@ -446,6 +450,10 @@ export const translations = {
       emailAlreadyRegistered: 'This email is already registered',
       phone: 'Phone',
       phonePlaceholder: '+258 84 000 0000',
+      mobilePhone: 'Mobile Number',
+      mobilePhonePlaceholder: '+258 84 000 0000',
+      confirmPassword: 'Confirm Password',
+      passwordsDontMatch: 'Passwords do not match',
     },
     
     // Help Page
