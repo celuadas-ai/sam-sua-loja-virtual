@@ -42,9 +42,9 @@ export default function ProfilePage() {
     const saved = localStorage.getItem('user-profile');
     if (saved) return JSON.parse(saved);
     return {
-      name: user?.name || 'João Silva',
-      email: user?.email || 'joao.silva@email.com',
-      phone: user?.phone || '+258 84 123 4567',
+      name: user?.user_metadata?.full_name || 'Cliente',
+      email: user?.email || '',
+      phone: user?.user_metadata?.phone || '+258 84 000 0000',
     };
   });
 

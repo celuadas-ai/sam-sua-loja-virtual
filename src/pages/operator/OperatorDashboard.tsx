@@ -78,7 +78,7 @@ export default function OperatorDashboard() {
             </div>
             <div>
               <h1 className="font-bold text-foreground">Operador</h1>
-              <p className="text-xs text-muted-foreground">{user?.name}</p>
+              <p className="text-xs text-muted-foreground">{user?.user_metadata?.full_name || user?.email}</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={handleLogout}>

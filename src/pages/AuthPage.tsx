@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,50 +10,108 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export default function AuthPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, signup, isAuthenticated, userRole, isLoading } = useAuth();
   const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    emailOrPhone: '',
+    email: '',
     password: '',
     name: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const user = login(formData.emailOrPhone, formData.password);
-    
-    if (user) {
-      const redirectText = user.role === 'admin' 
-        ? t.auth.adminPanel 
-        : user.role === 'operator' 
-          ? t.auth.operatorPanel 
-          : t.auth.productsPage;
-      
-      toast({
-        title: isLogin ? `${t.auth.welcomeBack}!` : t.auth.accountCreated,
-        description: `${t.auth.redirectingTo} ${redirectText}...`,
-      });
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      redirectByRole();
+    }
+  }, [isAuthenticated, userRole, isLoading]);
 
-      setTimeout(() => {
-        if (user.role === 'admin') {
-          navigate('/admin');
-        } else if (user.role === 'operator') {
-          navigate('/operator');
-        } else {
-          navigate('/products');
-        }
-      }, 1000);
+  const redirectByRole = () => {
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else if (userRole === 'operator') {
+      navigate('/operator');
     } else {
-      toast({
-        title: t.auth.welcome,
-        description: t.auth.redirecting,
-      });
-      setTimeout(() => navigate('/products'), 1000);
+      navigate('/products');
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      toast({
+        title: t.auth.error || 'Erro',
+        description: t.auth.fillAllFields || 'Por favor preencha todos os campos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isLogin && !formData.name) {
+      toast({
+        title: t.auth.error || 'Erro',
+        description: t.auth.fillAllFields || 'Por favor preencha todos os campos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await login(formData.email, formData.password);
+        
+        if (error) {
+          toast({
+            title: t.auth.error || 'Erro',
+            description: error === 'Invalid login credentials' 
+              ? (t.auth.invalidCredentials || 'Credenciais inválidas')
+              : error,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: `${t.auth.welcomeBack}!`,
+            description: t.auth.redirecting || 'Redirecionando...',
+          });
+        }
+      } else {
+        const { error } = await signup(formData.email, formData.password, formData.name);
+        
+        if (error) {
+          let errorMessage = error;
+          if (error.includes('already registered')) {
+            errorMessage = t.auth.emailAlreadyRegistered || 'Este email já está registado';
+          }
+          
+          toast({
+            title: t.auth.error || 'Erro',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: t.auth.accountCreated || 'Conta criada',
+            description: t.auth.redirecting || 'Redirecionando...',
+          });
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -85,15 +143,6 @@ export default function AuthPage() {
             ? t.auth.loginToContinue
             : t.auth.registerToOrder}
         </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-xs text-muted-foreground mt-4 bg-muted p-2 rounded-lg"
-        >
-          {t.auth.demoHint}
-        </motion.p>
       </div>
 
       <motion.form
@@ -116,9 +165,10 @@ export default function AuthPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="sam-input pl-12"
+                  disabled={isSubmitting}
                 />
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Mail className="w-5 h-5" />
+                  <User className="w-5 h-5" />
                 </div>
               </div>
             </div>
@@ -126,18 +176,19 @@ export default function AuthPage() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              {t.auth.emailOrPhone}
+              {t.auth.email || 'Email'}
             </label>
             <div className="relative">
               <input
-                type="text"
+                type="email"
                 placeholder={t.auth.emailPlaceholder}
-                value={formData.emailOrPhone}
-                onChange={(e) => setFormData({ ...formData, emailOrPhone: e.target.value })}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="sam-input pl-12"
+                disabled={isSubmitting}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {formData.emailOrPhone.includes('@') ? <Mail className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
+                <Mail className="w-5 h-5" />
               </div>
             </div>
           </div>
@@ -153,6 +204,7 @@ export default function AuthPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="sam-input pl-12 pr-12"
+                disabled={isSubmitting}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <Lock className="w-5 h-5" />
@@ -161,6 +213,7 @@ export default function AuthPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isSubmitting}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -176,15 +229,31 @@ export default function AuthPage() {
           )}
         </div>
 
-        <motion.button type="submit" whileTap={{ scale: 0.98 }} className="sam-button-accent w-full mt-8">
-          {isLogin ? t.auth.login : t.auth.createAccount}
-          <ArrowRight className="w-5 h-5" />
+        <motion.button 
+          type="submit" 
+          whileTap={{ scale: 0.98 }} 
+          className="sam-button-accent w-full mt-8 disabled:opacity-50"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <>
+              {isLogin ? t.auth.login : t.auth.createAccount}
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </motion.button>
 
         <div className="mt-8 text-center">
           <p className="text-muted-foreground">
             {isLogin ? t.auth.noAccount : t.auth.hasAccount}{' '}
-            <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-accent font-semibold hover:underline">
+            <button 
+              type="button" 
+              onClick={() => setIsLogin(!isLogin)} 
+              className="text-accent font-semibold hover:underline"
+              disabled={isSubmitting}
+            >
               {isLogin ? t.auth.createNewAccount : t.auth.login}
             </button>
           </p>

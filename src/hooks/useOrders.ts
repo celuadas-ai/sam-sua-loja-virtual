@@ -144,8 +144,8 @@ export function useOrders() {
           payment_method: paymentMethod,
           payment_status: 'pending',
           status: 'received',
-          customer_name: customerName || user.name,
-          customer_phone: customerPhone || user.phone,
+          customer_name: customerName || user.user_metadata?.full_name || user.email,
+          customer_phone: customerPhone || user.user_metadata?.phone,
           customer_address: customerAddress,
           estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         })
