@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Edit, User, Phone, Mail, MapPin } from 'lucide-react';
+import { Search, Edit, User, Phone, MapPin, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +42,9 @@ export default function AdminProfiles() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deletingProfile, setDeletingProfile] = useState<Profile | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -139,6 +152,44 @@ export default function AdminProfiles() {
     }
   };
 
+  const handleDeleteClick = (profile: Profile) => {
+    setDeletingProfile(profile);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!deletingProfile) return;
+    
+    setIsDeleting(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', deletingProfile.id);
+
+      if (error) {
+        console.error('Error deleting profile:', error);
+        toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({
+        title: 'Perfil eliminado',
+        description: `${deletingProfile.name || 'Perfil'} foi eliminado com sucesso`,
+      });
+      
+      setIsDeleteOpen(false);
+      setDeletingProfile(null);
+      fetchProfiles();
+    } catch (error) {
+      console.error('Error:', error);
+      toast({ title: 'Erro', description: 'Erro ao eliminar perfil', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getRoleBadgeColor = (role?: string) => {
     switch (role) {
       case 'admin':
@@ -232,6 +283,33 @@ export default function AdminProfiles() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Perfil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja eliminar o perfil de "{deletingProfile?.name || 'utilizador'}"? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteProfile} 
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                'Eliminar'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Loading State */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -283,15 +361,25 @@ export default function AdminProfiles() {
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                onClick={() => handleEditClick(profile)}
-              >
-                <Edit className="w-4 h-4" />
-                Editar Perfil
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-2"
+                  onClick={() => handleEditClick(profile)}
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => handleDeleteClick(profile)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </motion.div>
           ))}
         </div>
