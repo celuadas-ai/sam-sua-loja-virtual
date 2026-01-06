@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UserProfile {
   name: string;
@@ -37,21 +38,54 @@ export default function ProfilePage() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('user-profile');
-    if (saved) return JSON.parse(saved);
-    return {
-      name: user?.user_metadata?.full_name || 'Cliente',
-      email: user?.email || '',
-      phone: user?.user_metadata?.phone || '+258 84 000 0000',
-    };
+  const [profile, setProfile] = useState<UserProfile>({
+    name: '',
+    email: user?.email || '',
+    phone: '',
   });
 
   const [formData, setFormData] = useState<UserProfile>(profile);
 
+  // Fetch profile from Supabase
   useEffect(() => {
-    localStorage.setItem('user-profile', JSON.stringify(profile));
+    const fetchProfile = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('name, phone')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching profile:', error);
+        }
+
+        setProfile({
+          name: data?.name || user.user_metadata?.full_name || '',
+          email: user.email || '',
+          phone: data?.phone || user.user_metadata?.phone || '',
+        });
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  // Update formData when profile changes
+  useEffect(() => {
+    setFormData(profile);
   }, [profile]);
 
   const menuItems = [
@@ -61,22 +95,58 @@ export default function ProfilePage() {
     { icon: HelpCircle, label: t.profile.help, path: '/help' },
   ];
 
-  const handleSaveProfile = () => {
-    if (!formData.name || !formData.email || !formData.phone) {
+  const handleSaveProfile = async () => {
+    if (!formData.name || !formData.phone) {
       toast({ title: t.common.error, description: t.toasts.fillAllFields, variant: 'destructive' });
       return;
     }
-    setProfile(formData);
-    setIsEditOpen(false);
-    toast({ title: t.toasts.profileUpdated });
+
+    if (!user) return;
+
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          name: formData.name,
+          phone: formData.phone,
+        });
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        toast({ title: t.common.error, description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      setProfile({
+        ...formData,
+        email: user.email || '',
+      });
+      setIsEditOpen(false);
+      toast({ title: t.toasts.profileUpdated });
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({ title: t.common.error, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem('user-profile');
     toast({ title: t.toasts.sessionEnded });
     navigate('/');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24 sm:pb-20">
@@ -93,10 +163,10 @@ export default function ProfilePage() {
             <User className="w-10 h-10 text-primary-foreground" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-1">
-            {profile.name}
+            {profile.name || 'Cliente'}
           </h2>
           <p className="text-muted-foreground">{profile.email}</p>
-          <p className="text-sm text-muted-foreground">{profile.phone}</p>
+          <p className="text-sm text-muted-foreground">{profile.phone || '-'}</p>
 
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -178,9 +248,12 @@ export default function ProfilePage() {
               <Input
                 type="email"
                 value={formData.email}
-                onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="email@exemplo.com"
+                disabled
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                O email não pode ser alterado
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
@@ -194,8 +267,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <Button onClick={handleSaveProfile} className="w-full">
-            {t.profile.saveChanges}
+          <Button onClick={handleSaveProfile} className="w-full" disabled={isSaving}>
+            {isSaving ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              t.profile.saveChanges
+            )}
           </Button>
         </DialogContent>
       </Dialog>
