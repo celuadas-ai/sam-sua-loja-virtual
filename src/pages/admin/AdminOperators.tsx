@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, UserCheck, UserX } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, UserCheck, UserX, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useOperators } from '@/hooks/useOperators';
 import { Button } from '@/components/ui/button';
@@ -30,12 +30,13 @@ import { Operator } from '@/types';
 
 export default function AdminOperators() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { operators, addOperator, updateOperator, deleteOperator, toggleStatus } = useOperators();
+  const { operators, isLoading, addOperator, updateOperator, deleteOperator, toggleStatus } = useOperators();
   const { toast } = useToast();
   
   // Form states
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingOperator, setEditingOperator] = useState<Operator | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -53,7 +54,7 @@ export default function AdminOperators() {
     setFormData({ name: '', email: '', phone: '', password: '' });
   };
 
-  const handleAddOperator = () => {
+  const handleAddOperator = async () => {
     if (!formData.name || !formData.email || !formData.phone) {
       toast({
         title: 'Erro',
@@ -63,20 +64,29 @@ export default function AdminOperators() {
       return;
     }
 
-    addOperator({
+    setIsSubmitting(true);
+    const result = await addOperator({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       isActive: true,
     });
+    setIsSubmitting(false);
 
-    toast({
-      title: 'Operador registrado',
-      description: `${formData.name} foi adicionado com sucesso`,
-    });
-    
-    resetForm();
-    setIsAddOpen(false);
+    if (result) {
+      toast({
+        title: 'Operador registrado',
+        description: `${formData.name} foi adicionado com sucesso`,
+      });
+      resetForm();
+      setIsAddOpen(false);
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível registrar o operador',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleEditClick = (operator: Operator) => {
@@ -90,7 +100,7 @@ export default function AdminOperators() {
     setIsEditOpen(true);
   };
 
-  const handleUpdateOperator = () => {
+  const handleUpdateOperator = async () => {
     if (!editingOperator) return;
     
     if (!formData.name || !formData.email || !formData.phone) {
@@ -102,36 +112,55 @@ export default function AdminOperators() {
       return;
     }
 
-    updateOperator(editingOperator.id, {
+    setIsSubmitting(true);
+    const success = await updateOperator(editingOperator.id, {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
     });
+    setIsSubmitting(false);
 
-    toast({
-      title: 'Operador atualizado',
-      description: `${formData.name} foi atualizado com sucesso`,
-    });
-    
-    resetForm();
-    setIsEditOpen(false);
-    setEditingOperator(null);
+    if (success) {
+      toast({
+        title: 'Operador atualizado',
+        description: `${formData.name} foi atualizado com sucesso`,
+      });
+      resetForm();
+      setIsEditOpen(false);
+      setEditingOperator(null);
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o operador',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteOperator = (operator: Operator) => {
-    deleteOperator(operator.id);
-    toast({
-      title: 'Operador removido',
-      description: `${operator.name} foi removido com sucesso`,
-    });
+  const handleDeleteOperator = async (operator: Operator) => {
+    const success = await deleteOperator(operator.id);
+    if (success) {
+      toast({
+        title: 'Operador removido',
+        description: `${operator.name} foi removido com sucesso`,
+      });
+    } else {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível remover o operador',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleToggleStatus = (operator: Operator) => {
-    toggleStatus(operator.id);
-    toast({
-      title: 'Estado atualizado',
-      description: `${operator.name} foi ${operator.isActive ? 'desativado' : 'ativado'}`,
-    });
+  const handleToggleStatus = async (operator: Operator) => {
+    const success = await toggleStatus(operator.id);
+    if (success) {
+      toast({
+        title: 'Estado atualizado',
+        description: `${operator.name} foi ${operator.isActive ? 'desativado' : 'ativado'}`,
+      });
+    }
   };
 
   const activeCount = operators.filter((o) => o.isActive).length;
@@ -204,7 +233,8 @@ export default function AdminOperators() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
-              <Button className="w-full" onClick={handleAddOperator}>
+              <Button className="w-full" onClick={handleAddOperator} disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Registrar Operador
               </Button>
             </div>
@@ -247,7 +277,8 @@ export default function AdminOperators() {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
-            <Button className="w-full" onClick={handleUpdateOperator}>
+            <Button className="w-full" onClick={handleUpdateOperator} disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Salvar Alterações
             </Button>
           </div>
@@ -255,6 +286,11 @@ export default function AdminOperators() {
       </Dialog>
 
       {/* Operators Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredOperators.map((operator, index) => (
           <motion.div
@@ -353,6 +389,7 @@ export default function AdminOperators() {
           </motion.div>
         ))}
       </div>
+      )}
     </AdminLayout>
   );
 }
