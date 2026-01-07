@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Plus, Check, ChevronRight, Map } from 'lucide-react';
+import { MapPin, Plus, Check, ChevronRight, Map, Navigation, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,14 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Address {
   id: string;
   label: string;
   address: string;
   isDefault: boolean;
+  coords?: { lat: number; lng: number };
 }
 
 interface AddressSelectorProps {
@@ -39,6 +41,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
   const [showNewForm, setShowNewForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [formData, setFormData] = useState({ label: '', address: '', coords: null as { lat: number; lng: number } | null });
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('user-addresses', JSON.stringify(addresses));
@@ -70,6 +73,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
       label: formData.label,
       address: formData.address,
       isDefault: false,
+      coords: formData.coords || undefined,
     };
 
     setAddresses(prev => [...prev, newAddress]);
@@ -84,6 +88,73 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
   const handleMapAddressSelect = (address: string, coords: { lat: number; lng: number }) => {
     setFormData(prev => ({ ...prev, address, coords }));
     setShowMapPicker(false);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({ title: 'Geolocalização não suportada pelo navegador', variant: 'destructive' });
+      return;
+    }
+
+    setIsLoadingLocation(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      // Get API key from edge function
+      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-maps-key');
+      
+      if (keyError || !keyData?.apiKey) {
+        throw new Error('Não foi possível obter a chave da API');
+      }
+
+      // Reverse geocoding
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${keyData.apiKey}&language=pt`
+      );
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results.length > 0) {
+        const address = data.results[0].formatted_address;
+        
+        const currentLocationAddress: Address = {
+          id: `current-${Date.now()}`,
+          label: 'Localização Atual',
+          address: address,
+          isDefault: false,
+          coords: { lat: latitude, lng: longitude },
+        };
+
+        // Add to addresses if not exists
+        setAddresses(prev => {
+          const filtered = prev.filter(a => !a.id.startsWith('current-'));
+          return [...filtered, currentLocationAddress];
+        });
+        
+        onAddressSelect(currentLocationAddress);
+        setIsOpen(false);
+        toast({ title: 'Localização atual detectada!' });
+      } else {
+        throw new Error('Não foi possível obter o endereço');
+      }
+    } catch (error: any) {
+      console.error('Error getting location:', error);
+      let message = 'Erro ao obter localização';
+      if (error.code === 1) message = 'Permissão de localização negada';
+      if (error.code === 2) message = 'Localização indisponível';
+      if (error.code === 3) message = 'Tempo esgotado ao obter localização';
+      toast({ title: message, variant: 'destructive' });
+    } finally {
+      setIsLoadingLocation(false);
+    }
   };
 
   return (
@@ -120,6 +191,32 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
           </DialogHeader>
 
           <div className="space-y-3 py-4">
+            {/* Use Current Location Button */}
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={handleUseCurrentLocation}
+              disabled={isLoadingLocation}
+              className="w-full p-4 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center gap-3 hover:bg-accent/20 transition-colors disabled:opacity-50"
+            >
+              {isLoadingLocation ? (
+                <Loader2 className="w-5 h-5 text-accent animate-spin" />
+              ) : (
+                <Navigation className="w-5 h-5 text-accent" />
+              )}
+              <span className="font-medium text-accent">
+                {isLoadingLocation ? 'A detectar localização...' : 'Usar minha localização atual'}
+              </span>
+            </motion.button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">ou selecione</span>
+              </div>
+            </div>
+
             {addresses.map((address) => (
               <motion.div
                 key={address.id}
@@ -137,7 +234,11 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
                   }`}>
-                    <MapPin className="w-5 h-5" />
+                    {address.id.startsWith('current-') ? (
+                      <Navigation className="w-5 h-5" />
+                    ) : (
+                      <MapPin className="w-5 h-5" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -145,6 +246,11 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                       {address.isDefault && (
                         <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                           {t.address.default}
+                        </span>
+                      )}
+                      {address.coords && (
+                        <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                          GPS
                         </span>
                       )}
                     </div>
