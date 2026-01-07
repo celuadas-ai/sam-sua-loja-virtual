@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      driver_positions: {
+        Row: {
+          created_at: string
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          operator_id: string
+          order_id: string
+          speed: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          operator_id: string
+          order_id: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          operator_id?: string
+          order_id?: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_positions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operators: {
         Row: {
           created_at: string

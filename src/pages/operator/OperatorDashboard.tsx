@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2 } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import samLogo from '@/assets/sam-logo.png';
 import { toast } from 'sonner';
 import { useOrders } from '@/hooks/useOrders';
+import { useDriverPosition } from '@/hooks/useDriverPosition';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -24,6 +25,8 @@ export default function OperatorDashboard() {
   const { t } = useLanguage();
   const { orders: allOrders, loading, updateOrderStatus, confirmPayment } = useOrders();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const { isTracking, startTracking, stopTracking } = useDriverPosition();
 
   // Filter to show only non-delivered orders
   const orders = allOrders.filter((o) => o.status !== 'delivered');
@@ -60,6 +63,21 @@ export default function OperatorDashboard() {
 
   const toggleOrderExpand = (orderId: string) => {
     setExpandedOrderId(prev => prev === orderId ? null : orderId);
+  };
+
+  const handleToggleTracking = async (orderId: string) => {
+    if (trackingOrderId === orderId && isTracking) {
+      await stopTracking(orderId);
+      setTrackingOrderId(null);
+      toast.success('Rastreio GPS desativado');
+    } else {
+      if (trackingOrderId && isTracking) {
+        await stopTracking(trackingOrderId);
+      }
+      await startTracking(orderId);
+      setTrackingOrderId(orderId);
+      toast.success('Rastreio GPS ativado - sua posição está sendo enviada em tempo real');
+    }
   };
 
   const handleLogout = () => {
@@ -236,6 +254,22 @@ export default function OperatorDashboard() {
 
                 {/* Action Buttons */}
                 <div className="p-4 pt-0 space-y-2">
+                  {/* GPS Tracking Button - Show for on_the_way and almost_there */}
+                  {(order.status === 'on_the_way' || order.status === 'almost_there') && (
+                    <Button 
+                      variant={trackingOrderId === order.id && isTracking ? "destructive" : "outline"}
+                      className={`w-full gap-2 ${trackingOrderId === order.id && isTracking 
+                        ? '' 
+                        : 'border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'}`}
+                      onClick={() => handleToggleTracking(order.id)}
+                    >
+                      <Navigation className="w-4 h-4" />
+                      {trackingOrderId === order.id && isTracking 
+                        ? 'Parar Rastreio GPS' 
+                        : 'Iniciar Rastreio GPS'}
+                    </Button>
+                  )}
+
                   {/* Confirm Payment Button - Only show if not paid and order is delivered or almost there */}
                   {!isPaid && (order.status === 'almost_there' || order.status === 'delivered') && (
                     <Button 
