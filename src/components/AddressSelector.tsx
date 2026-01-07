@@ -191,29 +191,36 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
           </DialogHeader>
 
           <div className="space-y-3 py-4">
-            {/* Use Current Location Button */}
+            {/* Use Current Location - Primary Option */}
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handleUseCurrentLocation}
               disabled={isLoadingLocation}
-              className="w-full p-4 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center gap-3 hover:bg-accent/20 transition-colors disabled:opacity-50"
+              className="w-full p-5 rounded-2xl bg-gradient-to-r from-accent to-accent/80 text-accent-foreground flex items-center gap-4 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
             >
-              {isLoadingLocation ? (
-                <Loader2 className="w-5 h-5 text-accent animate-spin" />
-              ) : (
-                <Navigation className="w-5 h-5 text-accent" />
-              )}
-              <span className="font-medium text-accent">
-                {isLoadingLocation ? 'A detectar localização...' : 'Usar minha localização atual'}
-              </span>
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                {isLoadingLocation ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <Navigation className="w-6 h-6" />
+                )}
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-bold text-lg">
+                  {isLoadingLocation ? 'A detectar...' : 'Usar localização atual'}
+                </p>
+                <p className="text-sm opacity-80">
+                  Entrega rápida para onde você está agora
+                </p>
+              </div>
             </motion.button>
 
-            <div className="relative">
+            <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">ou selecione</span>
+                <span className="bg-background px-3 text-muted-foreground">ou escolha um endereço guardado</span>
               </div>
             </div>
 
