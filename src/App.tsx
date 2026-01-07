@@ -19,6 +19,7 @@ import SettingsPage from "./pages/SettingsPage";
 import AddressesPage from "./pages/AddressesPage";
 import PaymentMethodsPage from "./pages/PaymentMethodsPage";
 import HelpPage from "./pages/HelpPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -62,6 +63,7 @@ const App = () => (
                 <Route path="/addresses" element={<AddressesPage />} />
                 <Route path="/payment-methods" element={<PaymentMethodsPage />} />
                 <Route path="/help" element={<HelpPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 
                 {/* Admin */}
                 <Route path="/admin" element={<AdminDashboard />} />
