@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Plus, Check, ChevronRight } from 'lucide-react';
+import { MapPin, Plus, Check, ChevronRight, Map } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { AddressMapPicker } from './AddressMapPicker';
 
 interface Address {
   id: string;
@@ -36,7 +37,8 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
     ];
   });
   const [showNewForm, setShowNewForm] = useState(false);
-  const [formData, setFormData] = useState({ label: '', address: '' });
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [formData, setFormData] = useState({ label: '', address: '', coords: null as { lat: number; lng: number } | null });
 
   useEffect(() => {
     localStorage.setItem('user-addresses', JSON.stringify(addresses));
@@ -72,10 +74,16 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
 
     setAddresses(prev => [...prev, newAddress]);
     onAddressSelect(newAddress);
-    setFormData({ label: '', address: '' });
+    setFormData({ label: '', address: '', coords: null });
     setShowNewForm(false);
+    setShowMapPicker(false);
     setIsOpen(false);
     toast({ title: t.address.addressAdded });
+  };
+
+  const handleMapAddressSelect = (address: string, coords: { lat: number; lng: number }) => {
+    setFormData(prev => ({ ...prev, address, coords }));
+    setShowMapPicker(false);
   };
 
   return (
@@ -174,23 +182,45 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                     placeholder="Casa"
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">
-                    {t.address.fullAddress}
-                  </label>
-                  <Input
-                    value={formData.address}
-                    onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Av. Eduardo Mondlane, 123"
+                
+                {showMapPicker ? (
+                  <AddressMapPicker
+                    initialAddress={formData.address}
+                    onAddressSelect={handleMapAddressSelect}
                   />
-                </div>
+                ) : (
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">
+                      {t.address.fullAddress}
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={formData.address}
+                        onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        placeholder="Av. Eduardo Mondlane, 123"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowMapPicker(true)}
+                        title="Selecionar no mapa"
+                      >
+                        <Map className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     className="flex-1"
                     onClick={() => {
                       setShowNewForm(false);
-                      setFormData({ label: '', address: '' });
+                      setShowMapPicker(false);
+                      setFormData({ label: '', address: '', coords: null });
                     }}
                   >
                     {t.common.cancel}
