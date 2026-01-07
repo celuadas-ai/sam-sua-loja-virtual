@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, ArrowRight, Lock } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -9,12 +9,14 @@ import { useCart } from '@/contexts/CartContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Address {
   id: string;
   label: string;
   address: string;
   isDefault: boolean;
+  coords?: { lat: number; lng: number };
 }
 
 export default function PaymentPage() {
@@ -25,6 +27,63 @@ export default function PaymentPage() {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const hasAutoDetected = useRef(false);
+
+  // Auto-detect location on page load
+  useEffect(() => {
+    if (hasAutoDetected.current) return;
+    hasAutoDetected.current = true;
+
+    const autoDetectLocation = async () => {
+      if (!navigator.geolocation) return;
+
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        // Get API key from edge function
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-maps-key');
+        
+        if (keyError || !keyData?.apiKey) {
+          console.error('Failed to get API key');
+          return;
+        }
+
+        // Reverse geocoding
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${keyData.apiKey}&language=pt`
+        );
+        const data = await response.json();
+
+        if (data.status === 'OK' && data.results.length > 0) {
+          const address = data.results[0].formatted_address;
+          
+          const currentLocationAddress: Address = {
+            id: `current-${Date.now()}`,
+            label: 'Localização Atual',
+            address: address,
+            isDefault: false,
+            coords: { lat: latitude, lng: longitude },
+          };
+
+          setSelectedAddress(currentLocationAddress);
+          toast({ title: '📍 Localização detectada automaticamente!' });
+        }
+      } catch (error) {
+        console.log('Auto-detect location skipped:', error);
+        // Silent fail - user can still select manually
+      }
+    };
+
+    autoDetectLocation();
+  }, [toast]);
 
   const paymentMethods: {
     method: PaymentMethod;
