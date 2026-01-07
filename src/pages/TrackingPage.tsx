@@ -84,10 +84,11 @@ export default function TrackingPage() {
     <div className="min-h-screen bg-background pb-20">
       <Header title={t.tracking.title} showBack />
 
-      {/* Google Maps */}
+      {/* Google Maps with Realtime Tracking */}
       <DeliveryMap 
         status={currentOrder.status} 
         destinationAddress={currentOrder.customerAddress}
+        orderId={currentOrder.id}
       />
 
       {/* ETA Card */}

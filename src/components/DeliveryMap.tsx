@@ -4,22 +4,28 @@ import { motion } from 'framer-motion';
 import { MapPin, Navigation } from 'lucide-react';
 import { OrderStatus } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { useDriverPosition } from '@/hooks/useDriverPosition';
 
 interface DeliveryMapProps {
   status: OrderStatus;
   destinationAddress?: string;
+  orderId?: string;
 }
 
 const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
-export function DeliveryMap({ status, destinationAddress }: DeliveryMapProps) {
+export function DeliveryMap({ status, destinationAddress, orderId }: DeliveryMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const driverMarkerRef = useRef<google.maps.Marker | null>(null);
+  const routeLineRef = useRef<google.maps.Polyline | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
-  // Simulated driver positions based on order status
+  // Real-time driver position from Supabase
+  const { position: realtimePosition } = useDriverPosition(orderId);
+
+  // Fallback simulated positions based on order status
   const getDriverPosition = (orderStatus: OrderStatus) => {
     const positions: Record<OrderStatus, { lat: number; lng: number }> = {
       received: { lat: -25.9532, lng: 32.5832 }, // Warehouse
@@ -29,6 +35,14 @@ export function DeliveryMap({ status, destinationAddress }: DeliveryMapProps) {
       delivered: MAPUTO_CENTER, // At destination
     };
     return positions[orderStatus];
+  };
+
+  // Get current driver position (realtime or simulated)
+  const getCurrentDriverPosition = () => {
+    if (realtimePosition) {
+      return { lat: realtimePosition.latitude, lng: realtimePosition.longitude };
+    }
+    return getDriverPosition(status);
   };
 
   useEffect(() => {
@@ -73,8 +87,8 @@ export function DeliveryMap({ status, destinationAddress }: DeliveryMapProps) {
   useEffect(() => {
     if (!isLoaded || !mapRef.current || loadError) return;
 
-    const initializeMap = () => {
-      const driverPos = getDriverPosition(status);
+  const initializeMap = () => {
+      const driverPos = getCurrentDriverPosition();
 
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current!, {
         center: driverPos,
@@ -130,27 +144,32 @@ export function DeliveryMap({ status, destinationAddress }: DeliveryMapProps) {
       });
 
       // Draw route line
-      const routePath = new window.google.maps.Polyline({
+      routeLineRef.current = new window.google.maps.Polyline({
         path: [driverPos, MAPUTO_CENTER],
         geodesic: true,
         strokeColor: '#3b82f6',
         strokeOpacity: 0.8,
         strokeWeight: 4,
       });
-      routePath.setMap(mapInstanceRef.current);
+      routeLineRef.current.setMap(mapInstanceRef.current);
     };
 
     initializeMap();
   }, [isLoaded, loadError]);
 
-  // Update driver position when status changes
+  // Update driver position when realtime position or status changes
   useEffect(() => {
     if (!driverMarkerRef.current || !mapInstanceRef.current) return;
 
-    const newPos = getDriverPosition(status);
+    const newPos = getCurrentDriverPosition();
     driverMarkerRef.current.setPosition(newPos);
     mapInstanceRef.current.panTo(newPos);
-  }, [status]);
+
+    // Update route line
+    if (routeLineRef.current) {
+      routeLineRef.current.setPath([newPos, MAPUTO_CENTER]);
+    }
+  }, [status, realtimePosition]);
 
   if (loadError) {
     return (
