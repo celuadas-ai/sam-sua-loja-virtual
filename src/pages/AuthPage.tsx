@@ -121,8 +121,8 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="pt-12 pb-8 px-6 text-center">
+    <div className="min-h-screen bg-background flex flex-col items-center">
+      <div className="w-full max-w-md pt-12 pb-8 px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -157,7 +157,7 @@ export default function AuthPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         onSubmit={handleSubmit}
-        className="flex-1 px-6 pb-8"
+        className="flex-1 w-full max-w-md px-6 pb-8"
       >
         <div className="space-y-4">
           {!isLogin && (
