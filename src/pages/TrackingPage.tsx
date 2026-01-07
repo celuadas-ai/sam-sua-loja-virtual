@@ -5,6 +5,7 @@ import { Clock, Phone, MessageCircle, MapPin } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
+import { DeliveryMap } from '@/components/DeliveryMap';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { OrderStatus } from '@/types';
@@ -83,52 +84,11 @@ export default function TrackingPage() {
     <div className="min-h-screen bg-background pb-20">
       <Header title={t.tracking.title} showBack />
 
-      {/* Map Placeholder */}
-      <div className="relative h-48 bg-sam-light-blue overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <div className="relative">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-16 h-16 bg-accent rounded-full flex items-center justify-center shadow-sam-glow"
-            >
-              <MapPin className="w-8 h-8 text-accent-foreground" />
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 1, repeat: Infinity }}
-              className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-lg shadow-sam text-sm font-medium"
-            >
-              🛵 {t.status.on_the_way}
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Decorative grid */}
-        <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full">
-            <pattern
-              id="grid"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 40 0 L 0 0 0 40"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1"
-                className="text-primary"
-              />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-      </div>
+      {/* Google Maps */}
+      <DeliveryMap 
+        status={currentOrder.status} 
+        destinationAddress={currentOrder.customerAddress}
+      />
 
       {/* ETA Card */}
       <div className="px-4 -mt-8 relative z-10">
