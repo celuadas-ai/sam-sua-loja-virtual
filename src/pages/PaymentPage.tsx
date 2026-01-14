@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { PaymentMethodCard } from '@/components/PaymentMethodCard';
 import { AddressSelector } from '@/components/AddressSelector';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,15 +20,57 @@ interface Address {
   coords?: { lat: number; lng: number };
 }
 
+interface UserProfile {
+  name: string | null;
+  phone: string | null;
+}
+
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { items, total, createOrder } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const hasAutoDetected = useRef(false);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('name, phone')
+          .eq('id', user.id)
+          .single();
+
+        if (data) {
+          setUserProfile({
+            name: data.name || user.user_metadata?.full_name || null,
+            phone: data.phone || user.user_metadata?.phone || null,
+          });
+        } else {
+          setUserProfile({
+            name: user.user_metadata?.full_name || null,
+            phone: user.user_metadata?.phone || null,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setUserProfile({
+          name: user.user_metadata?.full_name || null,
+          phone: user.user_metadata?.phone || null,
+        });
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   // Auto-detect location on page load
   useEffect(() => {
@@ -116,12 +159,12 @@ export default function PaymentPage() {
     setIsProcessing(true);
 
     try {
-      // Create order with customer details
+      // Create order with customer details from profile
       await createOrder(
         selectedMethod,
-        undefined, // customerName - will use from user profile
-        undefined, // customerPhone - will use from user profile
-        selectedAddress.address // customerAddress
+        userProfile?.name || undefined,
+        userProfile?.phone || undefined,
+        selectedAddress.address
       );
 
       toast({

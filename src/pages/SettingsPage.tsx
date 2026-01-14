@@ -3,14 +3,14 @@ import { Bell, Moon, Sun, Globe, ChevronRight, Smartphone } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Switch } from '@/components/ui/switch';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettingsDb } from '@/hooks/useSettingsDb';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SettingsPage() {
-  const { settings, updateSettings, updateNotification } = useSettings();
+  const { settings, updateSettings, updateNotification } = useSettingsDb();
   const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     updateSettings({ theme });
@@ -34,6 +34,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (lang: 'pt' | 'en') => {
     updateSettings({ language: lang });
+    setLanguage(lang);
     toast({ title: lang === 'pt' ? 'Idioma alterado para Português' : 'Language changed to English' });
   };
 

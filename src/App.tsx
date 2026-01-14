@@ -14,6 +14,7 @@ import PaymentPage from "./pages/PaymentPage";
 import TrackingPage from "./pages/TrackingPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import OrdersPage from "./pages/OrdersPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import AddressesPage from "./pages/AddressesPage";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/tracking" element={<TrackingPage />} />
                 <Route path="/confirmation" element={<ConfirmationPage />} />
                 <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/orders/:orderId" element={<OrderDetailPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/addresses" element={<AddressesPage />} />
