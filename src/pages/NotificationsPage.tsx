@@ -1,55 +1,14 @@
 import { motion } from 'framer-motion';
-import { Bell, Package, Truck, Tag, CheckCircle } from 'lucide-react';
+import { Bell, Package, Truck, Tag, Check, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import { Button } from '@/components/ui/button';
+import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
-interface Notification {
-  id: string;
-  type: 'order' | 'delivery' | 'promo';
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
-
-// Mock notifications - in a real app these would come from the database
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'Pedido confirmado',
-    message: 'O seu pedido #1234 foi confirmado e está a ser preparado.',
-    time: '5 min',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'delivery',
-    title: 'Entregador a caminho',
-    message: 'O seu pedido está a caminho! Chegada prevista em 15 minutos.',
-    time: '30 min',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'promo',
-    title: 'Promoção especial',
-    message: 'Aproveite 20% de desconto em todos os garrafões de 20L!',
-    time: '2h',
-    read: true,
-  },
-  {
-    id: '4',
-    type: 'order',
-    title: 'Pedido entregue',
-    message: 'O seu pedido #1233 foi entregue com sucesso. Obrigado!',
-    time: '1d',
-    read: true,
-  },
-];
-
-const getIcon = (type: Notification['type']) => {
+const getNotificationIcon = (type: Notification['type']) => {
   switch (type) {
     case 'order':
       return Package;
@@ -62,95 +21,114 @@ const getIcon = (type: Notification['type']) => {
   }
 };
 
-const getIconColor = (type: Notification['type']) => {
+const getNotificationColor = (type: Notification['type']) => {
   switch (type) {
     case 'order':
       return 'bg-blue-500/10 text-blue-500';
     case 'delivery':
-      return 'bg-green-500/10 text-green-500';
-    case 'promo':
       return 'bg-orange-500/10 text-orange-500';
+    case 'promo':
+      return 'bg-green-500/10 text-green-500';
     default:
-      return 'bg-primary/10 text-primary';
+      return 'bg-muted text-muted-foreground';
   }
 };
 
 export default function NotificationsPage() {
-  const { language } = useLanguage();
-  
-  const translations = {
-    pt: {
-      title: 'Notificações',
-      empty: 'Sem notificações',
-      emptyMessage: 'Você será notificado sobre pedidos e promoções aqui.',
-      markAllRead: 'Marcar todas como lidas',
-    },
-    en: {
-      title: 'Notifications',
-      empty: 'No notifications',
-      emptyMessage: 'You will be notified about orders and promotions here.',
-      markAllRead: 'Mark all as read',
-    },
-  };
+  const { t } = useLanguage();
+  const { notifications, isLoading, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
-  const t = translations[language];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <Header title="Notificações" showBack />
+        <div className="flex flex-col items-center justify-center px-6 py-20">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+          <p className="text-muted-foreground">A carregar notificações...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header title={t.title} showBack />
+      <Header title="Notificações" showBack />
 
-      <div className="px-4 py-4">
-        {mockNotifications.length === 0 ? (
+      {/* Mark all as read button */}
+      {unreadCount > 0 && (
+        <div className="px-4 py-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={markAllAsRead}
+            className="w-full gap-2"
+          >
+            <Check className="w-4 h-4" />
+            Marcar todas como lidas ({unreadCount})
+          </Button>
+        </div>
+      )}
+
+      <div className="px-4 py-4 space-y-3">
+        {notifications.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-16"
+            className="sam-card p-8 text-center"
           >
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Bell className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">{t.empty}</h2>
-            <p className="text-muted-foreground text-center">{t.emptyMessage}</p>
+            <Bell className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-lg font-semibold text-foreground mb-2">
+              Sem notificações
+            </h2>
+            <p className="text-muted-foreground">
+              As suas notificações aparecerão aqui quando houver atualizações nos seus pedidos.
+            </p>
           </motion.div>
         ) : (
-          <div className="space-y-3">
-            {mockNotifications.map((notification, index) => {
-              const Icon = getIcon(notification.type);
-              const iconColorClass = getIconColor(notification.type);
-              
-              return (
-                <motion.div
-                  key={notification.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`sam-card p-4 ${!notification.read ? 'border-l-4 border-l-primary' : ''}`}
-                >
-                  <div className="flex gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconColorClass}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className={`font-medium ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {notification.title}
-                        </h3>
-                        <span className="text-xs text-muted-foreground flex-shrink-0">
-                          {notification.time}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                    </div>
-                    {notification.read && (
-                      <CheckCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    )}
+          notifications.map((notification, index) => {
+            const Icon = getNotificationIcon(notification.type);
+            const colorClass = getNotificationColor(notification.type);
+
+            return (
+              <motion.div
+                key={notification.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => !notification.isRead && markAsRead(notification.id)}
+                className={`sam-card p-4 cursor-pointer transition-all ${
+                  !notification.isRead ? 'border-l-4 border-l-primary bg-primary/5' : ''
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`font-semibold text-foreground ${!notification.isRead ? '' : 'text-muted-foreground'}`}>
+                        {notification.title}
+                      </p>
+                      {!notification.isRead && (
+                        <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {formatDistanceToNow(notification.createdAt, {
+                        addSuffix: true,
+                        locale: pt,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })
         )}
       </div>
 

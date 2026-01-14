@@ -84,7 +84,8 @@ export default function OrdersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="sam-card p-4"
+            onClick={() => navigate(`/orders/${order.id}`)}
+            className="sam-card p-4 cursor-pointer hover:bg-muted/50 transition-colors"
           >
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
