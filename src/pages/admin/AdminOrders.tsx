@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Eye, Clock, CheckCircle, Truck, Package } from 'lucide-react';
+import { Search, Eye, Clock, CheckCircle, Truck, Package, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { mockOrders, mockOperators } from '@/data/mockUsers';
+import { useOrders } from '@/hooks/useOrders';
+import { useOperators } from '@/hooks/useOperators';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,10 +30,11 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: an
 };
 
 export default function AdminOrders() {
+  const { orders, loading } = useOrders();
+  const { operators } = useOperators();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [orders, setOrders] = useState(mockOrders);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -50,6 +52,16 @@ export default function AdminOrders() {
       minute: '2-digit',
     }).format(date);
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Encomendas" subtitle="A carregar...">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout
@@ -196,7 +208,7 @@ export default function AdminOrders() {
                     <SelectValue placeholder="Atribuir" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockOperators
+                    {operators
                       .filter((o) => o.isActive)
                       .map((op) => (
                         <SelectItem key={op.id} value={op.id}>

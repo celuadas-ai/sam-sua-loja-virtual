@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Tag, Calendar, Percent, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Calendar, Percent, Package, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { usePromotions } from '@/hooks/usePromotions';
+import { usePromotionsDb } from '@/hooks/usePromotionsDb';
 import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Promotion } from '@/types';
 
 export default function AdminPromotions() {
-  const { promotions, addPromotion, updatePromotion, deletePromotion, togglePromotion } = usePromotions();
+  const { promotions, isLoading, addPromotion, updatePromotion, deletePromotion, togglePromotion } = usePromotionsDb();
   const { products } = useProducts();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -193,6 +193,16 @@ export default function AdminPromotions() {
   };
 
   const activeCount = promotions.filter((p) => p.isActive).length;
+
+  if (isLoading) {
+    return (
+      <AdminLayout title="Promoções" subtitle="A carregar...">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout
