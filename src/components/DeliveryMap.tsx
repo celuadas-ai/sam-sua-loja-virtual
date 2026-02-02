@@ -173,7 +173,7 @@ export function DeliveryMap({ status, destinationAddress, orderId }: DeliveryMap
 
   if (loadError) {
     return (
-      <div className="relative h-48 bg-muted overflow-hidden flex items-center justify-center">
+      <div className="relative h-64 sm:h-72 bg-muted overflow-hidden flex items-center justify-center">
         <div className="text-center text-muted-foreground">
           <MapPin className="w-8 h-8 mx-auto mb-2" />
           <p className="text-sm">Mapa indisponível</p>
@@ -184,7 +184,7 @@ export function DeliveryMap({ status, destinationAddress, orderId }: DeliveryMap
 
   if (!isLoaded) {
     return (
-      <div className="relative h-48 bg-muted overflow-hidden">
+      <div className="relative h-64 sm:h-72 bg-muted overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -205,7 +205,7 @@ export function DeliveryMap({ status, destinationAddress, orderId }: DeliveryMap
   }
 
   return (
-    <div className="relative h-48 overflow-hidden">
+    <div className="relative h-64 sm:h-72 overflow-hidden">
       <div ref={mapRef} className="w-full h-full" />
       
       {/* Status overlay */}

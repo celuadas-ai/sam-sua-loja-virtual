@@ -47,10 +47,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-[280px] sm:pb-[260px]">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header title={t.cart.title} showBack />
 
-      <div className="px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-[220px] sm:pb-[200px]">
         <AnimatePresence mode="popLayout">
           {items.map((item, index) => (
             <CartItemCard key={item.id} item={item} index={index} />
