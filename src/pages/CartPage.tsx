@@ -50,7 +50,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header title={t.cart.title} showBack />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-[220px] sm:pb-[200px]">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-[280px] sm:pb-[220px]">
         <AnimatePresence mode="popLayout">
           {items.map((item, index) => (
             <CartItemCard key={item.id} item={item} index={index} />
@@ -62,7 +62,7 @@ export default function CartPage() {
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-[72px] left-0 right-0 bg-card border-t border-border p-4 pb-safe space-y-3 sm:space-y-4 shadow-lg z-40"
+        className="fixed bottom-[80px] left-0 right-0 bg-card border-t border-border p-4 pb-6 space-y-3 sm:space-y-4 shadow-lg z-40"
       >
         <div className="space-y-2">
           <div className="flex justify-between text-muted-foreground">

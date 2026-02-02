@@ -58,7 +58,7 @@ export default function ProductsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-44">
       {/* Header with Logo and Menu */}
       <header className="sticky top-0 z-40 bg-primary safe-area-top">
         <div className="flex items-center justify-between py-4 px-4">
@@ -196,7 +196,7 @@ export default function ProductsPage() {
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-24 left-4 right-4 z-40"
+          className="fixed bottom-[100px] left-4 right-4 z-40"
         >
           <motion.button
             whileTap={{ scale: 0.98 }}
