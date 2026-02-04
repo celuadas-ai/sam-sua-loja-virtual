@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import samLogo from '@/assets/sam-logo.png';
 import { toast } from 'sonner';
 import { useOrders } from '@/hooks/useOrders';
 import { useDriverPosition } from '@/hooks/useDriverPosition';
+import OperatorStockManager from '@/components/operator/OperatorStockManager';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -26,6 +27,7 @@ export default function OperatorDashboard() {
   const { orders: allOrders, loading, updateOrderStatus, confirmPayment } = useOrders();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [stockManagerOpen, setStockManagerOpen] = useState(false);
   const { isTracking, startTracking, stopTracking } = useDriverPosition();
 
   // Filter to show only non-delivered orders
@@ -99,9 +101,20 @@ export default function OperatorDashboard() {
               <p className="text-xs text-muted-foreground">{user?.user_metadata?.full_name || user?.email}</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setStockManagerOpen(true)}
+              className="gap-1"
+            >
+              <Boxes className="w-4 h-4" />
+              <span className="hidden sm:inline">Stock</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -322,6 +335,16 @@ export default function OperatorDashboard() {
           })
         )}
       </div>
+
+      {/* Stock Manager Modal */}
+      <AnimatePresence>
+        {stockManagerOpen && (
+          <OperatorStockManager
+            isOpen={stockManagerOpen}
+            onClose={() => setStockManagerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

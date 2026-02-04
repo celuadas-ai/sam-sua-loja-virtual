@@ -91,6 +91,33 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_stock: {
+        Row: {
+          created_at: string
+          id: string
+          operator_id: string
+          product_id: string
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          operator_id: string
+          product_id: string
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          operator_id?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       operators: {
         Row: {
           created_at: string
