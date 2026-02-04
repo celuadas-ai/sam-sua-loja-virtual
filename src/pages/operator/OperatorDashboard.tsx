@@ -179,7 +179,21 @@ export default function OperatorDashboard() {
                     </div>
                     <div className="flex items-start gap-2 text-sm">
                       <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground">{order.customerAddress || 'N/A'}</span>
+                      <span className="text-muted-foreground flex-1">{order.customerAddress || 'N/A'}</span>
+                      {order.customerAddress && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-accent hover:text-accent/80"
+                          onClick={() => {
+                            const encodedAddress = encodeURIComponent(order.customerAddress!);
+                            window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+                          }}
+                        >
+                          <Navigation className="w-3 h-3 mr-1" />
+                          Ver Mapa
+                        </Button>
+                      )}
                     </div>
                   </div>
 
@@ -260,7 +274,7 @@ export default function OperatorDashboard() {
                       variant={trackingOrderId === order.id && isTracking ? "destructive" : "outline"}
                       className={`w-full gap-2 ${trackingOrderId === order.id && isTracking 
                         ? '' 
-                        : 'border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'}`}
+                        : 'border-accent text-accent hover:bg-accent/10'}`}
                       onClick={() => handleToggleTracking(order.id)}
                     >
                       <Navigation className="w-4 h-4" />
@@ -274,7 +288,7 @@ export default function OperatorDashboard() {
                   {!isPaid && (order.status === 'almost_there' || order.status === 'delivered') && (
                     <Button 
                       variant="outline"
-                      className="w-full gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                      className="w-full gap-2 border-sam-success text-sam-success hover:bg-sam-success/10"
                       onClick={() => handleConfirmPayment(order.id)}
                     >
                       <CreditCard className="w-4 h-4" />
@@ -282,7 +296,8 @@ export default function OperatorDashboard() {
                     </Button>
                   )}
 
-                  {status.next && (
+                  {/* Only allow delivery confirmation if payment is confirmed */}
+                  {status.next && (status.next !== 'delivered' || isPaid) && (
                     <Button 
                       className="w-full gap-2" 
                       onClick={() => handleAdvanceStatus(order.id)}
@@ -293,6 +308,13 @@ export default function OperatorDashboard() {
                       {status.next === 'almost_there' && 'Quase a Chegar'}
                       {status.next === 'delivered' && 'Confirmar Entrega'}
                     </Button>
+                  )}
+                  
+                  {/* Show message if waiting for payment before delivery confirmation */}
+                  {status.next === 'delivered' && !isPaid && (
+                    <div className="text-center py-2 px-3 bg-destructive/10 text-destructive rounded-lg text-sm border border-destructive/20">
+                      ⚠️ Confirme o pagamento antes de finalizar a entrega
+                    </div>
                   )}
                 </div>
               </motion.div>
