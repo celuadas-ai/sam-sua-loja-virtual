@@ -11,7 +11,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Store
 } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +21,7 @@ import { useState } from 'react';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: Package, label: 'Produtos', path: '/admin/products' },
+  { icon: Store, label: 'Lojas', path: '/admin/stores' },
   { icon: Users, label: 'Operadores', path: '/admin/operators' },
   { icon: Users2, label: 'Perfis', path: '/admin/profiles' },
   { icon: Truck, label: 'Encomendas', path: '/admin/orders' },
