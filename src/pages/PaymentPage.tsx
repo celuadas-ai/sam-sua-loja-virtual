@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, ArrowRight, Lock } from 'lucide-react';
+import { CreditCard, ArrowRight, Lock, AlertTriangle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { PaymentMethodCard } from '@/components/PaymentMethodCard';
 import { AddressSelector } from '@/components/AddressSelector';
@@ -11,6 +11,8 @@ import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useStores } from '@/hooks/useStores';
+import { haversineDistance } from '@/utils/distance';
 
 interface Address {
   id: string;
@@ -36,6 +38,34 @@ export default function PaymentPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const hasAutoDetected = useRef(false);
+  const { stores } = useStores();
+
+  // Check if selected address is within delivery range
+  const deliveryCheck = useMemo(() => {
+    if (!selectedAddress?.coords || stores.length === 0) {
+      return { withinRange: true, nearestStore: null, distance: null };
+    }
+
+    let nearestStore = stores[0];
+    let minDist = Infinity;
+
+    for (const store of stores) {
+      const dist = haversineDistance(
+        selectedAddress.coords.lat, selectedAddress.coords.lng,
+        store.latitude, store.longitude
+      );
+      if (dist < minDist) {
+        minDist = dist;
+        nearestStore = store;
+      }
+    }
+
+    return {
+      withinRange: minDist <= nearestStore.maxDeliveryRadiusKm,
+      nearestStore,
+      distance: Math.round(minDist * 10) / 10,
+    };
+  }, [selectedAddress, stores]);
 
   // Fetch user profile data
   useEffect(() => {
@@ -148,6 +178,15 @@ export default function PaymentPage() {
       return;
     }
 
+    if (!deliveryCheck.withinRange) {
+      toast({
+        title: 'Fora da área de entrega',
+        description: `A morada está a ${deliveryCheck.distance} km. O máximo permitido é ${deliveryCheck.nearestStore?.maxDeliveryRadiusKm} km.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!selectedMethod) {
       toast({
         title: t.payment.selectPaymentMethod,
@@ -196,7 +235,35 @@ export default function PaymentPage() {
         />
       </div>
 
-      {/* Order Summary */}
+      {/* Distance warning */}
+      {selectedAddress?.coords && !deliveryCheck.withinRange && (
+        <div className="px-4 mb-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20"
+          >
+            <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-destructive">Fora da área de entrega</p>
+              <p className="text-xs text-destructive/80 mt-1">
+                A sua morada está a <strong>{deliveryCheck.distance} km</strong> da loja mais próxima ({deliveryCheck.nearestStore?.name}).
+                O raio máximo é de <strong>{deliveryCheck.nearestStore?.maxDeliveryRadiusKm} km</strong>.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {selectedAddress?.coords && deliveryCheck.withinRange && deliveryCheck.distance !== null && (
+        <div className="px-4 mb-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+            <span className="w-2 h-2 rounded-full bg-sam-success" />
+            Dentro da área de entrega — {deliveryCheck.distance} km de {deliveryCheck.nearestStore?.name}
+          </div>
+        </div>
+      )}
+
       <div className="px-4 mb-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
