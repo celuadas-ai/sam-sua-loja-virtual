@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes, Route, MapPinned } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { useOrders } from '@/hooks/useOrders';
 import { useDriverPosition } from '@/hooks/useDriverPosition';
 import OperatorStockManager from '@/components/operator/OperatorStockManager';
+import { useStores } from '@/hooks/useStores';
+import { haversineDistance, getDeliveryPriority, extractNeighborhood } from '@/utils/distance';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -29,6 +31,31 @@ export default function OperatorDashboard() {
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
   const [stockManagerOpen, setStockManagerOpen] = useState(false);
   const { isTracking, startTracking, stopTracking } = useDriverPosition();
+  const { stores } = useStores();
+
+  // Compute distance info for each order from nearest store
+  const orderDistances = useMemo(() => {
+    if (stores.length === 0) return {};
+    const map: Record<string, { distance: number; storeName: string; neighborhood: string; priority: ReturnType<typeof getDeliveryPriority> }> = {};
+    
+    for (const order of allOrders) {
+      if (!order.customerAddress) continue;
+      // Try to find coords from user_addresses — for now use nearest store as reference
+      // We'll calculate from the store to the order address
+      // Since we don't have lat/lng on orders, we'll show store name
+      // For orders with a known address, show neighborhood
+      const nearestStore = stores[0]; // use first store as default
+      const neighborhood = extractNeighborhood(order.customerAddress || '');
+      // We can't calculate exact distance without order coords, but we show neighborhood
+      map[order.id] = {
+        distance: 0, // Will be enhanced when order coords are available
+        storeName: nearestStore.name,
+        neighborhood,
+        priority: getDeliveryPriority(0),
+      };
+    }
+    return map;
+  }, [allOrders, stores]);
 
   // Filter to show only non-delivered orders
   const orders = allOrders.filter((o) => o.status !== 'delivered');
@@ -151,6 +178,7 @@ export default function OperatorDashboard() {
             const status = statusConfig[order.status];
             const isExpanded = expandedOrderId === order.id;
             const isPaid = order.paymentStatus === 'paid';
+            const distInfo = orderDistances[order.id];
             
             return (
               <motion.div
@@ -165,7 +193,7 @@ export default function OperatorDashboard() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="font-mono font-semibold text-foreground text-sm">{order.id.slice(0, 8)}...</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs text-white ${status.color}`}>
                           {status.label}
                         </span>
@@ -176,10 +204,31 @@ export default function OperatorDashboard() {
                         }`}>
                           {isPaid ? 'Pago' : 'Pendente'}
                         </span>
+                        {distInfo && (
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs text-white ${distInfo.priority.color}`}>
+                            {distInfo.priority.label}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <p className="font-bold text-foreground">{order.total.toLocaleString()} MZN</p>
                   </div>
+
+                  {/* Enriched order details */}
+                  {distInfo && (
+                    <div className="flex items-center gap-3 mb-3 p-2 rounded-lg bg-muted/50 text-xs">
+                      <div className="flex items-center gap-1">
+                        <MapPinned className="w-3.5 h-3.5 text-accent" />
+                        <span className="text-foreground font-medium">{distInfo.neighborhood}</span>
+                      </div>
+                      {distInfo.storeName && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Route className="w-3.5 h-3.5" />
+                          <span>Loja: {distInfo.storeName}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm">
@@ -194,18 +243,38 @@ export default function OperatorDashboard() {
                       <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="text-muted-foreground flex-1">{order.customerAddress || 'N/A'}</span>
                       {order.customerAddress && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs text-accent hover:text-accent/80"
-                          onClick={() => {
-                            const encodedAddress = encodeURIComponent(order.customerAddress!);
-                            window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
-                          }}
-                        >
-                          <Navigation className="w-3 h-3 mr-1" />
-                          Ver Mapa
-                        </Button>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-accent hover:text-accent/80"
+                            onClick={() => {
+                              const encodedAddress = encodeURIComponent(order.customerAddress!);
+                              window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+                            }}
+                          >
+                            <Navigation className="w-3 h-3 mr-1" />
+                            Mapa
+                          </Button>
+                          {distInfo?.storeName && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs text-primary hover:text-primary/80"
+                              onClick={() => {
+                                const store = stores.find(s => s.name === distInfo.storeName);
+                                if (store) {
+                                  const origin = `${store.latitude},${store.longitude}`;
+                                  const dest = encodeURIComponent(order.customerAddress!);
+                                  window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`, '_blank');
+                                }
+                              }}
+                            >
+                              <Route className="w-3 h-3 mr-1" />
+                              Rota
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
