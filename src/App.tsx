@@ -32,6 +32,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminPromotions from "./pages/admin/AdminPromotions";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminStores from "./pages/admin/AdminStores";
 
 // Operator Pages
 import OperatorDashboard from "./pages/operator/OperatorDashboard";
@@ -76,6 +77,7 @@ const App = () => (
                 <Route path="/admin/promotions" element={<AdminPromotions />} />
                 <Route path="/admin/reports" element={<AdminReports />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/stores" element={<AdminStores />} />
                 
                 {/* Operator */}
                 <Route path="/operator" element={<OperatorDashboard />} />
