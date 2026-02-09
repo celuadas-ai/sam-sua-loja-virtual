@@ -361,6 +361,7 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          delivery_zone: Json | null
           id: string
           is_active: boolean
           latitude: number
@@ -372,6 +373,7 @@ export type Database = {
         Insert: {
           address: string
           created_at?: string
+          delivery_zone?: Json | null
           id?: string
           is_active?: boolean
           latitude: number
@@ -383,6 +385,7 @@ export type Database = {
         Update: {
           address?: string
           created_at?: string
+          delivery_zone?: Json | null
           id?: string
           is_active?: boolean
           latitude?: number
