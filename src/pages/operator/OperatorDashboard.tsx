@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes, Route, MapPinned } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes, Route, MapPinned, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ import { useDriverPosition } from '@/hooks/useDriverPosition';
 import OperatorStockManager from '@/components/operator/OperatorStockManager';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, getDeliveryPriority, extractNeighborhood } from '@/utils/distance';
+import { OrderRouteMap } from '@/components/operator/OrderRouteMap';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -30,28 +31,57 @@ export default function OperatorDashboard() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
   const [stockManagerOpen, setStockManagerOpen] = useState(false);
+  const [mapOrderId, setMapOrderId] = useState<string | null>(null);
   const { isTracking, startTracking, stopTracking } = useDriverPosition();
   const { stores } = useStores();
 
   // Compute distance info for each order from nearest store
   const orderDistances = useMemo(() => {
     if (stores.length === 0) return {};
-    const map: Record<string, { distance: number; storeName: string; neighborhood: string; priority: ReturnType<typeof getDeliveryPriority> }> = {};
+    const map: Record<string, { distance: number; storeName: string; storeCoords: { lat: number; lng: number }; neighborhood: string; priority: ReturnType<typeof getDeliveryPriority>; eta: string; customerCoords: { lat: number; lng: number } | null }> = {};
     
     for (const order of allOrders) {
       if (!order.customerAddress) continue;
-      // Try to find coords from user_addresses — for now use nearest store as reference
-      // We'll calculate from the store to the order address
-      // Since we don't have lat/lng on orders, we'll show store name
-      // For orders with a known address, show neighborhood
-      const nearestStore = stores[0]; // use first store as default
+
       const neighborhood = extractNeighborhood(order.customerAddress || '');
-      // We can't calculate exact distance without order coords, but we show neighborhood
+      
+      // Check if order has real coordinates
+      const hasCoords = order.customerLatitude && order.customerLongitude;
+      
+      let nearestStore = stores[0];
+      let minDist = 0;
+      let customerCoords: { lat: number; lng: number } | null = null;
+
+      if (hasCoords) {
+        customerCoords = { lat: Number(order.customerLatitude), lng: Number(order.customerLongitude) };
+        minDist = Infinity;
+        
+        for (const store of stores) {
+          const dist = haversineDistance(
+            customerCoords.lat, customerCoords.lng,
+            store.latitude, store.longitude
+          );
+          if (dist < minDist) {
+            minDist = dist;
+            nearestStore = store;
+          }
+        }
+      }
+
+      // Estimate delivery time: ~3 min/km + 10 min preparation
+      const etaMinutes = hasCoords ? Math.round(minDist * 3 + 10) : 30;
+      const eta = etaMinutes >= 60 
+        ? `${Math.floor(etaMinutes / 60)}h ${etaMinutes % 60}min`
+        : `${etaMinutes} min`;
+
       map[order.id] = {
-        distance: 0, // Will be enhanced when order coords are available
+        distance: Math.round(minDist * 10) / 10,
         storeName: nearestStore.name,
+        storeCoords: { lat: nearestStore.latitude, lng: nearestStore.longitude },
         neighborhood,
-        priority: getDeliveryPriority(0),
+        priority: getDeliveryPriority(minDist),
+        eta,
+        customerCoords,
       };
     }
     return map;
@@ -216,15 +246,25 @@ export default function OperatorDashboard() {
 
                   {/* Enriched order details */}
                   {distInfo && (
-                    <div className="flex items-center gap-3 mb-3 p-2 rounded-lg bg-muted/50 text-xs">
+                    <div className="flex items-center gap-3 mb-3 p-2 rounded-lg bg-muted/50 text-xs flex-wrap">
                       <div className="flex items-center gap-1">
                         <MapPinned className="w-3.5 h-3.5 text-accent" />
                         <span className="text-foreground font-medium">{distInfo.neighborhood}</span>
                       </div>
-                      {distInfo.storeName && (
+                      {distInfo.distance > 0 && (
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Route className="w-3.5 h-3.5" />
-                          <span>Loja: {distInfo.storeName}</span>
+                          <span>{distInfo.distance} km</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>ETA: {distInfo.eta}</span>
+                      </div>
+                      {distInfo.storeName && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Package className="w-3.5 h-3.5" />
+                          <span>{distInfo.storeName}</span>
                         </div>
                       )}
                     </div>
@@ -278,6 +318,37 @@ export default function OperatorDashboard() {
                       )}
                     </div>
                   </div>
+
+                  {/* Route Map Toggle */}
+                  {distInfo?.customerCoords && (
+                    <div className="mb-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2 mb-2"
+                        onClick={() => setMapOrderId(prev => prev === order.id ? null : order.id)}
+                      >
+                        <Map className="w-4 h-4" />
+                        {mapOrderId === order.id ? 'Esconder Mapa' : 'Ver Rota no Mapa'}
+                      </Button>
+                      <AnimatePresence>
+                        {mapOrderId === order.id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <OrderRouteMap
+                              storeCoords={distInfo.storeCoords}
+                              customerCoords={distInfo.customerCoords}
+                              storeName={distInfo.storeName}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
 
                   {/* Expand/Collapse Products Button */}
                   <button

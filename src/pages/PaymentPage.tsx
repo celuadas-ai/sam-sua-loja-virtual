@@ -198,12 +198,13 @@ export default function PaymentPage() {
     setIsProcessing(true);
 
     try {
-      // Create order with customer details from profile
+      // Create order with customer details from profile and coordinates
       await createOrder(
         selectedMethod,
         userProfile?.name || undefined,
         userProfile?.phone || undefined,
-        selectedAddress.address
+        selectedAddress.address,
+        selectedAddress.coords
       );
 
       toast({

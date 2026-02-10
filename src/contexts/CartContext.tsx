@@ -12,7 +12,7 @@ interface CartContextType {
   total: number;
   itemCount: number;
   currentOrder: Order | null;
-  createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string) => Promise<void>;
+  createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string, customerCoords?: { lat: number; lng: number }) => Promise<void>;
   updateOrderStatus: (status: OrderStatus) => void;
   processPayment: () => void;
   completeOrder: () => void;
@@ -66,7 +66,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     paymentMethod: PaymentMethod,
     customerName?: string,
     customerPhone?: string,
-    customerAddress?: string
+    customerAddress?: string,
+    customerCoords?: { lat: number; lng: number }
   ) => {
     let dbOrder: Order | null = null;
 
@@ -84,6 +85,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             customer_name: customerName || user.user_metadata?.full_name || user.email,
             customer_phone: customerPhone || user.user_metadata?.phone,
             customer_address: customerAddress,
+            customer_latitude: customerCoords?.lat || null,
+            customer_longitude: customerCoords?.lng || null,
             estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           })
           .select()
