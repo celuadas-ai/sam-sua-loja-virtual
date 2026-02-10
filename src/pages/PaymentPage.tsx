@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useStores } from '@/hooks/useStores';
-import { haversineDistance } from '@/utils/distance';
+import { haversineDistance, isPointInPolygon } from '@/utils/distance';
 
 interface Address {
   id: string;
@@ -60,8 +60,17 @@ export default function PaymentPage() {
       }
     }
 
+    // Check polygon-based delivery zone first (if defined)
+    let withinRange: boolean;
+    if (nearestStore.deliveryZone && nearestStore.deliveryZone.length >= 3) {
+      withinRange = isPointInPolygon(selectedAddress.coords, nearestStore.deliveryZone);
+    } else {
+      // Fallback to radius check
+      withinRange = minDist <= nearestStore.maxDeliveryRadiusKm;
+    }
+
     return {
-      withinRange: minDist <= nearestStore.maxDeliveryRadiusKm,
+      withinRange,
       nearestStore,
       distance: Math.round(minDist * 10) / 10,
     };
