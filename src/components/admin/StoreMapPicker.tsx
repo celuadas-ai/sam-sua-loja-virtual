@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Navigation, Search, Crosshair, Pencil, Trash2 } from 'lucide-react';
+import { Navigation, Search, Crosshair, Pencil, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,12 +37,15 @@ export default function StoreMapPicker({
   const polygonMarkersRef = useRef<google.maps.Marker[]>([]);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const clickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const drawingPointsRef = useRef<LatLng[]>([]);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingPoints, setDrawingPoints] = useState<LatLng[]>([]);
+  const [drawingPointCount, setDrawingPointCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const center = latitude && longitude ? { lat: latitude, lng: longitude } : MAPUTO_CENTER;
 
@@ -80,14 +83,19 @@ export default function StoreMapPicker({
     });
   }, [onLocationChange]);
 
-  // Draw saved polygon on map
+  // Clear all polygon visuals
+  const clearPolygonVisuals = useCallback(() => {
+    polygonRef.current?.setMap(null);
+    polygonRef.current = null;
+    polygonMarkersRef.current.forEach(m => m.setMap(null));
+    polygonMarkersRef.current = [];
+  }, []);
+
+  // Draw saved polygon on map with draggable vertices
   const drawPolygonOnMap = useCallback((points: LatLng[]) => {
     if (!mapInstance.current || points.length < 3) return;
 
-    // Clear old polygon and markers
-    polygonRef.current?.setMap(null);
-    polygonMarkersRef.current.forEach(m => m.setMap(null));
-    polygonMarkersRef.current = [];
+    clearPolygonVisuals();
 
     polygonRef.current = new google.maps.Polygon({
       paths: points,
@@ -99,7 +107,6 @@ export default function StoreMapPicker({
       strokeWeight: 2,
     });
 
-    // Add draggable vertex markers
     points.forEach((pt, idx) => {
       const marker = new google.maps.Marker({
         position: pt,
@@ -127,11 +134,70 @@ export default function StoreMapPicker({
 
       polygonMarkersRef.current.push(marker);
     });
-  }, [onDeliveryZoneChange]);
+  }, [onDeliveryZoneChange, clearPolygonVisuals]);
+
+  // Setup click listener based on drawing mode
+  const setupClickListener = useCallback(() => {
+    if (!mapInstance.current) return;
+
+    // Remove old listener
+    if (clickListenerRef.current) {
+      google.maps.event.removeListener(clickListenerRef.current);
+      clickListenerRef.current = null;
+    }
+
+    if (isDrawing) {
+      clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+        if (!e.latLng) return;
+        const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        drawingPointsRef.current = [...drawingPointsRef.current, pt];
+        setDrawingPointCount(drawingPointsRef.current.length);
+
+        // Add visual marker for the point
+        const marker = new google.maps.Marker({
+          position: pt,
+          map: mapInstance.current!,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: '#f59e0b',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2,
+          },
+        });
+        polygonMarkersRef.current.push(marker);
+
+        // Draw polygon preview if 3+ points
+        if (drawingPointsRef.current.length >= 3) {
+          polygonRef.current?.setMap(null);
+          polygonRef.current = new google.maps.Polygon({
+            paths: drawingPointsRef.current,
+            map: mapInstance.current!,
+            fillColor: '#f59e0b',
+            fillOpacity: 0.15,
+            strokeColor: '#f59e0b',
+            strokeOpacity: 0.7,
+            strokeWeight: 2,
+          });
+        }
+      });
+    } else {
+      clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+        if (e.latLng) {
+          const c = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+          markerRef.current?.setPosition(c);
+          circleRef.current?.setCenter(c);
+          reverseGeocode(c);
+        }
+      });
+    }
+  }, [isDrawing, reverseGeocode]);
 
   // Init map
   useEffect(() => {
     if (!isLoaded || !mapRef.current || loadError) return;
+    if (mapInstance.current) return; // Don't reinitialize
 
     mapInstance.current = new google.maps.Map(mapRef.current, {
       center, zoom: 13, disableDefaultUI: true, zoomControl: true,
@@ -181,92 +247,53 @@ export default function StoreMapPicker({
     if (deliveryZone && deliveryZone.length >= 3) {
       drawPolygonOnMap(deliveryZone);
     }
+
+    // Setup initial click listener (non-drawing mode)
+    setupClickListener();
   }, [isLoaded, loadError]);
+
+  // Re-setup click listener when drawing mode changes
+  useEffect(() => {
+    setupClickListener();
+  }, [isDrawing, setupClickListener]);
 
   // Update circle radius
   useEffect(() => {
     circleRef.current?.setRadius(radiusKm * 1000);
   }, [radiusKm]);
 
-  // Handle drawing mode clicks
+  // Resize map when fullscreen changes
   useEffect(() => {
-    if (!mapInstance.current) return;
-
-    const listener = isDrawing
-      ? mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
-          if (!e.latLng) return;
-          const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-          setDrawingPoints(prev => {
-            const next = [...prev, pt];
-            // Draw temporary markers
-            const marker = new google.maps.Marker({
-              position: pt,
-              map: mapInstance.current!,
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 7,
-                fillColor: '#f59e0b',
-                fillOpacity: 1,
-                strokeColor: '#fff',
-                strokeWeight: 2,
-              },
-            });
-            polygonMarkersRef.current.push(marker);
-
-            // Draw polygon preview if 3+ points
-            if (next.length >= 3) {
-              polygonRef.current?.setMap(null);
-              polygonRef.current = new google.maps.Polygon({
-                paths: next,
-                map: mapInstance.current!,
-                fillColor: '#f59e0b',
-                fillOpacity: 0.15,
-                strokeColor: '#f59e0b',
-                strokeOpacity: 0.7,
-                strokeWeight: 2,
-              });
-            }
-            return next;
-          });
-        })
-      : mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
-          if (e.latLng) {
-            const c = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-            markerRef.current?.setPosition(c);
-            circleRef.current?.setCenter(c);
-            reverseGeocode(c);
-          }
-        });
-
-    return () => google.maps.event.removeListener(listener);
-  }, [isDrawing, reverseGeocode]);
+    if (mapInstance.current) {
+      setTimeout(() => {
+        google.maps.event.trigger(mapInstance.current!, 'resize');
+      }, 300);
+    }
+  }, [isFullscreen]);
 
   const startDrawing = () => {
-    // Clear existing polygon
-    polygonRef.current?.setMap(null);
-    polygonMarkersRef.current.forEach(m => m.setMap(null));
-    polygonMarkersRef.current = [];
-    setDrawingPoints([]);
+    clearPolygonVisuals();
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
     setIsDrawing(true);
   };
 
   const finishDrawing = () => {
     setIsDrawing(false);
-    if (drawingPoints.length >= 3) {
-      // Clear temp markers and redraw with draggable vertices
-      polygonRef.current?.setMap(null);
-      polygonMarkersRef.current.forEach(m => m.setMap(null));
-      polygonMarkersRef.current = [];
-      drawPolygonOnMap(drawingPoints);
-      onDeliveryZoneChange(drawingPoints);
+    const points = drawingPointsRef.current;
+    if (points.length >= 3) {
+      clearPolygonVisuals();
+      drawPolygonOnMap(points);
+      onDeliveryZoneChange(points);
     }
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
   };
 
   const clearPolygon = () => {
-    polygonRef.current?.setMap(null);
-    polygonMarkersRef.current.forEach(m => m.setMap(null));
-    polygonMarkersRef.current = [];
-    setDrawingPoints([]);
+    clearPolygonVisuals();
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
     setIsDrawing(false);
     onDeliveryZoneChange(null);
   };
@@ -302,42 +329,60 @@ export default function StoreMapPicker({
     );
   }
 
+  const mapContainerClasses = isFullscreen
+    ? 'fixed inset-0 z-50 bg-background flex flex-col'
+    : 'space-y-2';
+
   return (
-    <div className="space-y-2">
-      <Label>Localização no mapa</Label>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-        <input
-          ref={searchRef}
-          placeholder="Pesquisar localização..."
-          className="w-full pl-10 pr-10 h-9 rounded-md border border-input bg-background text-sm"
-        />
-        <button onClick={getCurrentLocation} disabled={isLocating} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted z-10">
-          <Crosshair className={`w-4 h-4 text-primary ${isLocating ? 'animate-pulse' : ''}`} />
-        </button>
+    <div className={mapContainerClasses}>
+      {/* Header bar */}
+      <div className={isFullscreen ? 'p-3 space-y-2' : 'space-y-2'}>
+        {!isFullscreen && <Label>Localização no mapa</Label>}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+          <input
+            ref={searchRef}
+            placeholder="Pesquisar localização..."
+            className="w-full pl-10 pr-10 h-9 rounded-md border border-input bg-background text-sm"
+          />
+          <button onClick={getCurrentLocation} disabled={isLocating} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted z-10">
+            <Crosshair className={`w-4 h-4 text-primary ${isLocating ? 'animate-pulse' : ''}`} />
+          </button>
+        </div>
+
+        {/* Polygon + fullscreen controls */}
+        <div className="flex gap-2 flex-wrap">
+          {isDrawing ? (
+            <Button type="button" size="sm" variant="default" onClick={finishDrawing} disabled={drawingPointCount < 3}>
+              Concluir polígono ({drawingPointCount} pontos)
+            </Button>
+          ) : (
+            <Button type="button" size="sm" variant="outline" onClick={startDrawing} className="gap-1">
+              <Pencil className="w-3.5 h-3.5" />
+              Desenhar zona de entrega
+            </Button>
+          )}
+          {(deliveryZone?.length || drawingPointCount > 0) && (
+            <Button type="button" size="sm" variant="outline" onClick={clearPolygon} className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10">
+              <Trash2 className="w-3.5 h-3.5" />
+              Limpar polígono
+            </Button>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsFullscreen(f => !f)}
+            className="gap-1 ml-auto"
+          >
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {isFullscreen ? 'Sair' : 'Ecrã inteiro'}
+          </Button>
+        </div>
       </div>
 
-      {/* Polygon controls */}
-      <div className="flex gap-2">
-        {isDrawing ? (
-          <Button type="button" size="sm" variant="default" onClick={finishDrawing} disabled={drawingPoints.length < 3}>
-            Concluir polígono ({drawingPoints.length} pontos)
-          </Button>
-        ) : (
-          <Button type="button" size="sm" variant="outline" onClick={startDrawing} className="gap-1">
-            <Pencil className="w-3.5 h-3.5" />
-            Desenhar zona de entrega
-          </Button>
-        )}
-        {(deliveryZone?.length || drawingPoints.length > 0) && (
-          <Button type="button" size="sm" variant="outline" onClick={clearPolygon} className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10">
-            <Trash2 className="w-3.5 h-3.5" />
-            Limpar polígono
-          </Button>
-        )}
-      </div>
-
-      <div className="relative h-64 rounded-xl overflow-hidden border border-border">
+      {/* Map */}
+      <div className={`relative rounded-xl overflow-hidden border border-border ${isFullscreen ? 'flex-1 m-3 mt-0' : 'h-64'}`}>
         <div ref={mapRef} className="w-full h-full" />
         <div className="absolute bottom-2 left-2 right-2 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-muted-foreground text-center">
           {isDrawing
