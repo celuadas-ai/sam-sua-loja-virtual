@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Navigation, Search, Crosshair, Pencil, Trash2, Maximize2, Minimize2 } from 'lucide-react';
+import { Navigation, Search, Crosshair, Pencil, Trash2, Maximize2, Minimize2, MousePointerClick } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +38,11 @@ export default function StoreMapPicker({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const clickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const moveListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const upListenerRef = useRef<google.maps.MapsEventListener | null>(null);
   const drawingPointsRef = useRef<LatLng[]>([]);
+  const isMouseDownRef = useRef(false);
+  const drawingPolylineRef = useRef<google.maps.Polyline | null>(null);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -136,43 +140,74 @@ export default function StoreMapPicker({
     });
   }, [onDeliveryZoneChange, clearPolygonVisuals]);
 
-  // Setup click listener based on drawing mode
+  // Setup listeners based on drawing mode
   const setupClickListener = useCallback(() => {
     if (!mapInstance.current) return;
 
-    // Remove old listener
+    // Remove old listeners
     if (clickListenerRef.current) {
       google.maps.event.removeListener(clickListenerRef.current);
       clickListenerRef.current = null;
     }
+    if (moveListenerRef.current) {
+      google.maps.event.removeListener(moveListenerRef.current);
+      moveListenerRef.current = null;
+    }
+    if (upListenerRef.current) {
+      google.maps.event.removeListener(upListenerRef.current);
+      upListenerRef.current = null;
+    }
 
     if (isDrawing) {
-      // Disable map dragging so left-click adds polygon points
+      // Disable map dragging so mouse events go to drawing
       mapInstance.current.setOptions({ draggable: false, disableDoubleClickZoom: true });
-      clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+
+      // Mouse down: start drawing
+      clickListenerRef.current = mapInstance.current.addListener('mousedown', (e: google.maps.MapMouseEvent) => {
         if (!e.latLng) return;
+        isMouseDownRef.current = true;
         const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        drawingPointsRef.current = [...drawingPointsRef.current, pt];
-        setDrawingPointCount(drawingPointsRef.current.length);
+        drawingPointsRef.current = [pt];
+        setDrawingPointCount(1);
 
-        const marker = new google.maps.Marker({
-          position: pt,
+        // Clear previous preview
+        drawingPolylineRef.current?.setMap(null);
+        polygonRef.current?.setMap(null);
+
+        drawingPolylineRef.current = new google.maps.Polyline({
+          path: [pt],
           map: mapInstance.current!,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 7,
-            fillColor: '#f59e0b',
-            fillOpacity: 1,
-            strokeColor: '#fff',
-            strokeWeight: 2,
-          },
+          strokeColor: '#f59e0b',
+          strokeOpacity: 0.9,
+          strokeWeight: 3,
         });
-        polygonMarkersRef.current.push(marker);
+      });
 
-        if (drawingPointsRef.current.length >= 3) {
+      // Mouse move: add points while dragging
+      moveListenerRef.current = mapInstance.current.addListener('mousemove', (e: google.maps.MapMouseEvent) => {
+        if (!isMouseDownRef.current || !e.latLng) return;
+        const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        drawingPointsRef.current.push(pt);
+        setDrawingPointCount(drawingPointsRef.current.length);
+        drawingPolylineRef.current?.getPath().push(e.latLng);
+      });
+
+      // Mouse up: finish freehand stroke, show polygon preview
+      upListenerRef.current = mapInstance.current.addListener('mouseup', () => {
+        if (!isMouseDownRef.current) return;
+        isMouseDownRef.current = false;
+
+        const points = drawingPointsRef.current;
+        if (points.length >= 3) {
+          // Simplify points to reduce noise (keep every Nth point)
+          const simplified = simplifyPoints(points, Math.max(1, Math.floor(points.length / 60)));
+          drawingPointsRef.current = simplified;
+          setDrawingPointCount(simplified.length);
+
+          drawingPolylineRef.current?.setMap(null);
           polygonRef.current?.setMap(null);
           polygonRef.current = new google.maps.Polygon({
-            paths: drawingPointsRef.current,
+            paths: simplified,
             map: mapInstance.current!,
             fillColor: '#f59e0b',
             fillOpacity: 0.15,
@@ -194,6 +229,19 @@ export default function StoreMapPicker({
       });
     }
   }, [isDrawing, reverseGeocode]);
+
+  // Simplify an array of points by keeping every Nth point + always the last
+  const simplifyPoints = (points: LatLng[], step: number): LatLng[] => {
+    if (points.length <= 10) return points;
+    const result: LatLng[] = [];
+    for (let i = 0; i < points.length; i += step) {
+      result.push(points[i]);
+    }
+    // Always include last point to close the shape
+    const last = points[points.length - 1];
+    if (result[result.length - 1] !== last) result.push(last);
+    return result;
+  };
 
   // Init map
   useEffect(() => {
@@ -274,13 +322,19 @@ export default function StoreMapPicker({
 
   const startDrawing = () => {
     clearPolygonVisuals();
+    drawingPolylineRef.current?.setMap(null);
+    drawingPolylineRef.current = null;
     drawingPointsRef.current = [];
+    isMouseDownRef.current = false;
     setDrawingPointCount(0);
     setIsDrawing(true);
   };
 
   const finishDrawing = () => {
     setIsDrawing(false);
+    isMouseDownRef.current = false;
+    drawingPolylineRef.current?.setMap(null);
+    drawingPolylineRef.current = null;
     const points = drawingPointsRef.current;
     if (points.length >= 3) {
       clearPolygonVisuals();
@@ -293,7 +347,10 @@ export default function StoreMapPicker({
 
   const clearPolygon = () => {
     clearPolygonVisuals();
+    drawingPolylineRef.current?.setMap(null);
+    drawingPolylineRef.current = null;
     drawingPointsRef.current = [];
+    isMouseDownRef.current = false;
     setDrawingPointCount(0);
     setIsDrawing(false);
     onDeliveryZoneChange(null);
@@ -392,7 +449,7 @@ export default function StoreMapPicker({
         <div ref={mapRef} className="w-full h-full" />
         <div className="absolute bottom-2 left-2 right-2 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-muted-foreground text-center">
           {isDrawing
-            ? 'Clique no mapa para adicionar pontos ao polígono (mín. 3)'
+            ? 'Mantém o botão do rato premido e arrasta para desenhar o limite da zona'
             : 'Clique no mapa ou arraste o marcador · Amarelo = zona de entrega'}
         </div>
       </div>
