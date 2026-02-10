@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Star, ShoppingBag, CreditCard, Wallet } from 'lucide-react';
+import { CheckCircle2, Star, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,35 +12,10 @@ export default function ConfirmationPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { currentOrder, processPayment, completeOrder } = useCart();
+  const { completeOrder } = useCart();
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [paymentComplete, setPaymentComplete] = useState(false);
-
-  const paymentLabels: Record<string, string> = {
-    mpesa: 'M-Pesa',
-    emola: 'e-Mola',
-    pos: 'POS',
-    cash: t.payment.cash,
-  };
-
-  const handlePayment = async () => {
-    setPaymentProcessing(true);
-    
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    processPayment();
-    setPaymentComplete(true);
-    setPaymentProcessing(false);
-
-    toast({
-      title: t.confirmation.paymentConfirmed,
-      description: t.confirmation.thankYouPurchase,
-    });
-  };
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -90,60 +65,8 @@ export default function ConfirmationPage() {
         {t.confirmation.hopeYouEnjoyed}
       </motion.p>
 
-      {/* Payment Section */}
-      {!paymentComplete && currentOrder && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="w-full max-w-sm sam-card p-6 mb-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-sam-light-blue flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-accent" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-foreground">{t.confirmation.makePayment}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t.confirmation.method}: {paymentLabels[currentOrder.paymentMethod]}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-muted/50 rounded-xl p-4 mb-4">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">{t.confirmation.totalToPay}</span>
-              <span className="text-xl font-bold text-primary">{currentOrder.total} MT</span>
-            </div>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={handlePayment}
-            disabled={paymentProcessing}
-            className="sam-button-accent w-full py-4 rounded-2xl disabled:opacity-50"
-          >
-            {paymentProcessing ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-5 h-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full"
-                />
-                <span>{t.confirmation.processingPayment}</span>
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-5 h-5" />
-                <span>{t.confirmation.confirmPayment}</span>
-              </>
-            )}
-          </motion.button>
-        </motion.div>
-      )}
-
-      {/* Feedback Section - only show after payment */}
-      {paymentComplete && !submitted ? (
+      {/* Feedback Section */}
+      {!submitted ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -209,7 +132,7 @@ export default function ConfirmationPage() {
             {t.common.skip}
           </button>
         </motion.div>
-      ) : paymentComplete && (
+      ) : (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
