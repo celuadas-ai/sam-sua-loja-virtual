@@ -199,6 +199,8 @@ export type Database = {
         Row: {
           created_at: string
           customer_address: string | null
+          customer_latitude: number | null
+          customer_longitude: number | null
           customer_name: string | null
           customer_phone: string | null
           estimated_delivery: string | null
@@ -214,6 +216,8 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_address?: string | null
+          customer_latitude?: number | null
+          customer_longitude?: number | null
           customer_name?: string | null
           customer_phone?: string | null
           estimated_delivery?: string | null
@@ -229,6 +233,8 @@ export type Database = {
         Update: {
           created_at?: string
           customer_address?: string | null
+          customer_latitude?: number | null
+          customer_longitude?: number | null
           customer_name?: string | null
           customer_phone?: string | null
           estimated_delivery?: string | null

@@ -13,6 +13,8 @@ interface DbOrder {
   customer_name: string | null;
   customer_phone: string | null;
   customer_address: string | null;
+  customer_latitude: number | null;
+  customer_longitude: number | null;
   operator_id: string | null;
   estimated_delivery: string | null;
   created_at: string;
@@ -47,6 +49,8 @@ function mapDbOrderToOrder(dbOrder: DbOrder, items: CartItem[]): Order {
     customerName: dbOrder.customer_name || undefined,
     customerPhone: dbOrder.customer_phone || undefined,
     customerAddress: dbOrder.customer_address || undefined,
+    customerLatitude: dbOrder.customer_latitude ? Number(dbOrder.customer_latitude) : undefined,
+    customerLongitude: dbOrder.customer_longitude ? Number(dbOrder.customer_longitude) : undefined,
     operatorId: dbOrder.operator_id || undefined,
   };
 }
@@ -130,7 +134,8 @@ export function useOrders() {
     paymentMethod: PaymentMethod,
     customerName?: string,
     customerPhone?: string,
-    customerAddress?: string
+    customerAddress?: string,
+    customerCoords?: { lat: number; lng: number }
   ): Promise<Order | null> => {
     if (!user) return null;
 
@@ -147,6 +152,8 @@ export function useOrders() {
           customer_name: customerName || user.user_metadata?.full_name || user.email,
           customer_phone: customerPhone || user.user_metadata?.phone,
           customer_address: customerAddress,
+          customer_latitude: customerCoords?.lat || null,
+          customer_longitude: customerCoords?.lng || null,
           estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         })
         .select()
