@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, MapPin, Loader2, Navigation, Search, Crosshair } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,9 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import StoreMapPicker from '@/components/admin/StoreMapPicker';
+
+interface LatLng { lat: number; lng: number; }
 
 interface Store {
   id: string;
@@ -35,9 +38,8 @@ interface Store {
   longitude: number;
   max_delivery_radius_km: number;
   is_active: boolean;
+  delivery_zone: LatLng[] | null;
 }
-
-const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
 const defaultForm = {
   name: '',
@@ -46,6 +48,7 @@ const defaultForm = {
   longitude: '',
   max_delivery_radius_km: '15',
   is_active: true,
+  delivery_zone: null as LatLng[] | null,
 };
 
 export default function AdminStores() {
@@ -68,6 +71,7 @@ export default function AdminStores() {
         latitude: Number(s.latitude),
         longitude: Number(s.longitude),
         max_delivery_radius_km: Number(s.max_delivery_radius_km),
+        delivery_zone: Array.isArray(s.delivery_zone) ? (s.delivery_zone as unknown as LatLng[]) : null,
       })));
     }
     setLoading(false);
@@ -90,6 +94,7 @@ export default function AdminStores() {
       longitude: store.longitude.toString(),
       max_delivery_radius_km: store.max_delivery_radius_km.toString(),
       is_active: store.is_active,
+      delivery_zone: store.delivery_zone,
     });
     setIsDialogOpen(true);
   };
@@ -108,29 +113,17 @@ export default function AdminStores() {
       longitude: parseFloat(form.longitude),
       max_delivery_radius_km: parseFloat(form.max_delivery_radius_km) || 15,
       is_active: form.is_active,
+      delivery_zone: form.delivery_zone as unknown as import('@/integrations/supabase/types').Json,
     };
 
     if (editingStore) {
-      const { error } = await supabase
-        .from('stores')
-        .update(payload)
-        .eq('id', editingStore.id);
-
-      if (error) {
-        toast.error('Erro ao atualizar loja');
-      } else {
-        toast.success('Loja atualizada');
-      }
+      const { error } = await supabase.from('stores').update(payload).eq('id', editingStore.id);
+      if (error) toast.error('Erro ao atualizar loja');
+      else toast.success('Loja atualizada');
     } else {
-      const { error } = await supabase
-        .from('stores')
-        .insert(payload);
-
-      if (error) {
-        toast.error('Erro ao criar loja');
-      } else {
-        toast.success('Loja criada');
-      }
+      const { error } = await supabase.from('stores').insert(payload);
+      if (error) toast.error('Erro ao criar loja');
+      else toast.success('Loja criada');
     }
 
     setSaving(false);
@@ -140,12 +133,8 @@ export default function AdminStores() {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('stores').delete().eq('id', id);
-    if (error) {
-      toast.error('Erro ao eliminar loja');
-    } else {
-      toast.success('Loja eliminada');
-      fetchStores();
-    }
+    if (error) toast.error('Erro ao eliminar loja');
+    else { toast.success('Loja eliminada'); fetchStores(); }
   };
 
   return (
@@ -201,10 +190,19 @@ export default function AdminStores() {
                 <span>📍 {store.latitude.toFixed(4)}, {store.longitude.toFixed(4)}</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 mb-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 mb-2">
                 <span className="text-sm text-foreground font-medium">Raio máximo</span>
                 <span className="text-sm font-bold text-primary">{store.max_delivery_radius_km} km</span>
               </div>
+
+              {store.delivery_zone && store.delivery_zone.length >= 3 && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10 mb-4">
+                  <span className="text-sm text-foreground font-medium">Zona de entrega</span>
+                  <span className="text-sm font-bold text-amber-600">{store.delivery_zone.length} pontos</span>
+                </div>
+              )}
+
+              {!(store.delivery_zone && store.delivery_zone.length >= 3) && <div className="mb-4" />}
 
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => openEdit(store)}>
@@ -249,13 +247,16 @@ export default function AdminStores() {
               <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ex: SAM Maputo Central" />
             </div>
 
-            {/* Interactive Map */}
             <StoreMapPicker
               latitude={form.latitude ? parseFloat(form.latitude) : undefined}
               longitude={form.longitude ? parseFloat(form.longitude) : undefined}
               radiusKm={parseFloat(form.max_delivery_radius_km) || 15}
+              deliveryZone={form.delivery_zone ?? undefined}
               onLocationChange={(lat, lng, address) => {
                 setForm(f => ({ ...f, latitude: lat.toString(), longitude: lng.toString(), address: address || f.address }));
+              }}
+              onDeliveryZoneChange={(zone) => {
+                setForm(f => ({ ...f, delivery_zone: zone }));
               }}
             />
 
@@ -303,180 +304,5 @@ export default function AdminStores() {
         </DialogContent>
       </Dialog>
     </AdminLayout>
-  );
-}
-
-// ── Inline Map Picker Component ──────────────────────────────────
-
-interface StoreMapPickerProps {
-  latitude?: number;
-  longitude?: number;
-  radiusKm: number;
-  onLocationChange: (lat: number, lng: number, address?: string) => void;
-}
-
-function StoreMapPicker({ latitude, longitude, radiusKm, onLocationChange }: StoreMapPickerProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const circleRef = useRef<google.maps.Circle | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
-
-  const center = latitude && longitude ? { lat: latitude, lng: longitude } : MAPUTO_CENTER;
-
-  // Load Google Maps
-  useEffect(() => {
-    const load = async () => {
-      if (window.google?.maps?.places) { setIsLoaded(true); return; }
-      const existing = document.querySelector('script[src*="maps.googleapis.com"]');
-      if (existing) {
-        const iv = setInterval(() => { if (window.google?.maps?.places) { clearInterval(iv); setIsLoaded(true); } }, 100);
-        return;
-      }
-      try {
-        const { data, error } = await supabase.functions.invoke('get-maps-key');
-        if (error || !data?.apiKey) { setLoadError(true); return; }
-        const s = document.createElement('script');
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
-        s.async = true; s.defer = true;
-        s.onload = () => setIsLoaded(true);
-        s.onerror = () => setLoadError(true);
-        document.head.appendChild(s);
-      } catch { setLoadError(true); }
-    };
-    load();
-  }, []);
-
-  // Init map
-  useEffect(() => {
-    if (!isLoaded || !mapRef.current || loadError) return;
-
-    mapInstance.current = new google.maps.Map(mapRef.current, {
-      center, zoom: 13, disableDefaultUI: true, zoomControl: true,
-      styles: [
-        { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-      ],
-    });
-
-    markerRef.current = new google.maps.Marker({
-      position: center, map: mapInstance.current, draggable: true,
-      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 12, fillColor: '#3b82f6', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 3 },
-    });
-
-    circleRef.current = new google.maps.Circle({
-      map: mapInstance.current, center, radius: radiusKm * 1000,
-      fillColor: '#3b82f6', fillOpacity: 0.08, strokeColor: '#3b82f6', strokeOpacity: 0.4, strokeWeight: 2,
-    });
-
-    markerRef.current.addListener('dragend', () => {
-      const pos = markerRef.current?.getPosition();
-      if (pos) {
-        const c = { lat: pos.lat(), lng: pos.lng() };
-        circleRef.current?.setCenter(c);
-        reverseGeocode(c);
-      }
-    });
-
-    mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
-      if (e.latLng) {
-        const c = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        markerRef.current?.setPosition(c);
-        circleRef.current?.setCenter(c);
-        reverseGeocode(c);
-      }
-    });
-
-    if (searchRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(searchRef.current, {
-        componentRestrictions: { country: 'mz' }, fields: ['formatted_address', 'geometry'],
-      });
-      autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place?.geometry?.location) {
-          const c = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-          mapInstance.current?.panTo(c);
-          mapInstance.current?.setZoom(15);
-          markerRef.current?.setPosition(c);
-          circleRef.current?.setCenter(c);
-          onLocationChange(c.lat, c.lng, place.formatted_address);
-        }
-      });
-    }
-  }, [isLoaded, loadError]);
-
-  // Update circle radius when slider changes
-  useEffect(() => {
-    circleRef.current?.setRadius(radiusKm * 1000);
-  }, [radiusKm]);
-
-  const reverseGeocode = useCallback((coords: { lat: number; lng: number }) => {
-    if (!window.google?.maps) return;
-    new google.maps.Geocoder().geocode({ location: coords }, (results, status) => {
-      if (status === 'OK' && results?.[0]) {
-        onLocationChange(coords.lat, coords.lng, results[0].formatted_address);
-      } else {
-        onLocationChange(coords.lat, coords.lng);
-      }
-    });
-  }, [onLocationChange]);
-
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) return;
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        mapInstance.current?.panTo(c);
-        markerRef.current?.setPosition(c);
-        circleRef.current?.setCenter(c);
-        reverseGeocode(c);
-        setIsLocating(false);
-      },
-      () => setIsLocating(false),
-      { enableHighAccuracy: true }
-    );
-  };
-
-  if (loadError) {
-    return <div className="h-48 bg-muted rounded-xl flex items-center justify-center text-sm text-muted-foreground">Mapa indisponível</div>;
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="h-48 bg-muted rounded-xl flex items-center justify-center">
-        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-          <Navigation className="w-6 h-6 text-primary-foreground" />
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      <Label>Localização no mapa</Label>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-        <input
-          ref={searchRef}
-          placeholder="Pesquisar localização..."
-          className="w-full pl-10 pr-10 h-9 rounded-md border border-input bg-background text-sm"
-        />
-        <button onClick={getCurrentLocation} disabled={isLocating} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted z-10">
-          <Crosshair className={`w-4 h-4 text-primary ${isLocating ? 'animate-pulse' : ''}`} />
-        </button>
-      </div>
-      <div className="relative h-64 rounded-xl overflow-hidden border border-border">
-        <div ref={mapRef} className="w-full h-full" />
-        <div className="absolute bottom-2 left-2 right-2 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-muted-foreground text-center">
-          Clique no mapa ou arraste o marcador · Círculo azul = raio de entrega
-        </div>
-      </div>
-    </div>
   );
 }
