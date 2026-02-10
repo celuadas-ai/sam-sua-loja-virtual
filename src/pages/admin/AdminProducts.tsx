@@ -262,7 +262,7 @@ export default function AdminProducts() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Preço (MZN) *</Label>
+                  <Label htmlFor="price">Preço por pack/caixa (MZN) *</Label>
                   <Input
                     id="price"
                     placeholder="Preço"
@@ -352,7 +352,7 @@ export default function AdminProducts() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-price">Preço (MZN) *</Label>
+                <Label htmlFor="edit-price">Preço por pack/caixa (MZN) *</Label>
                 <Input
                   id="edit-price"
                   placeholder="Preço"
@@ -409,7 +409,7 @@ export default function AdminProducts() {
                 <th className="text-left p-4 font-semibold text-foreground">Produto</th>
                 <th className="text-left p-4 font-semibold text-foreground">Marca</th>
                 <th className="text-left p-4 font-semibold text-foreground">Volume</th>
-                <th className="text-left p-4 font-semibold text-foreground">Preço/un</th>
+                <th className="text-left p-4 font-semibold text-foreground">Preço</th>
                 <th className="text-left p-4 font-semibold text-foreground">Qtd. Mín</th>
                 <th className="text-right p-4 font-semibold text-foreground">Ações</th>
               </tr>
@@ -431,7 +431,7 @@ export default function AdminProducts() {
                   </td>
                   <td className="p-4 text-muted-foreground">{product.brand}</td>
                   <td className="p-4 text-muted-foreground">{product.volume}</td>
-                  <td className="p-4 font-semibold text-foreground">{product.price} MZN</td>
+                  <td className="p-4 font-semibold text-foreground">{product.price} MZN/{product.unitLabel}</td>
                   <td className="p-4 text-muted-foreground">{product.minQuantity}</td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
