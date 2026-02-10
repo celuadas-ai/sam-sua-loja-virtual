@@ -147,15 +147,14 @@ export default function StoreMapPicker({
     }
 
     if (isDrawing) {
-      // Disable default right-click context menu on the map
-      mapInstance.current.setOptions({ disableDoubleClickZoom: true });
-      clickListenerRef.current = mapInstance.current.addListener('rightclick', (e: google.maps.MapMouseEvent) => {
+      // Disable map dragging so left-click adds polygon points
+      mapInstance.current.setOptions({ draggable: false, disableDoubleClickZoom: true });
+      clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
         if (!e.latLng) return;
         const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         drawingPointsRef.current = [...drawingPointsRef.current, pt];
         setDrawingPointCount(drawingPointsRef.current.length);
 
-        // Add visual marker for the point
         const marker = new google.maps.Marker({
           position: pt,
           map: mapInstance.current!,
@@ -170,7 +169,6 @@ export default function StoreMapPicker({
         });
         polygonMarkersRef.current.push(marker);
 
-        // Draw polygon preview if 3+ points
         if (drawingPointsRef.current.length >= 3) {
           polygonRef.current?.setMap(null);
           polygonRef.current = new google.maps.Polygon({
@@ -185,6 +183,7 @@ export default function StoreMapPicker({
         }
       });
     } else {
+      mapInstance.current.setOptions({ draggable: true, disableDoubleClickZoom: false });
       clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
         if (e.latLng) {
           const c = { lat: e.latLng.lat(), lng: e.latLng.lng() };
