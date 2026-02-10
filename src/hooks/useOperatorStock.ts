@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { products } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
 
 export interface StockItem {
   id: string;
@@ -15,6 +15,7 @@ export interface StockItem {
 
 export function useOperatorStock() {
   const { user } = useAuth();
+  const { products } = useProducts();
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,6 @@ export function useOperatorStock() {
 
       if (error) throw error;
 
-      // Map stock data with product info
       const stockItems: StockItem[] = (data || []).map((item: any) => {
         const product = products.find(p => p.id === item.product_id);
         return {
@@ -53,14 +53,15 @@ export function useOperatorStock() {
   };
 
   useEffect(() => {
-    fetchStock();
-  }, [user]);
+    if (products.length > 0) {
+      fetchStock();
+    }
+  }, [user, products]);
 
   const updateStock = async (productId: string, quantity: number): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      // Check if stock entry exists
       const { data: existing } = await supabase
         .from('operator_stock')
         .select('id')
@@ -69,23 +70,15 @@ export function useOperatorStock() {
         .single();
 
       if (existing) {
-        // Update existing
         const { error } = await supabase
           .from('operator_stock')
           .update({ quantity })
           .eq('id', existing.id);
-
         if (error) throw error;
       } else {
-        // Insert new
         const { error } = await supabase
           .from('operator_stock')
-          .insert({
-            operator_id: user.id,
-            product_id: productId,
-            quantity,
-          });
-
+          .insert({ operator_id: user.id, product_id: productId, quantity });
         if (error) throw error;
       }
 
@@ -108,7 +101,6 @@ export function useOperatorStock() {
         .eq('product_id', productId);
 
       if (error) throw error;
-
       await fetchStock();
       return true;
     } catch (error) {
@@ -117,7 +109,6 @@ export function useOperatorStock() {
     }
   };
 
-  // Get available products (not yet in stock)
   const availableProducts = products.filter(
     p => !stock.find(s => s.productId === p.id)
   );

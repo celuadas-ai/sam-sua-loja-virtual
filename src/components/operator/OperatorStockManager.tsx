@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOperatorStock, StockItem } from '@/hooks/useOperatorStock';
 import { toast } from 'sonner';
-import { products } from '@/data/products';
 
 interface OperatorStockManagerProps {
   isOpen: boolean;
