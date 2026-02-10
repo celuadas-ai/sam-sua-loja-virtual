@@ -190,7 +190,7 @@ export default function PaymentPage() {
     if (!deliveryCheck.withinRange) {
       toast({
         title: 'Fora da área de entrega',
-        description: `A morada está a ${deliveryCheck.distance} km. O máximo permitido é ${deliveryCheck.nearestStore?.maxDeliveryRadiusKm} km.`,
+        description: 'Infelizmente a sua morada está fora do nosso raio de entrega. Entre em contacto com +258 841234567 para mais informações.',
         variant: 'destructive',
       });
       return;
@@ -255,10 +255,9 @@ export default function PaymentPage() {
           >
             <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-destructive">Fora da área de entrega</p>
+            <p className="text-sm font-semibold text-destructive">Fora da área de entrega</p>
               <p className="text-xs text-destructive/80 mt-1">
-                A sua morada está a <strong>{deliveryCheck.distance} km</strong> da loja mais próxima ({deliveryCheck.nearestStore?.name}).
-                O raio máximo é de <strong>{deliveryCheck.nearestStore?.maxDeliveryRadiusKm} km</strong>.
+                Infelizmente a sua morada está fora do nosso raio de entrega. Entre em contacto com <strong>+258 841234567</strong> para mais informações.
               </p>
             </div>
           </motion.div>
