@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Plus, Check, ChevronRight, Map, Navigation, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Check, ChevronRight, Map, Navigation, Loader2, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +60,16 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
   const handleSelectAddress = (address: Address) => {
     onAddressSelect(address);
     setIsOpen(false);
+  };
+
+  const handleDeleteAddress = (id: string) => {
+    setAddresses(prev => prev.filter(a => a.id !== id));
+    if (selectedAddress?.id === id) {
+      const remaining = addresses.filter(a => a.id !== id);
+      const next = remaining.find(a => a.isDefault) || remaining[0] || null;
+      if (next) onAddressSelect(next);
+    }
+    toast({ title: 'Endereço eliminado' });
   };
 
   const handleAddNew = () => {
@@ -227,45 +237,58 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
             {addresses.map((address) => (
               <motion.div
                 key={address.id}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleSelectAddress(address)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`p-4 rounded-xl border transition-all ${
                   selectedAddress?.id === address.id
                     ? 'border-primary bg-primary/5'
                     : 'border-border hover:border-primary/50'
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    selectedAddress?.id === address.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}>
-                    {address.id.startsWith('current-') ? (
-                      <Navigation className="w-5 h-5" />
-                    ) : (
-                      <MapPin className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-foreground">{address.label}</p>
-                      {address.isDefault && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                          {t.address.default}
-                        </span>
-                      )}
-                      {address.coords && (
-                        <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
-                          GPS
-                        </span>
+                  <div
+                    className="flex-1 flex items-start gap-3 cursor-pointer"
+                    onClick={() => handleSelectAddress(address)}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      selectedAddress?.id === address.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}>
+                      {address.id.startsWith('current-') ? (
+                        <Navigation className="w-5 h-5" />
+                      ) : (
+                        <MapPin className="w-5 h-5" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{address.address}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground">{address.label}</p>
+                        {address.isDefault && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                            {t.address.default}
+                          </span>
+                        )}
+                        {address.coords && (
+                          <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                            GPS
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{address.address}</p>
+                    </div>
+                    {selectedAddress?.id === address.id && (
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                    )}
                   </div>
-                  {selectedAddress?.id === address.id && (
-                    <Check className="w-5 h-5 text-primary" />
-                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteAddress(address.id);
+                    }}
+                    className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                    title="Eliminar endereço"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </motion.div>
             ))}
