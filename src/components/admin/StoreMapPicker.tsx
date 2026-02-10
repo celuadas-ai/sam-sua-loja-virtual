@@ -147,7 +147,9 @@ export default function StoreMapPicker({
     }
 
     if (isDrawing) {
-      clickListenerRef.current = mapInstance.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+      // Disable default right-click context menu on the map
+      mapInstance.current.setOptions({ disableDoubleClickZoom: true });
+      clickListenerRef.current = mapInstance.current.addListener('rightclick', (e: google.maps.MapMouseEvent) => {
         if (!e.latLng) return;
         const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         drawingPointsRef.current = [...drawingPointsRef.current, pt];
