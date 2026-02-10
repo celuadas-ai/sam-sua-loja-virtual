@@ -218,6 +218,15 @@ export const translations = {
       mobilePhonePlaceholder: '+258 84 000 0000',
       confirmPassword: 'Confirmar Palavra-passe',
       passwordsDontMatch: 'As palavras-passe não coincidem',
+      resetEmailSent: 'Enviámos um link de recuperação para o seu email.',
+      resetInstructions: 'Insira o seu email para receber um link de recuperação.',
+      sendResetLink: 'Enviar link de recuperação',
+      backToLogin: 'Voltar ao login',
+      checkEmailInbox: 'Verifique a sua caixa de entrada e siga o link para redefinir a palavra-passe.',
+      newPassword: 'Nova palavra-passe',
+      passwordTooShort: 'A palavra-passe deve ter pelo menos 6 caracteres.',
+      passwordUpdated: 'Palavra-passe atualizada com sucesso!',
+      updatePassword: 'Atualizar palavra-passe',
     },
     
     // Help Page
@@ -454,6 +463,15 @@ export const translations = {
       mobilePhonePlaceholder: '+258 84 000 0000',
       confirmPassword: 'Confirm Password',
       passwordsDontMatch: 'Passwords do not match',
+      resetEmailSent: 'We sent a recovery link to your email.',
+      resetInstructions: 'Enter your email to receive a recovery link.',
+      sendResetLink: 'Send recovery link',
+      backToLogin: 'Back to login',
+      checkEmailInbox: 'Check your inbox and follow the link to reset your password.',
+      newPassword: 'New password',
+      passwordTooShort: 'Password must be at least 6 characters.',
+      passwordUpdated: 'Password updated successfully!',
+      updatePassword: 'Update password',
     },
     
     // Help Page

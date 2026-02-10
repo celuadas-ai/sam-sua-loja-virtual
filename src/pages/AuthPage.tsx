@@ -270,7 +270,7 @@ export default function AuthPage() {
 
           {isLogin && (
             <div className="text-right">
-              <button type="button" className="text-sm text-accent hover:underline">
+              <button type="button" onClick={() => navigate('/forgot-password')} className="text-sm text-accent hover:underline">
                 {t.auth.forgotPassword}
               </button>
             </div>

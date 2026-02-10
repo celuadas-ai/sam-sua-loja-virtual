@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import SplashScreen from "./pages/SplashScreen";
 import AuthPage from "./pages/AuthPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -52,6 +54,8 @@ const App = () => (
                 {/* Public */}
                 <Route path="/" element={<SplashScreen />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 
                 {/* Customer */}
                 <Route path="/products" element={<ProductsPage />} />

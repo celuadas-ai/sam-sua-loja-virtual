@@ -1,73 +1,45 @@
-# Welcome to your Lovable project
+# SAM Água - Loja Virtual de Água Mineral
 
-## Project info
+Aplicação mobile-first de e-commerce para encomenda e entrega de água mineral em Maputo, Moçambique. Permite aos clientes encomendar água com entrega rápida, acompanhar pedidos em tempo real e pagar via M-Pesa, eMola, POS ou dinheiro.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Funcionalidades
 
-## How can I edit this code?
+- **Catálogo de Produtos** — Água Namaacha, Fonte Fresca, Natura e mais
+- **Carrinho e Checkout** — Com seleção de endereço e método de pagamento
+- **Rastreamento em Tempo Real** — Acompanhe a entrega no mapa
+- **Painel Admin** — Gestão de produtos, operadores, lojas e promoções
+- **Painel Operador** — Gestão de entregas e stock
+- **Multi-idioma** — Português e Inglês
+- **Mobile** — Suporte a Android via Capacitor
 
-There are several ways of editing your application.
+## Tecnologias
 
-**Use Lovable**
+- React + TypeScript + Vite
+- Tailwind CSS + shadcn/ui
+- Framer Motion
+- Lovable Cloud (autenticação, base de dados, edge functions)
+- Capacitor (Android)
+- Google Maps API
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Desenvolvimento Local
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+> É necessária ligação à internet para os serviços de backend e Google Maps.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Build Android
 
-**Use GitHub Codespaces**
+```sh
+npm run build
+npx cap sync android
+npx cap run android
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Licença
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Projeto privado — SAM.co.mz
