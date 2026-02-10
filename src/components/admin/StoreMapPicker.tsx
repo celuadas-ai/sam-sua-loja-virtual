@@ -388,6 +388,7 @@ export default function StoreMapPicker({
         className={`relative rounded-xl overflow-hidden border border-border ${isFullscreen ? 'flex-1 m-3 mt-0' : 'h-64'}`}
         onPointerDown={e => e.stopPropagation()}
         onTouchStart={e => e.stopPropagation()}
+        onContextMenu={e => e.preventDefault()}
       >
         <div ref={mapRef} className="w-full h-full" />
         <div className="absolute bottom-2 left-2 right-2 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-muted-foreground text-center">
