@@ -141,16 +141,19 @@ export function useProducts() {
       if (updates.isPromo !== undefined) updateData.is_promo = updates.isPromo;
       if (updates.promoPrice !== undefined) updateData.promo_price = updates.promoPrice;
 
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('products')
         .update(updateData)
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (updateError) throw updateError;
 
-      setProducts(prev =>
-        prev.map(p => (p.id === id ? { ...p, ...updates } : p))
-      );
+      if (!data || data.length === 0) {
+        throw new Error('Não foi possível atualizar. Verifique se tem permissões de administrador.');
+      }
+
+      await fetchProducts();
       return true;
     } catch (err) {
       console.error('Error updating product:', err);
