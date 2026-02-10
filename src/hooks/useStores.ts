@@ -9,6 +9,7 @@ export interface Store {
   longitude: number;
   maxDeliveryRadiusKm: number;
   isActive: boolean;
+  deliveryZone: { lat: number; lng: number }[] | null;
 }
 
 export function useStores() {
@@ -31,6 +32,7 @@ export function useStores() {
           longitude: Number(s.longitude),
           maxDeliveryRadiusKm: Number(s.max_delivery_radius_km),
           isActive: s.is_active,
+          deliveryZone: Array.isArray(s.delivery_zone) ? (s.delivery_zone as unknown as { lat: number; lng: number }[]) : null,
         })));
       }
       setLoading(false);
