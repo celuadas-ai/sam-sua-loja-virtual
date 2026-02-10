@@ -1,31 +1,38 @@
 import { motion } from 'framer-motion';
 import { Package, Users, Truck, TrendingUp, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { mockOrders, mockOperators } from '@/data/mockUsers';
 import { useProducts } from '@/hooks/useProducts';
 import { useOperators } from '@/hooks/useOperators';
+import { useOrders } from '@/hooks/useOrders';
 
 export default function AdminDashboard() {
   const { products, isLoading: productsLoading } = useProducts();
   const { operators, isLoading: operatorsLoading } = useOperators();
+  const { orders, loading: ordersLoading } = useOrders();
   
   const activeOperators = operators.filter(o => o.isActive).length;
-  const pendingOrders = mockOrders.filter(o => o.status !== 'delivered').length;
-  const completedOrders = mockOrders.filter(o => o.status === 'delivered').length;
+  const pendingOrders = orders.filter(o => o.status !== 'delivered').length;
+  const completedOrders = orders.filter(o => o.status === 'delivered').length;
+  const todayOrders = orders.filter(o => {
+    const today = new Date();
+    const orderDate = new Date(o.createdAt);
+    return orderDate.toDateString() === today.toDateString();
+  });
+  const todaySales = todayOrders.reduce((sum, o) => sum + o.total, 0);
 
   const stats = [
     {
       icon: Truck,
       label: 'Encomendas Hoje',
-      value: '24',
-      change: '+12%',
+      value: ordersLoading ? '...' : todayOrders.length.toString(),
+      change: '',
       color: 'bg-accent',
     },
     {
       icon: TrendingUp,
-      label: 'Vendas (MZN)',
-      value: '45.600',
-      change: '+8%',
+      label: 'Vendas Hoje (MZN)',
+      value: ordersLoading ? '...' : todaySales.toLocaleString(),
+      change: '',
       color: 'bg-sam-success',
     },
     {
@@ -102,29 +109,37 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-4">
-            {mockOrders.slice(0, 4).map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"
-              >
-                <div>
-                  <p className="font-medium text-foreground">{order.id}</p>
-                  <p className="text-sm text-muted-foreground">{order.customerName}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-foreground">
-                    {order.total.toLocaleString()} MZN
-                  </p>
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs text-white ${
-                      statusLabels[order.status]?.color
-                    }`}
-                  >
-                    {statusLabels[order.status]?.label}
-                  </span>
-                </div>
+            {ordersLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-            ))}
+            ) : orders.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">Nenhuma encomenda</p>
+            ) : (
+              orders.slice(0, 4).map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">{order.id.slice(0, 8)}...</p>
+                    <p className="text-sm text-muted-foreground">{order.customerName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-foreground">
+                      {order.total.toLocaleString()} MZN
+                    </p>
+                    <span
+                      className={`inline-block px-2 py-1 rounded-full text-xs text-white ${
+                        statusLabels[order.status]?.color
+                      }`}
+                    >
+                      {statusLabels[order.status]?.label}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
 
