@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, MapPin, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Loader2, ChevronDown } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -247,18 +248,31 @@ export default function AdminStores() {
               <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ex: SAM Maputo Central" />
             </div>
 
-            <StoreMapPicker
-              latitude={form.latitude ? parseFloat(form.latitude) : undefined}
-              longitude={form.longitude ? parseFloat(form.longitude) : undefined}
-              radiusKm={parseFloat(form.max_delivery_radius_km) || 15}
-              deliveryZone={form.delivery_zone ?? undefined}
-              onLocationChange={(lat, lng, address) => {
-                setForm(f => ({ ...f, latitude: lat.toString(), longitude: lng.toString(), address: address || f.address }));
-              }}
-              onDeliveryZoneChange={(zone) => {
-                setForm(f => ({ ...f, delivery_zone: zone }));
-              }}
-            />
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="outline" className="w-full justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Abrir mapa e zona de entrega
+                  </span>
+                  <ChevronDown className="w-4 h-4 transition-transform [[data-state=open]>&]:rotate-180" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <StoreMapPicker
+                  latitude={form.latitude ? parseFloat(form.latitude) : undefined}
+                  longitude={form.longitude ? parseFloat(form.longitude) : undefined}
+                  radiusKm={parseFloat(form.max_delivery_radius_km) || 15}
+                  deliveryZone={form.delivery_zone ?? undefined}
+                  onLocationChange={(lat, lng, address) => {
+                    setForm(f => ({ ...f, latitude: lat.toString(), longitude: lng.toString(), address: address || f.address }));
+                  }}
+                  onDeliveryZoneChange={(zone) => {
+                    setForm(f => ({ ...f, delivery_zone: zone }));
+                  }}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             <div>
               <Label>Endereço</Label>
