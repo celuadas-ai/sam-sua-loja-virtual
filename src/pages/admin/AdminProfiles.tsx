@@ -47,6 +47,7 @@ interface Profile {
 
 export default function AdminProfiles() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -111,10 +112,14 @@ export default function AdminProfiles() {
     }
   };
 
-  const filteredProfiles = profiles.filter((profile) =>
-    (profile.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-    (profile.phone?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-  );
+  const filteredProfiles = profiles.filter((profile) => {
+    const matchesSearch =
+      (profile.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (profile.phone?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (profile.id.toLowerCase()).includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === 'all' || profile.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const handleEditClick = (profile: Profile) => {
     setEditingProfile(profile);
@@ -270,17 +275,28 @@ export default function AdminProfiles() {
       title="Perfis de Utilizadores"
       subtitle={`${profiles.length} utilizadores registados`}
     >
-      {/* Search */}
+      {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Pesquisar por nome ou telefone..."
+            placeholder="Pesquisar por nome, telefone ou ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filtrar por função" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as funções</SelectItem>
+            <SelectItem value="customer">Clientes</SelectItem>
+            <SelectItem value="operator">Operadores</SelectItem>
+            <SelectItem value="admin">Admins</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Edit Dialog */}
@@ -418,6 +434,9 @@ export default function AdminProfiles() {
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       Desde {formatDate(profile.created_at)}
+                    </p>
+                    <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5" title={profile.id}>
+                      ID: {profile.id.slice(0, 8)}…
                     </p>
                   </div>
                 </div>
