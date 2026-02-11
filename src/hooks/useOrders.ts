@@ -17,6 +17,7 @@ interface DbOrder {
   customer_longitude: number | null;
   operator_id: string | null;
   estimated_delivery: string | null;
+  order_number: number;
   created_at: string;
   updated_at: string;
 }
@@ -39,6 +40,7 @@ interface DbOrderItem {
 function mapDbOrderToOrder(dbOrder: DbOrder, items: CartItem[]): Order {
   return {
     id: dbOrder.id,
+    orderNumber: dbOrder.order_number,
     items,
     total: Number(dbOrder.total),
     status: dbOrder.status as OrderStatus,

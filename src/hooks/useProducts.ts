@@ -46,6 +46,7 @@ interface DbProduct {
   is_promo: boolean;
   promo_price: number | null;
   is_active: boolean;
+  sku: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -63,6 +64,7 @@ function mapDbToProduct(dbProduct: DbProduct): Product {
     unitLabel: dbProduct.unit_label,
     isPromo: dbProduct.is_promo,
     promoPrice: dbProduct.promo_price ? Number(dbProduct.promo_price) : undefined,
+    sku: dbProduct.sku || undefined,
   };
 }
 
