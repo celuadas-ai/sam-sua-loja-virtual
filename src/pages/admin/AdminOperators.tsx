@@ -55,7 +55,7 @@ export default function AdminOperators() {
   };
 
   const handleAddOperator = async () => {
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.password) {
       toast({
         title: 'Erro',
         description: 'Preencha todos os campos obrigatórios',
@@ -69,6 +69,7 @@ export default function AdminOperators() {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
+      password: formData.password,
       isActive: true,
     });
     setIsSubmitting(false);
@@ -224,7 +225,7 @@ export default function AdminOperators() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Palavra-passe</Label>
+                <Label htmlFor="password">Palavra-passe *</Label>
                 <Input 
                   id="password"
                   placeholder="Palavra-passe" 

@@ -94,38 +94,34 @@ export function useOperators() {
     }
   }, []);
 
-  // Add a new operator (creates user role, profile, and operator record)
-  const addOperator = async (operatorData: Omit<Operator, 'id' | 'role' | 'deliveriesCompleted'>): Promise<Operator | null> => {
+  // Add a new operator via backend function
+  const addOperator = async (operatorData: Omit<Operator, 'id' | 'role' | 'deliveriesCompleted'> & { password?: string }): Promise<Operator | null> => {
     try {
-      // First, we need to create a user in Supabase Auth
-      // For now, we'll create the operator record for an existing user
-      // The admin should first create the user account, then add them as operator
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
 
-      // Check if user already exists with this email by checking profiles
-      // Note: In production, you'd want a proper user creation flow
+      const response = await supabase.functions.invoke('create-operator', {
+        body: {
+          name: operatorData.name,
+          email: operatorData.email,
+          phone: operatorData.phone,
+          password: operatorData.password || 'Operator123!',
+        },
+      });
 
-      // Create a placeholder - in real scenario, admin would select existing user
-      const { data: newOperator, error: operatorError } = await supabase
-        .from('operators')
-        .insert({
-          user_id: operatorData.email, // This should be a real user_id
-          is_active: operatorData.isActive ?? true,
-          deliveries_completed: 0,
-        })
-        .select()
-        .single();
-
-      if (operatorError) throw operatorError;
+      if (response.error) throw new Error(response.error.message);
+      
+      const result = response.data;
+      if (result.error) throw new Error(result.error);
 
       const operator: Operator = {
-        id: newOperator.id,
-        name: operatorData.name,
-        email: operatorData.email,
-        phone: operatorData.phone,
-        address: operatorData.address,
+        id: result.id,
+        name: result.name,
+        email: result.email,
+        phone: result.phone,
         role: 'operator',
-        isActive: newOperator.is_active,
-        deliveriesCompleted: newOperator.deliveries_completed,
+        isActive: result.is_active,
+        deliveriesCompleted: result.deliveries_completed,
       };
 
       setOperators(prev => [operator, ...prev]);
