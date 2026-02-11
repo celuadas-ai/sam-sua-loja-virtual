@@ -37,8 +37,9 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const filteredOrders = orders.filter((order) => {
+    const orderNum = order.orderNumber ? `#${order.orderNumber}` : '';
     const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      orderNum.includes(searchQuery) ||
       order.customerName?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -73,7 +74,7 @@ export default function AdminOrders() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Pesquisar por ID ou cliente..."
+            placeholder="Pesquisar por nº pedido ou cliente..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -105,7 +106,7 @@ export default function AdminOrders() {
           <table className="w-full min-w-[700px]">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left p-4 font-semibold text-foreground">ID</th>
+                <th className="text-left p-4 font-semibold text-foreground">Nº Pedido</th>
                 <th className="text-left p-4 font-semibold text-foreground">Cliente</th>
                 <th className="text-left p-4 font-semibold text-foreground">Total</th>
                 <th className="text-left p-4 font-semibold text-foreground">Pagamento</th>
@@ -120,8 +121,8 @@ export default function AdminOrders() {
                 const StatusIcon = status.icon;
                 return (
                   <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 font-mono font-semibold text-foreground">
-                      {order.id}
+                    <td className="p-4 font-mono font-semibold text-primary">
+                      #{order.orderNumber || '—'}
                     </td>
                     <td className="p-4">
                       <div>
@@ -180,8 +181,8 @@ export default function AdminOrders() {
           {selectedOrder && (
             <div className="space-y-4 py-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">ID</span>
-                <span className="font-mono font-semibold">{selectedOrder.id}</span>
+                <span className="text-muted-foreground">Nº Pedido</span>
+                <span className="font-mono font-semibold text-primary">#{selectedOrder.orderNumber || '—'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Cliente</span>

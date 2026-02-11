@@ -404,8 +404,9 @@ export default function AdminProducts() {
       >
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <table className="w-full min-w-[650px]">
-            <thead className="bg-muted/50">
+             <thead className="bg-muted/50">
               <tr>
+                <th className="text-left p-4 font-semibold text-foreground">SKU</th>
                 <th className="text-left p-4 font-semibold text-foreground">Produto</th>
                 <th className="text-left p-4 font-semibold text-foreground">Marca</th>
                 <th className="text-left p-4 font-semibold text-foreground">Volume</th>
@@ -417,6 +418,7 @@ export default function AdminProducts() {
             <tbody className="divide-y divide-border">
               {filteredProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="p-4 font-mono text-sm text-primary font-semibold">{product.sku || '—'}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden">

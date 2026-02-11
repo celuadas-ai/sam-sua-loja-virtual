@@ -9,6 +9,7 @@ export interface Product {
   unitLabel: string;
   isPromo?: boolean;
   promoPrice?: number;
+  sku?: string;
 }
 
 export interface CartItem extends Product {
@@ -17,6 +18,7 @@ export interface CartItem extends Product {
 
 export interface Order {
   id: string;
+  orderNumber?: number;
   items: CartItem[];
   total: number;
   status: OrderStatus;
