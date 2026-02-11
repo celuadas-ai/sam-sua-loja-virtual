@@ -190,7 +190,7 @@ export default function PaymentPage() {
     if (!deliveryCheck.withinRange) {
       toast({
         title: 'Fora da área de entrega',
-        description: 'Infelizmente a sua morada está fora do nosso raio de entrega. Entre em contacto com +258 841234567 para mais informações.',
+        description: 'Infelizmente, a sua morada está fora da nossa área de entrega. Por favor, entre em contacto connosco através do +258 841234567 ou info@sam.co.mz para mais informações e para nos ajudar a melhorar o nosso serviço.',
         variant: 'destructive',
       });
       return;
@@ -257,7 +257,7 @@ export default function PaymentPage() {
             <div>
             <p className="text-sm font-semibold text-destructive">Fora da área de entrega</p>
               <p className="text-xs text-destructive/80 mt-1">
-                Infelizmente a sua morada está fora do nosso raio de entrega. Entre em contacto com <strong>+258 841234567</strong> para mais informações.
+                Infelizmente, a sua morada está fora da nossa área de entrega. Por favor, entre em contacto connosco através do <strong>+258 841234567</strong> ou <strong>info@sam.co.mz</strong> para mais informações e para nos ajudar a melhorar o nosso serviço.
               </p>
             </div>
           </motion.div>
