@@ -206,6 +206,7 @@ export type Database = {
           estimated_delivery: string | null
           id: string
           operator_id: string | null
+          order_number: number
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status: Database["public"]["Enums"]["payment_status"]
           status: Database["public"]["Enums"]["order_status"]
@@ -223,6 +224,7 @@ export type Database = {
           estimated_delivery?: string | null
           id?: string
           operator_id?: string | null
+          order_number?: number
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["order_status"]
@@ -240,6 +242,7 @@ export type Database = {
           estimated_delivery?: string | null
           id?: string
           operator_id?: string | null
+          order_number?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["order_status"]
@@ -261,6 +264,7 @@ export type Database = {
           name: string
           price: number
           promo_price: number | null
+          sku: string | null
           unit_label: string
           updated_at: string
           volume: string
@@ -276,6 +280,7 @@ export type Database = {
           name: string
           price: number
           promo_price?: number | null
+          sku?: string | null
           unit_label: string
           updated_at?: string
           volume: string
@@ -291,6 +296,7 @@ export type Database = {
           name?: string
           price?: number
           promo_price?: number | null
+          sku?: string | null
           unit_label?: string
           updated_at?: string
           volume?: string
