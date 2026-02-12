@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { name, email, phone, password } = await req.json();
+    const { name, email, phone, password, store_id } = await req.json();
 
     if (!name || !email || !phone || !password) {
       return new Response(
@@ -91,9 +91,12 @@ Deno.serve(async (req) => {
       .upsert({ user_id: userId, role: "operator" }, { onConflict: "user_id,role" });
 
     // 4. Create operator record
+    const operatorInsert: Record<string, unknown> = { user_id: userId, is_active: true, deliveries_completed: 0 };
+    if (store_id) operatorInsert.store_id = store_id;
+
     const { data: operatorData, error: operatorError } = await supabaseAdmin
       .from("operators")
-      .insert({ user_id: userId, is_active: true, deliveries_completed: 0 })
+      .insert(operatorInsert)
       .select()
       .single();
 
@@ -113,6 +116,7 @@ Deno.serve(async (req) => {
         phone,
         is_active: true,
         deliveries_completed: 0,
+        store_id: operatorData.store_id || null,
       }),
       { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
