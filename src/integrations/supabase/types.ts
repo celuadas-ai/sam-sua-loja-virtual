@@ -124,6 +124,7 @@ export type Database = {
           deliveries_completed: number
           id: string
           is_active: boolean
+          store_id: string | null
           updated_at: string
           user_id: string
         }
@@ -132,6 +133,7 @@ export type Database = {
           deliveries_completed?: number
           id?: string
           is_active?: boolean
+          store_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -140,10 +142,19 @@ export type Database = {
           deliveries_completed?: number
           id?: string
           is_active?: boolean
+          store_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "operators_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {

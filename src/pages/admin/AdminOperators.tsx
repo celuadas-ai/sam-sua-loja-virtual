@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, UserCheck, UserX, Loader2, Store } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useOperators } from '@/hooks/useOperators';
 import { Button } from '@/components/ui/button';
@@ -23,10 +23,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Operator } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminOperators() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,12 +46,21 @@ export default function AdminOperators() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingOperator, setEditingOperator] = useState<Operator | null>(null);
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     password: '',
+    storeId: '',
   });
+
+  // Fetch stores
+  useEffect(() => {
+    supabase.from('stores').select('id, name').eq('is_active', true).then(({ data }) => {
+      if (data) setStores(data);
+    });
+  }, []);
 
   const filteredOperators = operators.filter((op) =>
     op.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,7 +68,7 @@ export default function AdminOperators() {
   );
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', password: '' });
+    setFormData({ name: '', email: '', phone: '', password: '', storeId: '' });
   };
 
   const handleAddOperator = async () => {
@@ -71,6 +88,7 @@ export default function AdminOperators() {
       phone: formData.phone,
       password: formData.password,
       isActive: true,
+      storeId: formData.storeId || undefined,
     });
     setIsSubmitting(false);
 
@@ -97,6 +115,7 @@ export default function AdminOperators() {
       email: operator.email,
       phone: operator.phone,
       password: '',
+      storeId: operator.storeId || '',
     });
     setIsEditOpen(true);
   };
@@ -118,6 +137,7 @@ export default function AdminOperators() {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
+      storeId: formData.storeId || undefined,
     });
     setIsSubmitting(false);
 
@@ -234,6 +254,20 @@ export default function AdminOperators() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Loja</Label>
+                <Select value={formData.storeId} onValueChange={(v) => setFormData({ ...formData, storeId: v === 'none' ? '' : v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar loja (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem loja</SelectItem>
+                    {stores.map(store => (
+                      <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button className="w-full" onClick={handleAddOperator} disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Registrar Operador
@@ -277,6 +311,20 @@ export default function AdminOperators() {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Loja</Label>
+              <Select value={formData.storeId} onValueChange={(v) => setFormData({ ...formData, storeId: v === 'none' ? '' : v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar loja (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem loja</SelectItem>
+                  {stores.map(store => (
+                    <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button className="w-full" onClick={handleUpdateOperator} disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -335,6 +383,13 @@ export default function AdminOperators() {
                 <span className="text-muted-foreground">Entregas</span>
                 <span className="text-foreground font-semibold">
                   {operator.deliveriesCompleted}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Loja</span>
+                <span className="text-foreground flex items-center gap-1">
+                  <Store className="w-3 h-3" />
+                  {operator.storeName || 'Sem loja'}
                 </span>
               </div>
             </div>

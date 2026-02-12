@@ -60,6 +60,8 @@ export interface Operator extends User {
   role: 'operator';
   isActive: boolean;
   deliveriesCompleted: number;
+  storeId?: string;
+  storeName?: string;
 }
 
 export interface Promotion {

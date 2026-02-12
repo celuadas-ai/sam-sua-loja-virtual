@@ -7,6 +7,7 @@ interface DbOperator {
   user_id: string;
   is_active: boolean;
   deliveries_completed: number;
+  store_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,7 +20,7 @@ interface DbProfile {
 }
 
 // Convert DB operator + profile to app Operator type
-function mapDbToOperator(dbOperator: DbOperator, profile: DbProfile | null, email: string): Operator {
+function mapDbToOperator(dbOperator: DbOperator, profile: DbProfile | null, email: string, storeName?: string): Operator {
   return {
     id: dbOperator.id,
     name: profile?.name || 'Operador',
@@ -29,6 +30,8 @@ function mapDbToOperator(dbOperator: DbOperator, profile: DbProfile | null, emai
     role: 'operator',
     isActive: dbOperator.is_active,
     deliveriesCompleted: dbOperator.deliveries_completed,
+    storeId: dbOperator.store_id || undefined,
+    storeName: storeName,
   };
 }
 
@@ -60,29 +63,23 @@ export function useOperators() {
       // Get user IDs to fetch profiles
       const userIds = operatorsData.map(op => op.user_id);
 
-      // Fetch profiles for these users
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', userIds);
+      // Fetch profiles and stores in parallel
+      const [profilesResult, storesResult] = await Promise.all([
+        supabase.from('profiles').select('*').in('id', userIds),
+        supabase.from('stores').select('id, name'),
+      ]);
 
-      if (profilesError) throw profilesError;
+      if (profilesResult.error) throw profilesResult.error;
 
-      // Get user roles to get emails
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('user_id', userIds)
-        .eq('role', 'operator');
+      const profilesData = profilesResult.data;
+      const storesData = storesResult.data || [];
 
-      if (rolesError) throw rolesError;
-
-      // Map operators with their profiles
+      // Map operators with their profiles and store names
       const mappedOperators = operatorsData.map(op => {
         const profile = profilesData?.find(p => p.id === op.user_id) || null;
-        // Email is not available from profiles, use a placeholder or fetch from auth if needed
         const email = profile?.name ? `${profile.name.toLowerCase().replace(/\s+/g, '.')}@operator.local` : 'operator@local';
-        return mapDbToOperator(op as DbOperator, profile as DbProfile, email);
+        const store = storesData.find(s => s.id === op.store_id);
+        return mapDbToOperator(op as DbOperator, profile as DbProfile, email, store?.name);
       });
 
       setOperators(mappedOperators);
@@ -97,15 +94,13 @@ export function useOperators() {
   // Add a new operator via backend function
   const addOperator = async (operatorData: Omit<Operator, 'id' | 'role' | 'deliveriesCompleted'> & { password?: string }): Promise<Operator | null> => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
       const response = await supabase.functions.invoke('create-operator', {
         body: {
           name: operatorData.name,
           email: operatorData.email,
           phone: operatorData.phone,
           password: operatorData.password || 'Operator123!',
+          store_id: operatorData.storeId || null,
         },
       });
 
@@ -122,9 +117,11 @@ export function useOperators() {
         role: 'operator',
         isActive: result.is_active,
         deliveriesCompleted: result.deliveries_completed,
+        storeId: result.store_id || undefined,
       };
 
-      setOperators(prev => [operator, ...prev]);
+      // Refetch to get store name
+      await fetchOperators();
       return operator;
     } catch (err) {
       console.error('Error adding operator:', err);
@@ -143,6 +140,9 @@ export function useOperators() {
       }
       if (updates.deliveriesCompleted !== undefined) {
         updateData.deliveries_completed = updates.deliveriesCompleted;
+      }
+      if (updates.storeId !== undefined) {
+        updateData.store_id = updates.storeId || null;
       }
 
       if (Object.keys(updateData).length > 0) {
