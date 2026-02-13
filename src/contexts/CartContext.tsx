@@ -9,10 +9,12 @@ interface CartContextType {
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  subtotal: number;
+  iva: number;
   total: number;
   itemCount: number;
   currentOrder: Order | null;
-  createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string, customerCoords?: { lat: number; lng: number }) => Promise<void>;
+  createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string, customerCoords?: { lat: number; lng: number }, customerNuit?: string, transactionIdExternal?: string) => Promise<void>;
   updateOrderStatus: (status: OrderStatus) => void;
   processPayment: () => void;
   completeOrder: () => void;
@@ -59,7 +61,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
+  const IVA_RATE = 0.16;
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
+  const iva = Math.round(subtotal * IVA_RATE * 100) / 100;
+  const total = Math.round((subtotal + iva) * 100) / 100;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const createOrder = async (
@@ -67,7 +72,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     customerName?: string,
     customerPhone?: string,
     customerAddress?: string,
-    customerCoords?: { lat: number; lng: number }
+    customerCoords?: { lat: number; lng: number },
+    customerNuit?: string,
+    transactionIdExternal?: string
   ) => {
     let dbOrder: Order | null = null;
 
@@ -87,6 +94,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             customer_address: customerAddress,
             customer_latitude: customerCoords?.lat || null,
             customer_longitude: customerCoords?.lng || null,
+            customer_nuit: customerNuit || null,
+            transaction_id_external: transactionIdExternal || null,
             estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           })
           .select()
@@ -190,6 +199,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         updateQuantity,
         clearCart,
+        subtotal,
+        iva,
         total,
         itemCount,
         currentOrder,

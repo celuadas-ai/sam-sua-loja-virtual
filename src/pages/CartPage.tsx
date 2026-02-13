@@ -9,7 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const { items, total, itemCount } = useCart();
+  const { items, subtotal, iva, total, itemCount } = useCart();
   const { t } = useLanguage();
 
   if (items.length === 0) {
@@ -67,7 +67,11 @@ export default function CartPage() {
         <div className="space-y-2">
           <div className="flex justify-between text-muted-foreground">
             <span>{t.cart.subtotal} ({itemCount} {itemCount === 1 ? t.cart.item : t.cart.items})</span>
-            <span>{total} MT</span>
+            <span>{subtotal.toFixed(2)} MT</span>
+          </div>
+          <div className="flex justify-between text-muted-foreground">
+            <span>IVA (16%)</span>
+            <span>{iva.toFixed(2)} MT</span>
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>{t.cart.deliveryFee}</span>
@@ -75,7 +79,7 @@ export default function CartPage() {
           </div>
           <div className="flex justify-between text-lg font-bold text-foreground pt-2 border-t border-border">
             <span>{t.cart.total}</span>
-            <span>{total} MT</span>
+            <span>{total.toFixed(2)} MT</span>
           </div>
         </div>
 
