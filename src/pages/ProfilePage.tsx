@@ -30,6 +30,7 @@ interface UserProfile {
   name: string;
   email: string;
   phone: string;
+  nuit: string;
 }
 
 export default function ProfilePage() {
@@ -45,6 +46,7 @@ export default function ProfilePage() {
     name: '',
     email: user?.email || '',
     phone: '',
+    nuit: '',
   });
 
   const [formData, setFormData] = useState<UserProfile>(profile);
@@ -60,7 +62,7 @@ export default function ProfilePage() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('name, phone')
+          .select('name, phone, nuit')
           .eq('id', user.id)
           .single();
 
@@ -72,6 +74,7 @@ export default function ProfilePage() {
           name: data?.name || user.user_metadata?.full_name || '',
           email: user.email || '',
           phone: data?.phone || user.user_metadata?.phone || '',
+          nuit: data?.nuit || '',
         });
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -112,6 +115,7 @@ export default function ProfilePage() {
           id: user.id,
           name: formData.name,
           phone: formData.phone,
+          nuit: formData.nuit,
         });
 
       if (error) {
@@ -167,6 +171,9 @@ export default function ProfilePage() {
           </h2>
           <p className="text-muted-foreground">{profile.email}</p>
           <p className="text-sm text-muted-foreground">{profile.phone || '-'}</p>
+          {profile.nuit && (
+            <p className="text-xs text-muted-foreground mt-1">NUIT: {profile.nuit}</p>
+          )}
 
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -263,6 +270,16 @@ export default function ProfilePage() {
                 value={formData.phone}
                 onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 placeholder="+258 84 123 4567"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">
+                NUIT
+              </label>
+              <Input
+                value={formData.nuit}
+                onChange={e => setFormData(prev => ({ ...prev, nuit: e.target.value }))}
+                placeholder="Número de Identificação Tributária"
               />
             </div>
           </div>

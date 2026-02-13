@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone } from 'lucide-react';
 import samLogo from '@/assets/sam-logo.png';
 import { useToast } from '@/hooks/use-toast';
@@ -306,6 +306,15 @@ export default function AuthPage() {
             </button>
           </p>
         </div>
+
+        {!isLogin && (
+          <p className="mt-4 text-xs text-center text-muted-foreground">
+            Ao criar conta, aceita os nossos{' '}
+            <Link to="/termos-e-condicoes" className="text-accent hover:underline">Termos e Condições</Link>
+            {' '}e a{' '}
+            <Link to="/privacidade" className="text-accent hover:underline">Política de Privacidade</Link>.
+          </p>
+        )}
       </motion.form>
     </div>
   );

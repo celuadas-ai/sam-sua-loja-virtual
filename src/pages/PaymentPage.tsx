@@ -25,6 +25,7 @@ interface Address {
 interface UserProfile {
   name: string | null;
   phone: string | null;
+  nuit: string | null;
 }
 
 export default function PaymentPage() {
@@ -32,7 +33,7 @@ export default function PaymentPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { items, total, createOrder } = useCart();
+  const { items, subtotal, iva, total, createOrder } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -84,7 +85,7 @@ export default function PaymentPage() {
       try {
         const { data } = await supabase
           .from('profiles')
-          .select('name, phone')
+          .select('name, phone, nuit')
           .eq('id', user.id)
           .single();
 
@@ -92,11 +93,13 @@ export default function PaymentPage() {
           setUserProfile({
             name: data.name || user.user_metadata?.full_name || null,
             phone: data.phone || user.user_metadata?.phone || null,
+            nuit: data.nuit || null,
           });
         } else {
           setUserProfile({
             name: user.user_metadata?.full_name || null,
             phone: user.user_metadata?.phone || null,
+            nuit: null,
           });
         }
       } catch (err) {
@@ -104,6 +107,7 @@ export default function PaymentPage() {
         setUserProfile({
           name: user.user_metadata?.full_name || null,
           phone: user.user_metadata?.phone || null,
+          nuit: null,
         });
       }
     };
@@ -213,7 +217,8 @@ export default function PaymentPage() {
         userProfile?.name || undefined,
         userProfile?.phone || undefined,
         selectedAddress.address,
-        selectedAddress.coords
+        selectedAddress.coords,
+        userProfile?.nuit || undefined
       );
 
       toast({
@@ -290,13 +295,23 @@ export default function PaymentPage() {
                 <span>
                   {item.quantity}x {item.name} ({item.volume})
                 </span>
-                <span>{item.price * item.quantity} MT</span>
+                <span>{(item.price * item.quantity * item.minQuantity).toFixed(2)} MT</span>
               </div>
             ))}
           </div>
-          <div className="flex justify-between font-bold text-foreground pt-3 mt-3 border-t border-border">
-            <span>{t.cart.total}</span>
-            <span>{total} MT</span>
+          <div className="space-y-1 pt-3 mt-3 border-t border-border">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{t.cart.subtotal}</span>
+              <span>{subtotal.toFixed(2)} MT</span>
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>IVA (16%)</span>
+              <span>{iva.toFixed(2)} MT</span>
+            </div>
+            <div className="flex justify-between font-bold text-foreground pt-2 border-t border-border">
+              <span>{t.cart.total}</span>
+              <span>{total.toFixed(2)} MT</span>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -355,7 +370,7 @@ export default function PaymentPage() {
           ) : (
             <>
               <CreditCard className="w-5 h-5" />
-              <span>{t.payment.confirmOrder} - {total} MT</span>
+              <span>{t.payment.confirmOrder} - {total.toFixed(2)} MT</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

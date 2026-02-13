@@ -23,6 +23,8 @@ import AddressesPage from "./pages/AddressesPage";
 import PaymentMethodsPage from "./pages/PaymentMethodsPage";
 import HelpPage from "./pages/HelpPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -71,6 +73,8 @@ const App = () => (
                 <Route path="/payment-methods" element={<PaymentMethodsPage />} />
                 <Route path="/help" element={<HelpPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/termos-e-condicoes" element={<TermsPage />} />
+                <Route path="/privacidade" element={<PrivacyPage />} />
                 
                 {/* Admin */}
                 <Route path="/admin" element={<AdminDashboard />} />

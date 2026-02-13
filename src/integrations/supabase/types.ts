@@ -213,6 +213,7 @@ export type Database = {
           customer_latitude: number | null
           customer_longitude: number | null
           customer_name: string | null
+          customer_nuit: string | null
           customer_phone: string | null
           estimated_delivery: string | null
           id: string
@@ -222,6 +223,7 @@ export type Database = {
           payment_status: Database["public"]["Enums"]["payment_status"]
           status: Database["public"]["Enums"]["order_status"]
           total: number
+          transaction_id_external: string | null
           updated_at: string
           user_id: string | null
         }
@@ -231,6 +233,7 @@ export type Database = {
           customer_latitude?: number | null
           customer_longitude?: number | null
           customer_name?: string | null
+          customer_nuit?: string | null
           customer_phone?: string | null
           estimated_delivery?: string | null
           id?: string
@@ -240,6 +243,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
+          transaction_id_external?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -249,6 +253,7 @@ export type Database = {
           customer_latitude?: number | null
           customer_longitude?: number | null
           customer_name?: string | null
+          customer_nuit?: string | null
           customer_phone?: string | null
           estimated_delivery?: string | null
           id?: string
@@ -258,6 +263,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
+          transaction_id_external?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -320,6 +326,7 @@ export type Database = {
           created_at: string
           id: string
           name: string | null
+          nuit: string | null
           phone: string | null
           updated_at: string
         }
@@ -328,6 +335,7 @@ export type Database = {
           created_at?: string
           id: string
           name?: string | null
+          nuit?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -336,6 +344,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+          nuit?: string | null
           phone?: string | null
           updated_at?: string
         }
