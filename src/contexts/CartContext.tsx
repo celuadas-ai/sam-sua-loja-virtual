@@ -62,9 +62,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const IVA_RATE = 0.16;
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
-  const iva = Math.round(subtotal * IVA_RATE * 100) / 100;
-  const total = Math.round((subtotal + iva) * 100) / 100;
+  const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
+  const subtotal = Math.round((total / (1 + IVA_RATE)) * 100) / 100;
+  const iva = Math.round((total - subtotal) * 100) / 100;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const createOrder = async (
