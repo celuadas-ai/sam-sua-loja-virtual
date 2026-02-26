@@ -128,7 +128,7 @@ export default function AuthPage() {
           animate={{ opacity: 1, scale: 1 }}
           className="w-20 h-20 mx-auto mb-6 bg-primary rounded-2xl p-3 shadow-sam">
 
-          <img alt="SAM" className="w-full h-full object-contain" src="/lovable-uploads/b25b0f69-6385-4a72-94b0-067b456f9f1c.png" />
+          <img alt="SAM" className="w-full h-full object-contain" src="/lovable-uploads/00897e18-d75b-4d41-94bb-3e2a7fa24533.jpg" />
         </motion.div>
 
         <motion.h1
