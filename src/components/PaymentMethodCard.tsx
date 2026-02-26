@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Check, Smartphone, CreditCard, Banknote } from 'lucide-react';
 import { PaymentMethod } from '@/types';
 import mpesaLogo from '@/assets/mpesa-logo.png';
+import emolaLogo from '@/assets/emola-logo.png';
 
 interface PaymentMethodCardProps {
   method: PaymentMethod;
@@ -48,10 +49,12 @@ export function PaymentMethodCard({
       <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border bg-primary-foreground border-[#fa0000]">
           <img src={mpesaLogo} alt="M-Pesa" className="w-9 h-9 object-contain" />
         </div> :
-
+      method === 'emola' ?
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border bg-primary-foreground border-orange-500">
+          <img src={emolaLogo} alt="e-Mola" className="w-9 h-9 object-contain" />
+        </div> :
       <div
         className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors[method]} flex items-center justify-center flex-shrink-0`}>
-
           <Icon className="w-6 h-6 text-primary-foreground" />
         </div>
       }
