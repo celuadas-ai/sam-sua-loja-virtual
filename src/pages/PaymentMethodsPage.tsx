@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Plus, Edit2, Trash2, Check, Smartphone, Banknote } from 'lucide-react';
+import mpesaLogo from '@/assets/mpesa-logo.png';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -122,9 +123,15 @@ export default function PaymentMethodsPage() {
               className={`sam-card p-4 ${method.isDefault ? 'border-primary' : ''}`}
             >
               <div className="flex items-start gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${config.color}`}>
-                  <Icon className="w-5 h-5" />
-                </div>
+                {method.type === 'mpesa' ? (
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-border">
+                    <img src={mpesaLogo} alt="M-Pesa" className="w-7 h-7 object-contain" />
+                  </div>
+                ) : (
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${config.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                )}
 
                 <div className="flex-1">
                   <div className="flex items-center gap-2">

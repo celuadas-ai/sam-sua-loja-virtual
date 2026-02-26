@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Check, Smartphone, CreditCard, Banknote } from 'lucide-react';
 import { PaymentMethod } from '@/types';
+import mpesaLogo from '@/assets/mpesa-logo.png';
 
 interface PaymentMethodCardProps {
   method: PaymentMethod;
@@ -43,11 +44,17 @@ export function PaymentMethodCard({
           : 'hover:border-accent/50'
       }`}
     >
-      <div
-        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors[method]} flex items-center justify-center flex-shrink-0`}
-      >
-        <Icon className="w-6 h-6 text-primary-foreground" />
-      </div>
+      {method === 'mpesa' ? (
+        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-border">
+          <img src={mpesaLogo} alt="M-Pesa" className="w-9 h-9 object-contain" />
+        </div>
+      ) : (
+        <div
+          className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors[method]} flex items-center justify-center flex-shrink-0`}
+        >
+          <Icon className="w-6 h-6 text-primary-foreground" />
+        </div>
+      )}
 
       <div className="flex-1 text-left">
         <h3 className="font-semibold text-foreground">{label}</h3>
