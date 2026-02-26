@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logoSam from '@/assets/logo-sam.png';
+import logoSam from '@/assets/logo-sam-white.png';
 
 export default function SplashScreen() {
   const navigate = useNavigate();
@@ -31,32 +31,13 @@ export default function SplashScreen() {
         <motion.div
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-40 h-40 mb-6 bg-primary-foreground rounded-[2rem] p-3 shadow-2xl"
         >
           <img
             src={logoSam}
             alt="SAM - Sociedade de Águas de Moçambique"
-            className="w-full h-full object-contain"
+            className="w-72 h-auto object-contain"
           />
         </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-5xl font-bold text-primary-foreground mb-2 tracking-tight"
-        >
-          SAM
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-lg text-primary-foreground/80 font-light tracking-wide"
-        >
-          Sociedade de Águas de Moçambique
-        </motion.p>
       </motion.div>
 
       <motion.div
