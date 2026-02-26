@@ -14,8 +14,8 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+  SheetTrigger } from
+'@/components/ui/sheet';
 import {
   MapPin,
   CreditCard,
@@ -24,8 +24,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  User,
-} from 'lucide-react';
+  User } from
+'lucide-react';
 
 export default function ProductsPage() {
   const navigate = useNavigate();
@@ -40,20 +40,20 @@ export default function ProductsPage() {
   const userEmail = user?.email || '';
 
   const menuItems = [
-    { icon: MapPin, label: t.profile.addresses, path: '/addresses' },
-    { icon: CreditCard, label: t.profile.paymentMethods, path: '/payment-methods' },
-    { icon: Bell, label: t.settings.notifications, path: '/notifications' },
-    { icon: HelpCircle, label: t.profile.help, path: '/help' },
-    { icon: Settings, label: t.profile.settings, path: '/settings' },
-  ];
+  { icon: MapPin, label: t.profile.addresses, path: '/addresses' },
+  { icon: CreditCard, label: t.profile.paymentMethods, path: '/payment-methods' },
+  { icon: Bell, label: t.settings.notifications, path: '/notifications' },
+  { icon: HelpCircle, label: t.profile.help, path: '/help' },
+  { icon: Settings, label: t.profile.settings, path: '/settings' }];
+
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand =
-      selectedBrand === 'Todos' || selectedBrand === 'All' || product.brand === selectedBrand;
+    selectedBrand === 'Todos' || selectedBrand === 'All' || product.brand === selectedBrand;
     const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.volume.toLowerCase().includes(searchQuery.toLowerCase());
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.volume.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesBrand && matchesSearch;
   });
 
@@ -66,8 +66,8 @@ export default function ProductsPage() {
             <SheetTrigger asChild>
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
-              >
+                className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/20 transition-colors">
+
                 <Menu className="w-5 h-5" />
               </motion.button>
             </SheetTrigger>
@@ -90,15 +90,15 @@ export default function ProductsPage() {
                     <button
                       key={item.path}
                       onClick={() => navigate(item.path)}
-                      className="w-full p-3 flex items-center gap-4 rounded-xl hover:bg-secondary transition-colors"
-                    >
+                      className="w-full p-3 flex items-center gap-4 rounded-xl hover:bg-secondary transition-colors">
+
                       <Icon className="w-5 h-5 text-muted-foreground" />
                       <span className="flex-1 text-left font-medium text-foreground">
                         {item.label}
                       </span>
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  );
+                    </button>);
+
                 })}
                 <div className="pt-4 border-t border-border mt-4">
                   <button
@@ -106,8 +106,8 @@ export default function ProductsPage() {
                       logout();
                       navigate('/');
                     }}
-                    className="w-full p-3 flex items-center gap-4 rounded-xl hover:bg-destructive/10 transition-colors"
-                  >
+                    className="w-full p-3 flex items-center gap-4 rounded-xl hover:bg-destructive/10 transition-colors">
+
                     <LogOut className="w-5 h-5 text-destructive" />
                     <span className="flex-1 text-left font-medium text-destructive">
                       {t.profile.logout}
@@ -121,10 +121,10 @@ export default function ProductsPage() {
           <motion.img
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            src={samLogo}
+
             alt="SAM - Sua loja virtual"
-            className="h-10 object-contain"
-          />
+            className="h-10 object-contain" src="/lovable-uploads/43c942e7-d400-4070-9d2c-97eb132bac2c.png" />
+
 
           <div className="w-10" />
         </div>
@@ -138,8 +138,8 @@ export default function ProductsPage() {
             placeholder={t.products.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="sam-input pl-10 sm:pl-12 text-sm sm:text-base"
-          />
+            className="sam-input pl-10 sm:pl-12 text-sm sm:text-base" />
+
           <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
         </div>
       </div>
@@ -147,62 +147,62 @@ export default function ProductsPage() {
       {/* Brand Filter */}
       <div className="px-2 sm:px-4 mb-4">
         <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 hide-scrollbar">
-          {brands.map((brand) => (
-            <motion.button
-              key={brand}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedBrand(brand)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
-                selectedBrand === brand
-                  ? 'bg-accent text-accent-foreground shadow-sam'
-                  : 'bg-secondary text-secondary-foreground hover:bg-muted'
-              }`}
-            >
+          {brands.map((brand) =>
+          <motion.button
+            key={brand}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setSelectedBrand(brand)}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+            selectedBrand === brand ?
+            'bg-accent text-accent-foreground shadow-sam' :
+            'bg-secondary text-secondary-foreground hover:bg-muted'}`
+            }>
+
               {brand === 'Todos' ? t.common.all : brand}
             </motion.button>
-          ))}
+          )}
         </div>
       </div>
 
       {/* Products Grid */}
       <div className="px-2 sm:px-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+        {isLoading ?
+        <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
+          </div> :
+
+        <>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              {filteredProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
+              {filteredProducts.map((product, index) =>
+            <ProductCard key={product.id} product={product} index={index} />
+            )}
             </div>
 
-            {filteredProducts.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
-              >
+            {filteredProducts.length === 0 &&
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12">
+
                 <p className="text-muted-foreground">{t.products.noProducts}</p>
               </motion.div>
-            )}
+          }
           </>
-        )}
+        }
       </div>
 
       {/* Floating Cart Button */}
-      {itemCount > 0 && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-[100px] left-4 right-4 z-40"
-        >
+      {itemCount > 0 &&
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="fixed bottom-[100px] left-4 right-4 z-40">
+
           <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/cart')}
-            className="w-full sam-button-accent py-4 rounded-2xl"
-          >
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/cart')}
+          className="w-full sam-button-accent py-4 rounded-2xl">
+
             <ShoppingCart className="w-5 h-5" />
             <span className="flex-1 text-left">
               {t.cart.viewCart} ({itemCount} {itemCount === 1 ? t.cart.item : t.cart.items})
@@ -211,9 +211,9 @@ export default function ProductsPage() {
             <ArrowRight className="w-5 h-5" />
           </motion.button>
         </motion.div>
-      )}
+      }
 
       <BottomNav />
-    </div>
-  );
+    </div>);
+
 }

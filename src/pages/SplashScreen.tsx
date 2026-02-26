@@ -35,7 +35,7 @@ export default function SplashScreen() {
           <img
 
             alt="SAM - Sociedade de Águas de Moçambique"
-            className="w-72 h-auto object-contain shadow-sm opacity-100" src="/lovable-uploads/feb0618a-bb09-4196-a3e3-f25e6a8eedd4.png" />
+            className="w-72 h-auto object-contain shadow-sm opacity-100" src="/lovable-uploads/d583fab8-9354-4c29-9ee0-b6dd4678a7ce.jpg" />
 
         </motion.div>
       </motion.div>
