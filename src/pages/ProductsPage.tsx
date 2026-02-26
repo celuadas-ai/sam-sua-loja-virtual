@@ -123,7 +123,7 @@ export default function ProductsPage() {
             animate={{ opacity: 1, scale: 1 }}
 
             alt="SAM - Sua loja virtual"
-            className="h-10 object-contain" src="/lovable-uploads/0385f9ea-fd39-4809-93eb-225447714226.jpg" />
+            className="h-10 object-contain" src="/lovable-uploads/25e761d2-2077-45a7-94ab-450180205a4d.png" />
 
 
           <div className="w-10" />
