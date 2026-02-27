@@ -110,6 +110,7 @@ export default function AdminOrders() {
                 <th className="text-left p-4 font-semibold text-foreground">Cliente</th>
                 <th className="text-left p-4 font-semibold text-foreground">Total</th>
                 <th className="text-left p-4 font-semibold text-foreground">Pagamento</th>
+                <th className="text-left p-4 font-semibold text-foreground">Loja</th>
                 <th className="text-left p-4 font-semibold text-foreground">Estado</th>
                 <th className="text-left p-4 font-semibold text-foreground">Data</th>
                 <th className="text-right p-4 font-semibold text-foreground">Ações</th>
