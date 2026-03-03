@@ -88,7 +88,8 @@ export default function OperatorDashboard() {
   }, [allOrders, stores]);
 
   // Filter to show only non-delivered orders
-  const orders = allOrders.filter((o) => o.status !== 'delivered');
+  // Show non-delivered orders + delivered but unpaid orders
+  const orders = allOrders.filter((o) => o.status !== 'delivered' || o.paymentStatus !== 'paid');
   const deliveredToday = allOrders.filter((o) => {
     const today = new Date();
     const orderDate = new Date(o.createdAt);
@@ -437,20 +438,8 @@ export default function OperatorDashboard() {
                     </Button>
                   )}
 
-                   {/* Confirm Payment Button - Show for any non-paid order */}
-                   {!isPaid && (
-                    <Button 
-                      variant="outline"
-                      className="w-full gap-2 border-sam-success text-sam-success hover:bg-sam-success/10"
-                      onClick={() => handleConfirmPayment(order.id)}
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      Confirmar Pagamento
-                    </Button>
-                  )}
-
-                  {/* Only allow delivery confirmation if payment is confirmed */}
-                  {status.next && (status.next !== 'delivered' || isPaid) && (
+                  {/* Advance status button - delivery allowed without payment */}
+                  {status.next && (
                     <Button 
                       className="w-full gap-2" 
                       onClick={() => handleAdvanceStatus(order.id)}
@@ -462,12 +451,17 @@ export default function OperatorDashboard() {
                       {status.next === 'delivered' && 'Confirmar Entrega'}
                     </Button>
                   )}
-                  
-                  {/* Show message if waiting for payment before delivery confirmation */}
-                  {status.next === 'delivered' && !isPaid && (
-                    <div className="text-center py-2 px-3 bg-destructive/10 text-destructive rounded-lg text-sm border border-destructive/20">
-                      ⚠️ Confirme o pagamento antes de finalizar a entrega
-                    </div>
+
+                  {/* Confirm Payment Button - Show after delivery for unpaid orders */}
+                  {!isPaid && order.status === 'delivered' && (
+                    <Button 
+                      variant="outline"
+                      className="w-full gap-2 border-sam-success text-sam-success hover:bg-sam-success/10"
+                      onClick={() => handleConfirmPayment(order.id)}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Confirmar Pagamento
+                    </Button>
                   )}
                 </div>
               </motion.div>
