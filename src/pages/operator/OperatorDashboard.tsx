@@ -437,8 +437,8 @@ export default function OperatorDashboard() {
                     </Button>
                   )}
 
-                  {/* Confirm Payment Button - Only show if not paid and order is delivered or almost there */}
-                  {!isPaid && (order.status === 'almost_there' || order.status === 'delivered') && (
+                   {/* Confirm Payment Button - Show for any non-paid order */}
+                   {!isPaid && (
                     <Button 
                       variant="outline"
                       className="w-full gap-2 border-sam-success text-sam-success hover:bg-sam-success/10"
