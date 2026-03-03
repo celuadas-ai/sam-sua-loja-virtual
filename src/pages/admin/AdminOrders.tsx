@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Eye, Clock, CheckCircle, Truck, Package, Loader2 } from 'lucide-react';
+import { Search, Eye, Clock, CheckCircle, Truck, Package, Loader2, CreditCard } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useOrders } from '@/hooks/useOrders';
 import { useOperators } from '@/hooks/useOperators';
@@ -30,7 +30,7 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: an
 };
 
 export default function AdminOrders() {
-  const { orders, loading } = useOrders();
+  const { orders, loading, confirmPayment } = useOrders();
   const { operators } = useOperators();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -202,6 +202,26 @@ export default function AdminOrders() {
                 <span className="font-bold text-lg">
                   {selectedOrder.total.toLocaleString()} MZN
                 </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Pagamento</span>
+                {selectedOrder.paymentStatus === 'paid' ? (
+                  <span className="text-sm font-medium text-sam-success">✓ Pago</span>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="gap-1"
+                    onClick={async () => {
+                      const success = await confirmPayment(selectedOrder.id);
+                      if (success) {
+                        setSelectedOrder({ ...selectedOrder, paymentStatus: 'paid' });
+                      }
+                    }}
+                  >
+                    <CreditCard className="w-3 h-3" />
+                    Confirmar Pagamento
+                  </Button>
+                )}
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Operador</span>
