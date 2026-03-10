@@ -5,8 +5,6 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone, Smartphone } from 'lu
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AuthLoginForm } from '@/components/auth/AuthLoginForm';
-import { AuthSignupForm } from '@/components/auth/AuthSignupForm';
 import { OtpVerificationModal } from '@/components/auth/OtpVerificationModal';
 
 export default function AuthPage() {
