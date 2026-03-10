@@ -10,8 +10,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
+  loginWithPhone: (phone: string, password: string) => Promise<{ error: string | null }>;
   signup: (email: string, password: string, name: string, phone: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
+  sendOtp: (phone: string) => Promise<{ error: string | null }>;
+  verifyOtp: (phone: string, otp: string) => Promise<{ valid: boolean; error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,13 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer role fetching with setTimeout to avoid deadlock
         if (session?.user) {
           setTimeout(() => {
             fetchUserRole(session.user.id).then(setUserRole);
@@ -50,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -69,16 +69,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message || null };
+  };
 
-    if (error) {
-      return { error: error.message };
+  const loginWithPhone = async (phone: string, password: string): Promise<{ error: string | null }> => {
+    // Find user email by phone from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('phone', phone)
+      .single();
+
+    if (profileError || !profile) {
+      return { error: 'Número de telemóvel não registado' };
     }
 
-    return { error: null };
+    // We need the email to login - get it from auth admin or use a workaround
+    // Use an edge function to get email by user id
+    const { data: fnData, error: fnError } = await supabase.functions.invoke('get-email-by-phone', {
+      body: { phone },
+    });
+
+    if (fnError || !fnData?.email) {
+      return { error: 'Não foi possível encontrar a conta associada a este número' };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: fnData.email, password });
+    return { error: error?.message || null };
   };
 
   const signup = async (email: string, password: string, name: string, phone: string): Promise<{ error: string | null }> => {
@@ -100,7 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: error.message };
     }
 
-    // Create default customer role for new users
     if (data.user) {
       await supabase.from('user_roles').insert({
         user_id: data.user.id,
@@ -109,6 +126,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return { error: null };
+  };
+
+  const sendOtp = async (phone: string): Promise<{ error: string | null }> => {
+    const { data, error } = await supabase.functions.invoke('send-otp', {
+      body: { phone },
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    if (data?.error) {
+      return { error: data.error };
+    }
+
+    return { error: null };
+  };
+
+  const verifyOtp = async (phone: string, otp: string): Promise<{ valid: boolean; error: string | null }> => {
+    const { data, error } = await supabase.functions.invoke('verify-otp', {
+      body: { phone, otp },
+    });
+
+    if (error) {
+      return { valid: false, error: error.message };
+    }
+
+    return { valid: data?.valid || false, error: data?.error || null };
   };
 
   const logout = async () => {
@@ -127,8 +172,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithPhone,
         signup,
         logout,
+        sendOtp,
+        verifyOtp,
       }}
     >
       {children}

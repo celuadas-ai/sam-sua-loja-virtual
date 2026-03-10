@@ -280,6 +280,30 @@ export type Database = {
           },
         ]
       }
+      phone_otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           brand: string

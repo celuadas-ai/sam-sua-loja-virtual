@@ -1,1 +1,10 @@
 project_id = "qyjjfacbhqwkruewgjwu"
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.get-email-by-phone]
+verify_jwt = false
