@@ -35,6 +35,11 @@ serve(async (req) => {
       });
     }
 
+    // Ensure Twilio From number has + prefix
+    if (twilioPhone && !twilioPhone.startsWith('+')) {
+      twilioPhone = '+' + twilioPhone;
+    }
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
