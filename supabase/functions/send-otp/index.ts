@@ -19,6 +19,10 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    // Ensure phone has country code for Mozambique
+    if (!phone.startsWith('+')) {
+      phone = '+258' + phone;
+    }
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
