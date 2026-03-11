@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { phone } = await req.json();
+    let { phone } = await req.json();
 
     if (!phone) {
       return new Response(JSON.stringify({ error: 'Phone number is required' }), {
