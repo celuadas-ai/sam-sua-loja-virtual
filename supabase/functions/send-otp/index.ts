@@ -52,13 +52,21 @@ serve(async (req) => {
     // Store OTP temporarily - we'll use edge function storage via KV or simple approach
     
     // For simplicity, store OTP in a temporary table
+    // Delete existing OTP for this phone first, then insert new one
+    await fetch(`${supabaseUrl}/rest/v1/phone_otps?phone=eq.${encodeURIComponent(phone)}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+    });
+
     const storeRes = await fetch(`${supabaseUrl}/rest/v1/phone_otps`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
-        'Prefer': 'resolution=merge-duplicates',
       },
       body: JSON.stringify({
         phone,
