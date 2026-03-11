@@ -11,13 +11,17 @@ serve(async (req) => {
   }
 
   try {
-    const { phone } = await req.json();
+    let { phone } = await req.json();
 
     if (!phone) {
       return new Response(JSON.stringify({ error: 'Phone number is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+    // Ensure phone has country code for Mozambique
+    if (!phone.startsWith('+')) {
+      phone = '+258' + phone;
     }
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
