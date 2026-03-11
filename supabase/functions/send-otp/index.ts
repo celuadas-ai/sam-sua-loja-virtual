@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+    let twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
 
     if (!accountSid || !authToken || !twilioPhone) {
       return new Response(JSON.stringify({ error: 'Twilio not configured' }), {
