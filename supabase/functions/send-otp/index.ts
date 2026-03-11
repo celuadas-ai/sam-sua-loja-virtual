@@ -26,13 +26,18 @@ serve(async (req) => {
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+    let twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
 
     if (!accountSid || !authToken || !twilioPhone) {
       return new Response(JSON.stringify({ error: 'Twilio not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Ensure Twilio From number has + prefix
+    if (twilioPhone && !twilioPhone.startsWith('+')) {
+      twilioPhone = '+' + twilioPhone;
     }
 
     // Generate 6-digit OTP
