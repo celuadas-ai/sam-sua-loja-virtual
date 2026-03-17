@@ -11,10 +11,16 @@ const json = (body: Record<string, unknown>, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
-const toE164 = (value: string | null | undefined) => {
+const normalizeTwilioFrom = (value: string | null | undefined) => {
   if (!value) return null;
   const digits = value.replace(/\D/g, '');
-  return digits ? `+${digits}` : null;
+  if (!digits) return null;
+
+  // Twilio sender is typically a US long code; accept common formats.
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+
+  return `+${digits}`;
 };
 
 const normalizeMozPhone = (value: string | null | undefined) => {
