@@ -74,19 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithPhone = async (phone: string, password: string): Promise<{ error: string | null }> => {
-    // Find user email by phone from profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('phone', phone)
-      .single();
-
-    if (profileError || !profile) {
-      return { error: 'Número de telemóvel não registado' };
-    }
-
-    // We need the email to login - get it from auth admin or use a workaround
-    // Use an edge function to get email by user id
+    // Use edge function (service role) to find email by phone - bypasses RLS
     const { data: fnData, error: fnError } = await supabase.functions.invoke('get-email-by-phone', {
       body: { phone },
     });
