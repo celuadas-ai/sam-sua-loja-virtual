@@ -8,7 +8,7 @@ import { useProducts, brands } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import samLogo from '@/assets/sam-logo.png';
+import samIconBlue from '@/assets/sam-icon-blue.jpg';
 import {
   Sheet,
   SheetContent,

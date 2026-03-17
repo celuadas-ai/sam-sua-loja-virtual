@@ -14,7 +14,7 @@ import {
   X,
   Store } from
 'lucide-react';
-import samLogo from '@/assets/sam-logo.png';
+import samIconBlue from '@/assets/sam-icon-blue.jpg';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 
