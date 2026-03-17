@@ -45,7 +45,7 @@ serve(async (req) => {
 
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhone = toE164(Deno.env.get('TWILIO_PHONE_NUMBER'));
+    const twilioPhone = normalizeTwilioFrom(Deno.env.get('TWILIO_PHONE_NUMBER'));
 
     if (!accountSid || !authToken || !twilioPhone) {
       console.error('Missing Twilio environment variables', {
