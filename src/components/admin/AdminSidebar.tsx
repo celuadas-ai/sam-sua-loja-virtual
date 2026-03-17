@@ -14,7 +14,7 @@ import {
   X,
   Store } from
 'lucide-react';
-import samLogo from '@/assets/sam-logo.png';
+import samIconBlue from '@/assets/sam-icon-blue.jpg';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 
@@ -76,7 +76,7 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-xl p-1.5">
-              <img alt="SAM" className="w-full h-full object-contain" src="/lovable-uploads/37bf7901-c5dd-4416-84d0-69460296375f.jpg" />
+              <img alt="SAM" className="w-full h-full object-contain" src={samIconBlue} />
             </div>
             <div>
               <h1 className="font-bold text-foreground">SAM Admin</h1>

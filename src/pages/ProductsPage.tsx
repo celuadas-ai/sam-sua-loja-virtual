@@ -8,7 +8,7 @@ import { useProducts, brands } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import samLogo from '@/assets/sam-logo.png';
+import samIconBlue from '@/assets/sam-icon-blue.jpg';
 import {
   Sheet,
   SheetContent,
@@ -123,7 +123,7 @@ export default function ProductsPage() {
             animate={{ opacity: 1, scale: 1 }}
 
             alt="SAM - Sua loja virtual"
-            className="h-10 object-contain" src="/lovable-uploads/d1bee3c6-2765-4073-b63a-f94a8fd6472e.png" />
+            className="h-10 w-10 object-contain rounded-xl" src={samIconBlue} />
 
 
           <div className="w-10" />
