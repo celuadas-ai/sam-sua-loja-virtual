@@ -11,7 +11,17 @@ serve(async (req) => {
   }
 
   try {
-    const { phone, otp } = await req.json();
+    const { phone: rawPhone, otp } = await req.json();
+
+    // Normalize to +258 format (same as send-otp)
+    const normalizePhone = (v: string | null | undefined) => {
+      if (!v) return null;
+      const digits = v.replace(/\D/g, '');
+      if (!digits) return null;
+      return digits.startsWith('258') ? `+${digits}` : `+258${digits}`;
+    };
+
+    const phone = normalizePhone(rawPhone);
 
     if (!phone || !otp) {
       return new Response(JSON.stringify({ error: 'Phone and OTP are required' }), {
