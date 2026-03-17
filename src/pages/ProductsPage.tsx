@@ -196,7 +196,7 @@ export default function ProductsPage() {
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-[100px] left-4 right-4 z-40">
+        className="fixed bottom-[120px] left-4 right-4 z-40">
 
           <motion.button
           whileTap={{ scale: 0.98 }}
