@@ -20,16 +20,24 @@ export default function TrackingPage() {
   const { orders, loading } = useOrders();
   const { stores } = useStores();
 
-  // Find the most recent active order (from DB or cart context)
-  const activeOrder: Order | null = useMemo(() => {
-    // Prefer currentOrder from cart (just placed)
+  // Find all active orders (non-delivered)
+  const activeOrders: Order[] = useMemo(() => {
+    const result: Order[] = [];
+    // Add currentOrder from cart (just placed) if active
     if (currentOrder && currentOrder.status !== 'delivered') {
-      return currentOrder;
+      result.push(currentOrder);
     }
-    // Otherwise find latest non-delivered order from DB
-    const active = orders.find(o => o.status !== 'delivered');
-    return active || currentOrder || null;
+    // Add active orders from DB (avoid duplicates)
+    for (const o of orders) {
+      if (o.status !== 'delivered' && !result.some(r => r.id === o.id)) {
+        result.push(o);
+      }
+    }
+    return result;
   }, [currentOrder, orders]);
+
+  const [selectedOrderIndex, setSelectedOrderIndex] = useState(0);
+  const activeOrder: Order | null = activeOrders[selectedOrderIndex] || null;
 
   // Calculate real ETA based on distance
   const eta = useMemo(() => {
@@ -129,6 +137,27 @@ export default function TrackingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Order selector if multiple active orders */}
+      {activeOrders.length > 1 && (
+        <div className="px-4 pt-2">
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+            {activeOrders.map((order, idx) => (
+              <motion.button
+                key={order.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedOrderIndex(idx)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  selectedOrderIndex === idx
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-secondary text-secondary-foreground'
+                }`}
+              >
+                #{order.id.slice(0, 6)}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
       <Header title={t.tracking.title} showBack />
 
       {/* Google Maps with Realtime Tracking */}

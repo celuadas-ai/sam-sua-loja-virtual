@@ -47,13 +47,18 @@ export default function ProductsPage() {
   { icon: Settings, label: t.profile.settings, path: '/settings' }];
 
 
+  // Normalize text removing accents for accent-insensitive search
+  const normalize = (text: string) =>
+    text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
   const filteredProducts = products.filter((product) => {
     const matchesBrand =
     selectedBrand === 'Todos' || selectedBrand === 'All' || product.brand === selectedBrand;
+    const query = normalize(searchQuery);
     const matchesSearch =
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.volume.toLowerCase().includes(searchQuery.toLowerCase());
+    normalize(product.name).includes(query) ||
+    normalize(product.brand).includes(query) ||
+    normalize(product.volume).includes(query);
     return matchesBrand && matchesSearch;
   });
 

@@ -183,6 +183,15 @@ export default function PaymentPage() {
   ];
 
   const handleConfirmOrder = async () => {
+    if (items.length === 0) {
+      toast({
+        title: 'Carrinho vazio',
+        description: 'Adicione pelo menos um produto antes de confirmar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!selectedAddress) {
       toast({
         title: t.payment.selectAddress,

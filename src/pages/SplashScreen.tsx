@@ -8,7 +8,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/auth');
+      navigate('/products');
     }, 2500);
 
     return () => clearTimeout(timer);
