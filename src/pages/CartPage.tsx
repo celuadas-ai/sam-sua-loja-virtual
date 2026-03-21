@@ -6,11 +6,13 @@ import { BottomNav } from '@/components/BottomNav';
 import { CartItemCard } from '@/components/CartItemCard';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { items, subtotal, iva, total, itemCount } = useCart();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   if (items.length === 0) {
     return (
@@ -85,7 +87,7 @@ export default function CartPage() {
 
         <motion.button
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/payment')}
+          onClick={() => navigate(isAuthenticated ? '/payment' : '/auth')}
           className="sam-button-accent w-full py-4 rounded-2xl"
         >
           {t.cart.continueOrder}
