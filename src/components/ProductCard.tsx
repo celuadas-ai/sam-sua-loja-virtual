@@ -11,27 +11,11 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem } = useCart();
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   
   const cartItem = items.find(item => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
-  const requireAuth = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Inicie sessão para comprar',
-        description: 'Precisa de ter uma conta para adicionar produtos ao carrinho.',
-      });
-      navigate('/auth');
-      return true;
-    }
-    return false;
-  };
-
   const handleAdd = () => {
-    if (requireAuth()) return;
     if (quantity === 0) {
       addItem(product);
     } else {
