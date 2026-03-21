@@ -137,6 +137,27 @@ export default function TrackingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Order selector if multiple active orders */}
+      {activeOrders.length > 1 && (
+        <div className="px-4 pt-2">
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+            {activeOrders.map((order, idx) => (
+              <motion.button
+                key={order.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedOrderIndex(idx)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  selectedOrderIndex === idx
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-secondary text-secondary-foreground'
+                }`}
+              >
+                #{order.id.slice(0, 6)}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
       <Header title={t.tracking.title} showBack />
 
       {/* Google Maps with Realtime Tracking */}

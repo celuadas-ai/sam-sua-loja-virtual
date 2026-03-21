@@ -28,7 +28,13 @@ export function BottomNav() {
           return (
             <motion.button
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                if (isActive && item.path === '/products') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  navigate(item.path);
+                }
+              }}
               className={`relative flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-4 py-2 rounded-xl transition-colors min-w-0 ${
                 isActive
                   ? 'text-accent'

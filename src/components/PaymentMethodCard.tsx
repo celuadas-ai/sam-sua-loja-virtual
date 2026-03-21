@@ -39,10 +39,10 @@ export function PaymentMethodCard({
     <motion.button
       onClick={onSelect}
       whileTap={{ scale: 0.98 }}
-      className={`w-full sam-card p-4 flex items-center gap-4 transition-all ${
+      className={`w-full sam-card p-4 flex items-center gap-4 transition-all cursor-pointer ${
       selected ?
       'ring-2 ring-accent border-accent' :
-      'hover:border-accent/50'}`
+      'hover:border-accent/50 hover:bg-muted/30'}`
       }>
 
       {method === 'mpesa' ?
@@ -65,10 +65,10 @@ export function PaymentMethodCard({
       </div>
 
       <div
-        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+        className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
         selected ?
-        'border-accent bg-accent' :
-        'border-border'}`
+        'border-accent bg-accent scale-110' :
+        'border-muted-foreground/40 bg-secondary'}`
         }>
 
         {selected && <Check className="w-4 h-4 text-accent-foreground" />}
