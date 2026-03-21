@@ -12,6 +12,7 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { items, subtotal, iva, total, itemCount } = useCart();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   if (items.length === 0) {
     return (
