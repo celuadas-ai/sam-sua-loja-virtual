@@ -1,11 +1,8 @@
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
