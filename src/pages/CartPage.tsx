@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { CartItemCard } from '@/components/CartItemCard';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
