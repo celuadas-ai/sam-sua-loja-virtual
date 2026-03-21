@@ -34,6 +34,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
   };
 
   const handleAdd = () => {
+    if (requireAuth()) return;
     if (quantity === 0) {
       addItem(product);
     } else {
