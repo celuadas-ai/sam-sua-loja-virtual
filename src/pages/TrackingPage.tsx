@@ -20,16 +20,24 @@ export default function TrackingPage() {
   const { orders, loading } = useOrders();
   const { stores } = useStores();
 
-  // Find the most recent active order (from DB or cart context)
-  const activeOrder: Order | null = useMemo(() => {
-    // Prefer currentOrder from cart (just placed)
+  // Find all active orders (non-delivered)
+  const activeOrders: Order[] = useMemo(() => {
+    const result: Order[] = [];
+    // Add currentOrder from cart (just placed) if active
     if (currentOrder && currentOrder.status !== 'delivered') {
-      return currentOrder;
+      result.push(currentOrder);
     }
-    // Otherwise find latest non-delivered order from DB
-    const active = orders.find(o => o.status !== 'delivered');
-    return active || currentOrder || null;
+    // Add active orders from DB (avoid duplicates)
+    for (const o of orders) {
+      if (o.status !== 'delivered' && !result.some(r => r.id === o.id)) {
+        result.push(o);
+      }
+    }
+    return result;
   }, [currentOrder, orders]);
+
+  const [selectedOrderIndex, setSelectedOrderIndex] = useState(0);
+  const activeOrder: Order | null = activeOrders[selectedOrderIndex] || null;
 
   // Calculate real ETA based on distance
   const eta = useMemo(() => {
