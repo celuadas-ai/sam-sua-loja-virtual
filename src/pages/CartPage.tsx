@@ -87,7 +87,7 @@ export default function CartPage() {
 
         <motion.button
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/payment')}
+          onClick={() => navigate(isAuthenticated ? '/payment' : '/auth')}
           className="sam-button-accent w-full py-4 rounded-2xl"
         >
           {t.cart.continueOrder}
