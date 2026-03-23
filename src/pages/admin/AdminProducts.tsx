@@ -9,8 +9,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  DialogTrigger } from
+'@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +20,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+  AlertDialogTrigger } from
+'@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,8 +29,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue } from
+'@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/types';
 
@@ -51,14 +51,14 @@ export default function AdminProducts() {
     volume: '',
     price: '',
     minQuantity: '',
-    unitLabel: 'unidade',
+    unitLabel: 'unidade'
   });
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand = selectedBrand === 'Todos' || product.brand === selectedBrand;
     const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.volume.toLowerCase().includes(searchQuery.toLowerCase());
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.volume.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesBrand && matchesSearch;
   });
 
@@ -69,7 +69,7 @@ export default function AdminProducts() {
       volume: '',
       price: '',
       minQuantity: '',
-      unitLabel: 'unidade',
+      unitLabel: 'unidade'
     });
   };
 
@@ -78,7 +78,7 @@ export default function AdminProducts() {
       toast({
         title: 'Erro',
         description: 'Preencha todos os campos obrigatórios',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -91,14 +91,14 @@ export default function AdminProducts() {
       price: parseFloat(formData.price),
       minQuantity: parseInt(formData.minQuantity),
       unitLabel: formData.unitLabel,
-      image: '/placeholder.svg',
+      image: '/placeholder.svg'
     });
     setIsSubmitting(false);
 
     if (result) {
       toast({
         title: 'Produto adicionado',
-        description: `${formData.name} foi adicionado com sucesso`,
+        description: `${formData.name} foi adicionado com sucesso`
       });
       resetForm();
       setIsAddOpen(false);
@@ -106,7 +106,7 @@ export default function AdminProducts() {
       toast({
         title: 'Erro',
         description: 'Não foi possível adicionar o produto',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -119,7 +119,7 @@ export default function AdminProducts() {
       volume: product.volume,
       price: product.price.toString(),
       minQuantity: product.minQuantity.toString(),
-      unitLabel: product.unitLabel,
+      unitLabel: product.unitLabel
     });
     setIsEditOpen(true);
   };
@@ -131,7 +131,7 @@ export default function AdminProducts() {
       toast({
         title: 'Erro',
         description: 'Preencha todos os campos obrigatórios',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -143,14 +143,14 @@ export default function AdminProducts() {
       volume: formData.volume,
       price: parseFloat(formData.price),
       minQuantity: parseInt(formData.minQuantity),
-      unitLabel: formData.unitLabel,
+      unitLabel: formData.unitLabel
     });
     setIsSubmitting(false);
 
     if (success) {
       toast({
         title: 'Produto atualizado',
-        description: `${formData.name} foi atualizado com sucesso`,
+        description: `${formData.name} foi atualizado com sucesso`
       });
       resetForm();
       setIsEditOpen(false);
@@ -159,7 +159,7 @@ export default function AdminProducts() {
       toast({
         title: 'Erro',
         description: 'Não foi possível atualizar o produto',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -169,18 +169,18 @@ export default function AdminProducts() {
     if (success) {
       toast({
         title: 'Produto removido',
-        description: `${product.name} foi removido com sucesso`,
+        description: `${product.name} foi removido com sucesso`
       });
     } else {
       toast({
         title: 'Erro',
         description: 'Não foi possível remover o produto',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
 
-  const availableBrands = brands.filter(b => b !== 'Todos');
+  const availableBrands = brands.filter((b) => b !== 'Todos');
 
   return (
     <AdminLayout title="Produtos" subtitle={`${products.length} produtos cadastrados`}>
@@ -192,24 +192,24 @@ export default function AdminProducts() {
             placeholder="Pesquisar produtos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+            className="pl-10" />
+          
         </div>
 
         <div className="flex gap-2 overflow-x-auto hide-scrollbar">
-          {brands.map((brand) => (
-            <button
-              key={brand}
-              onClick={() => setSelectedBrand(brand)}
-              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
-                selectedBrand === brand
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
+          {brands.map((brand) =>
+          <button
+            key={brand}
+            onClick={() => setSelectedBrand(brand)}
+            className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+            selectedBrand === brand ?
+            'bg-primary text-primary-foreground' :
+            'bg-muted text-muted-foreground hover:bg-muted/80'}`
+            }>
+            
               {brand}
             </button>
-          ))}
+          )}
         </div>
 
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -230,24 +230,24 @@ export default function AdminProducts() {
                   id="name"
                   placeholder="Nome do produto"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                
               </div>
               <div className="space-y-2">
                 <Label htmlFor="brand">Marca *</Label>
                 <Select
                   value={formData.brand}
-                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, brand: value })}>
+                  
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a marca" />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableBrands.map((brand) => (
-                      <SelectItem key={brand} value={brand}>
+                    {availableBrands.map((brand) =>
+                    <SelectItem key={brand} value={brand}>
                         {brand}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -257,8 +257,8 @@ export default function AdminProducts() {
                   id="volume"
                   placeholder="Volume (ex: 0.5L)"
                   value={formData.volume}
-                  onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, volume: e.target.value })} />
+                
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -268,8 +268,8 @@ export default function AdminProducts() {
                     placeholder="Preço"
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="minQuantity">Qtd. Mínima *</Label>
@@ -278,16 +278,16 @@ export default function AdminProducts() {
                     placeholder="Quantidade"
                     type="number"
                     value={formData.minQuantity}
-                    onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })} />
+                  
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unitLabel">Rótulo de unidade</Label>
                 <Select
                   value={formData.unitLabel}
-                  onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}>
+                  
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -320,24 +320,24 @@ export default function AdminProducts() {
                 id="edit-name"
                 placeholder="Nome do produto"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+              
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-brand">Marca *</Label>
               <Select
                 value={formData.brand}
-                onValueChange={(value) => setFormData({ ...formData, brand: value })}
-              >
+                onValueChange={(value) => setFormData({ ...formData, brand: value })}>
+                
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a marca" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableBrands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
+                  {availableBrands.map((brand) =>
+                  <SelectItem key={brand} value={brand}>
                       {brand}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -347,8 +347,8 @@ export default function AdminProducts() {
                 id="edit-volume"
                 placeholder="Volume (ex: 0.5L)"
                 value={formData.volume}
-                onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
-              />
+                onChange={(e) => setFormData({ ...formData, volume: e.target.value })} />
+              
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -358,8 +358,8 @@ export default function AdminProducts() {
                   placeholder="Preço"
                   type="number"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-minQuantity">Qtd. Mínima *</Label>
@@ -368,16 +368,16 @@ export default function AdminProducts() {
                   placeholder="Quantidade"
                   type="number"
                   value={formData.minQuantity}
-                  onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, minQuantity: e.target.value })} />
+                
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-unitLabel">Rótulo de unidade</Label>
               <Select
                 value={formData.unitLabel}
-                onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}
-              >
+                onValueChange={(value) => setFormData({ ...formData, unitLabel: value })}>
+                
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -400,13 +400,14 @@ export default function AdminProducts() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sam-card overflow-hidden"
-      >
+        className="sam-card overflow-hidden">
+        
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <table className="w-full min-w-[650px]">
              <thead className="bg-muted/50">
               <tr>
-                <th className="text-left p-4 font-semibold text-foreground">SKU</th>
+                <th className="text-left p-4 font-semibold text-foreground">
+</th>
                 <th className="text-left p-4 font-semibold text-foreground">Produto</th>
                 <th className="text-left p-4 font-semibold text-foreground">Marca</th>
                 <th className="text-left p-4 font-semibold text-foreground">Volume</th>
@@ -416,8 +417,7 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-muted/30 transition-colors">
+              {filteredProducts.map((product) => <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                   <td className="p-4 font-mono text-sm text-primary font-semibold">{product.sku || '—'}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -425,8 +425,8 @@ export default function AdminProducts() {
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-contain"
-                        />
+                          className="w-full h-full object-contain" />
+                        
                       </div>
                       <span className="font-medium text-foreground">{product.name}</span>
                     </div>
@@ -440,8 +440,8 @@ export default function AdminProducts() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEditClick(product)}
-                      >
+                        onClick={() => handleEditClick(product)}>
+                        
                         <Edit className="w-4 h-4" />
                       </Button>
                       <AlertDialog>
@@ -449,8 +449,8 @@ export default function AdminProducts() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:text-destructive"
-                          >
+                            className="text-destructive hover:text-destructive">
+                            
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -472,18 +472,18 @@ export default function AdminProducts() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        {filteredProducts.length === 0 && (
-          <div className="p-12 text-center">
+        {filteredProducts.length === 0 &&
+        <div className="p-12 text-center">
             <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Nenhum produto encontrado</p>
           </div>
-        )}
+        }
       </motion.div>
-    </AdminLayout>
-  );
+    </AdminLayout>);
+
 }
