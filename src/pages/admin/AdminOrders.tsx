@@ -35,6 +35,8 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string>('');
+  const [savingOperator, setSavingOperator] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
     const orderNum = order.orderNumber ? `#${order.orderNumber}` : '';
