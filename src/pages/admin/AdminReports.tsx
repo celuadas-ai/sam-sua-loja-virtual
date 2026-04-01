@@ -18,8 +18,8 @@ const topProducts = [
 const kpis = [
   {
     label: 'Receita Total',
-    value: '943.000 MZN',
-    change: '+12.5%',
+    value: '735.000 MZN',
+    change: '+14.2%',
     trend: 'up',
     icon: DollarSign,
   },
