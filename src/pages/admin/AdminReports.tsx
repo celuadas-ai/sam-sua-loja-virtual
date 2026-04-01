@@ -25,8 +25,8 @@ const kpis = [
   },
   {
     label: 'Total de Encomendas',
-    value: '683',
-    change: '+8.2%',
+    value: '499',
+    change: '+10.5%',
     trend: 'up',
     icon: Package,
   },
