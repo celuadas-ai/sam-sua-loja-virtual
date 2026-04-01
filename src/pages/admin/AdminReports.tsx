@@ -3,40 +3,37 @@ import { TrendingUp, TrendingDown, DollarSign, Package, Users, Truck } from 'luc
 import AdminLayout from '@/components/admin/AdminLayout';
 
 const monthlyData = [
-  { month: 'Jan', sales: 125000, orders: 89 },
-  { month: 'Fev', sales: 142000, orders: 102 },
-  { month: 'Mar', sales: 138000, orders: 95 },
-  { month: 'Abr', sales: 165000, orders: 118 },
-  { month: 'Mai', sales: 178000, orders: 134 },
-  { month: 'Jun', sales: 195000, orders: 145 },
+  { month: 'Jan', sales: 230000, orders: 156 },
+  { month: 'Fev', sales: 245000, orders: 168 },
+  { month: 'Mar', sales: 260000, orders: 175 },
 ];
 
 const topProducts = [
-  { name: 'Água Namaacha 0.5L', sales: 456, revenue: 11400 },
-  { name: 'Água Namaacha 1.5L', sales: 312, revenue: 14040 },
-  { name: 'Garrafão Natura 18.9L', sales: 128, revenue: 32000 },
-  { name: 'Água Fonte Fresca 7L', sales: 89, revenue: 10680 },
+  { name: 'Água Namaacha 0.5L', sales: 620, revenue: 15500 },
+  { name: 'Água Namaacha 1.5L', sales: 435, revenue: 19575 },
+  { name: 'Garrafão Natura 18.9L', sales: 210, revenue: 52500 },
+  { name: 'Água Fonte Fresca 7L', sales: 148, revenue: 17760 },
 ];
 
 const kpis = [
   {
     label: 'Receita Total',
-    value: '943.000 MZN',
-    change: '+12.5%',
+    value: '735.000 MZN',
+    change: '+14.2%',
     trend: 'up',
     icon: DollarSign,
   },
   {
     label: 'Total de Encomendas',
-    value: '683',
-    change: '+8.2%',
+    value: '499',
+    change: '+10.5%',
     trend: 'up',
     icon: Package,
   },
   {
     label: 'Clientes Ativos',
-    value: '234',
-    change: '+15.3%',
+    value: '187',
+    change: '+18.1%',
     trend: 'up',
     icon: Users,
   },
@@ -96,7 +93,7 @@ export default function AdminReports() {
           className="sam-card p-6"
         >
           <h2 className="text-lg font-semibold text-foreground mb-6">
-            Vendas Mensais (2024)
+            Vendas Mensais (2026)
           </h2>
           <div className="space-y-4">
             {monthlyData.map((data) => (

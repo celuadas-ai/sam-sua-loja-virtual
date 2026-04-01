@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Eye, Clock, CheckCircle, Truck, Package, Loader2, CreditCard } from 'lucide-react';
+import { Search, Eye, Clock, CheckCircle, Truck, Package, Loader2, CreditCard, Save } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useOrders } from '@/hooks/useOrders';
 import { useOperators } from '@/hooks/useOperators';
@@ -35,6 +35,8 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string>('');
+  const [savingOperator, setSavingOperator] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
     const orderNum = order.orderNumber ? `#${order.orderNumber}` : '';
@@ -106,14 +108,13 @@ export default function AdminOrders() {
           <table className="w-full min-w-[700px]">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left p-4 font-semibold text-foreground">Nº Pedido</th>
-                <th className="text-left p-4 font-semibold text-foreground">Cliente</th>
-                <th className="text-left p-4 font-semibold text-foreground">Total</th>
-                <th className="text-left p-4 font-semibold text-foreground">Pagamento</th>
-                <th className="text-left p-4 font-semibold text-foreground">Loja</th>
-                <th className="text-left p-4 font-semibold text-foreground">Estado</th>
-                <th className="text-left p-4 font-semibold text-foreground">Data</th>
-                <th className="text-right p-4 font-semibold text-foreground">Ações</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Nº Pedido</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[160px]">Cliente</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Total</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Pagamento</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[110px]">Estado</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[110px]">Data</th>
+                <th className="text-center p-4 font-semibold text-foreground w-[70px]">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -122,19 +123,19 @@ export default function AdminOrders() {
                 const StatusIcon = status.icon;
                 return (
                   <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 font-mono font-semibold text-primary">
+                    <td className="p-4 font-mono font-semibold text-primary w-[100px]">
                       #{order.orderNumber || '—'}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[160px]">
                       <div>
                         <p className="font-medium text-foreground">{order.customerName}</p>
                         <p className="text-sm text-muted-foreground">{order.customerPhone}</p>
                       </div>
                     </td>
-                    <td className="p-4 font-semibold text-foreground">
+                    <td className="p-4 font-semibold text-foreground w-[100px]">
                       {order.total.toLocaleString()} MZN
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[100px]">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           order.paymentStatus === 'paid'
@@ -145,7 +146,7 @@ export default function AdminOrders() {
                         {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[110px]">
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs text-white ${status.color}`}
                       >
@@ -153,14 +154,17 @@ export default function AdminOrders() {
                         {status.label}
                       </span>
                     </td>
-                    <td className="p-4 text-muted-foreground">
+                    <td className="p-4 text-muted-foreground w-[110px]">
                       {formatDate(order.createdAt)}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 text-center w-[70px]">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setSelectedOperatorId(order.operatorId || '');
+                        }}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -225,7 +229,10 @@ export default function AdminOrders() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Operador</span>
-                <Select defaultValue={selectedOrder.operatorId || ''}>
+                <Select
+                  value={selectedOperatorId}
+                  onValueChange={setSelectedOperatorId}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Atribuir" />
                   </SelectTrigger>
@@ -240,6 +247,33 @@ export default function AdminOrders() {
                   </SelectContent>
                 </Select>
               </div>
+              {selectedOperatorId && selectedOperatorId !== (selectedOrder.operatorId || '') && (
+                <Button
+                  className="w-full gap-2"
+                  disabled={savingOperator}
+                  onClick={async () => {
+                    setSavingOperator(true);
+                    try {
+                      const { error } = await (await import('@/integrations/supabase/client')).supabase
+                        .from('orders')
+                        .update({ operator_id: selectedOperatorId })
+                        .eq('id', selectedOrder.id);
+                      if (error) throw error;
+                      setSelectedOrder({ ...selectedOrder, operatorId: selectedOperatorId });
+                      const { toast } = await import('sonner');
+                      toast.success('Operador atribuído com sucesso');
+                    } catch (err) {
+                      const { toast } = await import('sonner');
+                      toast.error('Erro ao atribuir operador');
+                    } finally {
+                      setSavingOperator(false);
+                    }
+                  }}
+                >
+                  <Save className="w-4 h-4" />
+                  {savingOperator ? 'A guardar...' : 'Salvar'}
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
