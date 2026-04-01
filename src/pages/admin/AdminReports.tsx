@@ -3,12 +3,9 @@ import { TrendingUp, TrendingDown, DollarSign, Package, Users, Truck } from 'luc
 import AdminLayout from '@/components/admin/AdminLayout';
 
 const monthlyData = [
-  { month: 'Jan', sales: 125000, orders: 89 },
-  { month: 'Fev', sales: 142000, orders: 102 },
-  { month: 'Mar', sales: 138000, orders: 95 },
-  { month: 'Abr', sales: 165000, orders: 118 },
-  { month: 'Mai', sales: 178000, orders: 134 },
-  { month: 'Jun', sales: 195000, orders: 145 },
+  { month: 'Jan', sales: 230000, orders: 156 },
+  { month: 'Fev', sales: 245000, orders: 168 },
+  { month: 'Mar', sales: 260000, orders: 175 },
 ];
 
 const topProducts = [
