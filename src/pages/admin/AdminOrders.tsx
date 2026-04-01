@@ -161,7 +161,10 @@ export default function AdminOrders() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setSelectedOperatorId(order.operatorId || '');
+                        }}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
