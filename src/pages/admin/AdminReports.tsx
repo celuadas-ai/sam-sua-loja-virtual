@@ -32,8 +32,8 @@ const kpis = [
   },
   {
     label: 'Clientes Ativos',
-    value: '234',
-    change: '+15.3%',
+    value: '187',
+    change: '+18.1%',
     trend: 'up',
     icon: Users,
   },
