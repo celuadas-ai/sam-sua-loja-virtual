@@ -121,19 +121,19 @@ export default function AdminOrders() {
                 const StatusIcon = status.icon;
                 return (
                   <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 font-mono font-semibold text-primary">
+                    <td className="p-4 font-mono font-semibold text-primary w-[100px]">
                       #{order.orderNumber || '—'}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[160px]">
                       <div>
                         <p className="font-medium text-foreground">{order.customerName}</p>
                         <p className="text-sm text-muted-foreground">{order.customerPhone}</p>
                       </div>
                     </td>
-                    <td className="p-4 font-semibold text-foreground">
+                    <td className="p-4 font-semibold text-foreground w-[100px]">
                       {order.total.toLocaleString()} MZN
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[100px]">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           order.paymentStatus === 'paid'
@@ -144,7 +144,7 @@ export default function AdminOrders() {
                         {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 w-[110px]">
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs text-white ${status.color}`}
                       >
@@ -152,10 +152,10 @@ export default function AdminOrders() {
                         {status.label}
                       </span>
                     </td>
-                    <td className="p-4 text-muted-foreground">
+                    <td className="p-4 text-muted-foreground w-[110px]">
                       {formatDate(order.createdAt)}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 text-center w-[70px]">
                       <Button
                         variant="ghost"
                         size="sm"

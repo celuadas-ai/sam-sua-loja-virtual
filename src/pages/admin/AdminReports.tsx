@@ -93,7 +93,7 @@ export default function AdminReports() {
           className="sam-card p-6"
         >
           <h2 className="text-lg font-semibold text-foreground mb-6">
-            Vendas Mensais (2024)
+            Vendas Mensais (2026)
           </h2>
           <div className="space-y-4">
             {monthlyData.map((data) => (
