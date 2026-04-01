@@ -106,14 +106,13 @@ export default function AdminOrders() {
           <table className="w-full min-w-[700px]">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left p-4 font-semibold text-foreground">Nº Pedido</th>
-                <th className="text-left p-4 font-semibold text-foreground">Cliente</th>
-                <th className="text-left p-4 font-semibold text-foreground">Total</th>
-                <th className="text-left p-4 font-semibold text-foreground">Pagamento</th>
-                <th className="text-left p-4 font-semibold text-foreground">Loja</th>
-                <th className="text-left p-4 font-semibold text-foreground">Estado</th>
-                <th className="text-left p-4 font-semibold text-foreground">Data</th>
-                <th className="text-right p-4 font-semibold text-foreground">Ações</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Nº Pedido</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[160px]">Cliente</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Total</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[100px]">Pagamento</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[110px]">Estado</th>
+                <th className="text-left p-4 font-semibold text-foreground w-[110px]">Data</th>
+                <th className="text-center p-4 font-semibold text-foreground w-[70px]">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
