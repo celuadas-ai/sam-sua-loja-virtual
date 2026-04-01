@@ -9,10 +9,10 @@ const monthlyData = [
 ];
 
 const topProducts = [
-  { name: 'Água Namaacha 0.5L', sales: 456, revenue: 11400 },
-  { name: 'Água Namaacha 1.5L', sales: 312, revenue: 14040 },
-  { name: 'Garrafão Natura 18.9L', sales: 128, revenue: 32000 },
-  { name: 'Água Fonte Fresca 7L', sales: 89, revenue: 10680 },
+  { name: 'Água Namaacha 0.5L', sales: 620, revenue: 15500 },
+  { name: 'Água Namaacha 1.5L', sales: 435, revenue: 19575 },
+  { name: 'Garrafão Natura 18.9L', sales: 210, revenue: 52500 },
+  { name: 'Água Fonte Fresca 7L', sales: 148, revenue: 17760 },
 ];
 
 const kpis = [
