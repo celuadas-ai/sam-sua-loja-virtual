@@ -226,7 +226,10 @@ export default function AdminOrders() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Operador</span>
-                <Select defaultValue={selectedOrder.operatorId || ''}>
+                <Select
+                  value={selectedOperatorId}
+                  onValueChange={setSelectedOperatorId}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Atribuir" />
                   </SelectTrigger>
@@ -241,6 +244,33 @@ export default function AdminOrders() {
                   </SelectContent>
                 </Select>
               </div>
+              {selectedOperatorId && selectedOperatorId !== (selectedOrder.operatorId || '') && (
+                <Button
+                  className="w-full gap-2"
+                  disabled={savingOperator}
+                  onClick={async () => {
+                    setSavingOperator(true);
+                    try {
+                      const { error } = await (await import('@/integrations/supabase/client')).supabase
+                        .from('orders')
+                        .update({ operator_id: selectedOperatorId })
+                        .eq('id', selectedOrder.id);
+                      if (error) throw error;
+                      setSelectedOrder({ ...selectedOrder, operatorId: selectedOperatorId });
+                      const { toast } = await import('sonner');
+                      toast.success('Operador atribuído com sucesso');
+                    } catch (err) {
+                      const { toast } = await import('sonner');
+                      toast.error('Erro ao atribuir operador');
+                    } finally {
+                      setSavingOperator(false);
+                    }
+                  }}
+                >
+                  <Save className="w-4 h-4" />
+                  {savingOperator ? 'A guardar...' : 'Salvar'}
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
