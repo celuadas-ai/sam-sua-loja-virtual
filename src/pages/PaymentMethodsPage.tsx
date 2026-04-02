@@ -121,9 +121,9 @@ export default function PaymentMethodsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`sam-card p-4 ${method.isDefault ? 'border-primary' : ''}`}
+              className={`sam-card p-4 flex items-start gap-3 cursor-pointer ${method.isDefault ? 'border-primary' : ''}`}
+              onClick={() => handleSetDefault(method.id)}
             >
-              <div className="flex items-start gap-3">
                 {method.type === 'mpesa' ? (
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-border">
                     <img src={mpesaLogo} alt="M-Pesa" className="w-7 h-7 object-contain" />
@@ -152,16 +152,7 @@ export default function PaymentMethodsPage() {
                   </p>
                 </div>
 
-                <div className="flex gap-1">
-                  {!method.isDefault && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleSetDefault(method.id)}
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                  )}
+                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" size="icon" onClick={() => openEdit(method)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
@@ -174,7 +165,6 @@ export default function PaymentMethodsPage() {
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </Button>
                 </div>
-              </div>
             </motion.div>
           );
         })}
