@@ -49,7 +49,7 @@ export function Header({ title, showBack = false, showMenu = false }: HeaderProp
               whileTap={{ scale: 0.95 }}
               className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-foreground hover:bg-muted transition-colors"
             >
-              <Menu className="w-5 h-5" />
+              <Blinds className="w-5 h-5" />
             </motion.button>
           )}
         </div>
