@@ -239,6 +239,28 @@ export function useOrders() {
     }
   };
 
+  const assignOperator = async (orderId: string, operatorUserId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ operator_id: operatorUserId })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId ? { ...order, operatorId: operatorUserId } : order
+        )
+      );
+
+      return true;
+    } catch (err) {
+      console.error('Error assigning operator:', err);
+      return false;
+    }
+  };
+
   // Subscribe to realtime updates
   useEffect(() => {
     if (!user) return;
@@ -262,6 +284,7 @@ export function useOrders() {
                       ...order,
                       status: updated.status as OrderStatus,
                       paymentStatus: updated.payment_status as PaymentStatus,
+                      operatorId: updated.operator_id || undefined,
                     }
                   : order
               )
@@ -291,6 +314,7 @@ export function useOrders() {
     createOrder,
     updateOrderStatus,
     confirmPayment,
+    assignOperator,
     refetch: fetchOrders,
   };
 }

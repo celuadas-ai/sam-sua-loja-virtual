@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 import { Order, OrderStatus } from '@/types';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: any }> = {
@@ -30,7 +31,7 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: an
 };
 
 export default function AdminOrders() {
-  const { orders, loading, confirmPayment } = useOrders();
+  const { orders, loading, confirmPayment, assignOperator } = useOrders();
   const { operators } = useOperators();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -240,7 +241,7 @@ export default function AdminOrders() {
                     {operators
                       .filter((o) => o.isActive)
                       .map((op) => (
-                        <SelectItem key={op.id} value={op.id}>
+                         <SelectItem key={op.id} value={op.userId || op.id}>
                           {op.name}
                         </SelectItem>
                       ))}
@@ -254,16 +255,11 @@ export default function AdminOrders() {
                   onClick={async () => {
                     setSavingOperator(true);
                     try {
-                      const { error } = await (await import('@/integrations/supabase/client')).supabase
-                        .from('orders')
-                        .update({ operator_id: selectedOperatorId })
-                        .eq('id', selectedOrder.id);
-                      if (error) throw error;
+                      const success = await assignOperator(selectedOrder.id, selectedOperatorId);
+                      if (!success) throw new Error('assign_operator_failed');
                       setSelectedOrder({ ...selectedOrder, operatorId: selectedOperatorId });
-                      const { toast } = await import('sonner');
                       toast.success('Operador atribuído com sucesso');
-                    } catch (err) {
-                      const { toast } = await import('sonner');
+                    } catch {
                       toast.error('Erro ao atribuir operador');
                     } finally {
                       setSavingOperator(false);

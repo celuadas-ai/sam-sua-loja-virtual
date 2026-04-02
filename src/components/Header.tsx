@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getBackRoute } from '@/utils/navigation';
 
 interface HeaderProps {
   title: string;
@@ -15,28 +16,7 @@ export function Header({ title, showBack = false, showMenu = false }: HeaderProp
   const canGoBack = showBack && location.pathname !== '/products';
 
   const handleBack = () => {
-    // Define logical parent routes instead of browser history
-    const parentRoutes: Record<string, string> = {
-      '/cart': '/products',
-      '/payment': '/cart',
-      '/tracking': '/products',
-      '/confirmation': '/products',
-      '/orders': '/products',
-      '/profile': '/products',
-      '/settings': '/profile',
-      '/addresses': '/profile',
-      '/payment-methods': '/profile',
-      '/help': '/profile',
-      '/notifications': '/products',
-    };
-
-    // Check for dynamic routes
-    if (location.pathname.startsWith('/orders/')) {
-      navigate('/orders');
-      return;
-    }
-
-    const parent = parentRoutes[location.pathname] || '/products';
+    const parent = getBackRoute(location.pathname) || '/products';
     navigate(parent);
   };
 
