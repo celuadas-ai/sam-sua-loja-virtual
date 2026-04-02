@@ -57,6 +57,7 @@ export interface User {
 }
 
 export interface Operator extends User {
+  userId?: string;
   role: 'operator';
   isActive: boolean;
   deliveriesCompleted: number;

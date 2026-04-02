@@ -23,6 +23,7 @@ interface DbProfile {
 function mapDbToOperator(dbOperator: DbOperator, profile: DbProfile | null, email: string, storeName?: string): Operator {
   return {
     id: dbOperator.id,
+    userId: dbOperator.user_id,
     name: profile?.name || 'Operador',
     email: email,
     phone: profile?.phone || '',
