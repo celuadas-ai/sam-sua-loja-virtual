@@ -154,7 +154,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 sm:pb-20">
-      <Header title={t.profile.title} showMenu />
+      <Header title={t.profile.title} />
 
       {/* Profile Card */}
       <div className="px-4 py-6">
