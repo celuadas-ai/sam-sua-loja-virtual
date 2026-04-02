@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, Menu } from 'lucide-react';
+import { ChevronLeft, Blinds } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getBackRoute } from '@/utils/navigation';
 
