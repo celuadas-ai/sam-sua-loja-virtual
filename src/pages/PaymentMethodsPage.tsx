@@ -123,7 +123,10 @@ export default function PaymentMethodsPage() {
               transition={{ delay: index * 0.1 }}
               className={`sam-card p-4 ${method.isDefault ? 'border-primary' : ''}`}
             >
-              <div className="flex items-start gap-3">
+              <div
+                className="flex items-start gap-3 flex-1 cursor-pointer"
+                onClick={() => handleSetDefault(method.id)}
+              >
                 {method.type === 'mpesa' ? (
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-border">
                     <img src={mpesaLogo} alt="M-Pesa" className="w-7 h-7 object-contain" />
@@ -151,17 +154,9 @@ export default function PaymentMethodsPage() {
                     {config.label} • {method.details}
                   </p>
                 </div>
+              </div>
 
                 <div className="flex gap-1">
-                  {!method.isDefault && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleSetDefault(method.id)}
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                  )}
                   <Button variant="ghost" size="icon" onClick={() => openEdit(method)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
