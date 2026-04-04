@@ -460,15 +460,6 @@ export default function OperatorDashboard() {
         )}
       </div>
 
-      {/* Stock Manager Modal */}
-      <AnimatePresence>
-        {stockManagerOpen && (
-          <OperatorStockManager
-            isOpen={stockManagerOpen}
-            onClose={() => setStockManagerOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
