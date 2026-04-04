@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Clock, Phone, MessageCircle, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, Phone, MessageCircle, MapPin, Package, ChevronRight, User } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
@@ -12,6 +12,12 @@ import { useOrders } from '@/hooks/useOrders';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance } from '@/utils/distance';
 import { Order } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+interface OperatorInfo {
+  name: string;
+  phone: string;
+}
 
 export default function TrackingPage() {
   const navigate = useNavigate();
@@ -23,11 +29,9 @@ export default function TrackingPage() {
   // Find all active orders (non-delivered)
   const activeOrders: Order[] = useMemo(() => {
     const result: Order[] = [];
-    // Add currentOrder from cart (just placed) if active
     if (currentOrder && currentOrder.status !== 'delivered') {
       result.push(currentOrder);
     }
-    // Add active orders from DB (avoid duplicates)
     for (const o of orders) {
       if (o.status !== 'delivered' && !result.some(r => r.id === o.id)) {
         result.push(o);
@@ -36,16 +40,48 @@ export default function TrackingPage() {
     return result;
   }, [currentOrder, orders]);
 
-  const [selectedOrderIndex, setSelectedOrderIndex] = useState(0);
-  const activeOrder: Order | null = activeOrders[selectedOrderIndex] || null;
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [operatorInfo, setOperatorInfo] = useState<OperatorInfo | null>(null);
+
+  // Auto-select first order
+  useEffect(() => {
+    if (activeOrders.length > 0 && (!selectedOrderId || !activeOrders.find(o => o.id === selectedOrderId))) {
+      setSelectedOrderId(activeOrders[0].id);
+    }
+  }, [activeOrders, selectedOrderId]);
+
+  const activeOrder = activeOrders.find(o => o.id === selectedOrderId) || null;
+
+  // Fetch operator info when order has operator assigned
+  useEffect(() => {
+    const fetchOperatorInfo = async () => {
+      if (!activeOrder?.operatorId) {
+        setOperatorInfo(null);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('name, phone')
+          .eq('id', activeOrder.operatorId)
+          .single();
+        if (data) {
+          setOperatorInfo({ name: data.name || 'Operador', phone: data.phone || '' });
+        }
+      } catch {
+        setOperatorInfo(null);
+      }
+    };
+    fetchOperatorInfo();
+  }, [activeOrder?.operatorId]);
+
+  const hasOperator = !!activeOrder?.operatorId;
 
   // Calculate real ETA based on distance
   const eta = useMemo(() => {
     if (!activeOrder) return 0;
-
     if (activeOrder.status === 'delivered') return 0;
 
-    // If order has coordinates, calculate from nearest store
     if (activeOrder.customerLatitude && activeOrder.customerLongitude && stores.length > 0) {
       let minDist = Infinity;
       for (const store of stores) {
@@ -55,7 +91,6 @@ export default function TrackingPage() {
         );
         if (dist < minDist) minDist = dist;
       }
-      // ~3 min/km base + preparation time based on status
       const baseMinutes = Math.round(minDist * 3);
       switch (activeOrder.status) {
         case 'received': return baseMinutes + 15;
@@ -66,7 +101,6 @@ export default function TrackingPage() {
       }
     }
 
-    // Fallback ETA based on status
     switch (activeOrder.status) {
       case 'received': return 30;
       case 'preparing': return 20;
@@ -85,6 +119,28 @@ export default function TrackingPage() {
       return () => clearTimeout(timer);
     }
   }, [activeOrder?.status, navigate]);
+
+  const handleCall = () => {
+    if (operatorInfo?.phone) {
+      window.open(`tel:${operatorInfo.phone}`, '_self');
+    }
+  };
+
+  const handleSms = () => {
+    if (operatorInfo?.phone) {
+      window.open(`sms:${operatorInfo.phone}`, '_self');
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'received': return 'Recebido';
+      case 'preparing': return 'Preparando';
+      case 'on_the_way': return 'A caminho';
+      case 'almost_there': return 'Quase lá';
+      default: return status;
+    }
+  };
 
   if (loading) {
     return (
@@ -106,7 +162,6 @@ export default function TrackingPage() {
     return (
       <div className="min-h-screen bg-background pb-20">
         <Header title={t.tracking.title} showBack />
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -129,7 +184,6 @@ export default function TrackingPage() {
             {t.tracking.orderNow}
           </motion.button>
         </motion.div>
-
         <BottomNav />
       </div>
     );
@@ -137,27 +191,6 @@ export default function TrackingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Order selector if multiple active orders */}
-      {activeOrders.length > 1 && (
-        <div className="px-4 pt-2">
-          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-            {activeOrders.map((order, idx) => (
-              <motion.button
-                key={order.id}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedOrderIndex(idx)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  selectedOrderIndex === idx
-                    ? 'bg-accent text-accent-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                #{order.id.slice(0, 6)}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      )}
       <Header title={t.tracking.title} showBack />
 
       {/* Google Maps with Realtime Tracking */}
@@ -194,21 +227,43 @@ export default function TrackingPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-foreground"
-              >
-                <Phone className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-foreground"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </motion.button>
-            </div>
+            {/* Show call/SMS only when operator is assigned */}
+            {hasOperator && (
+              <div className="flex gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCall}
+                  className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600"
+                >
+                  <Phone className="w-5 h-5" />
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSms}
+                  className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </motion.button>
+              </div>
+            )}
           </div>
+
+          {/* Operator details */}
+          {hasOperator && operatorInfo && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-3 pt-3 border-t border-border flex items-center gap-3"
+            >
+              <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center">
+                <User className="w-4 h-4 text-accent" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{operatorInfo.name}</p>
+                <p className="text-xs text-muted-foreground">{operatorInfo.phone || 'Sem contacto'}</p>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
@@ -230,6 +285,38 @@ export default function TrackingPage() {
           <OrderTracker status={activeOrder.status} />
         </motion.div>
       </div>
+
+      {/* Other active orders list */}
+      {activeOrders.length > 1 && (
+        <div className="px-4 mt-4">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-2">Outras encomendas</h3>
+          <div className="space-y-2">
+            {activeOrders
+              .filter(o => o.id !== selectedOrderId)
+              .map(order => (
+                <motion.button
+                  key={order.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedOrderId(order.id)}
+                  className="w-full sam-card p-3 flex items-center gap-3 text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Package className="w-5 h-5 text-accent" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      #{order.id.slice(0, 8)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {getStatusLabel(order.status)}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                </motion.button>
+              ))}
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>

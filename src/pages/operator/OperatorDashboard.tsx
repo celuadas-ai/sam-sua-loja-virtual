@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Boxes, Route, MapPinned, Map } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Route, MapPinned, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +10,7 @@ import samLogo from '@/assets/sam-logo.png';
 import { toast } from 'sonner';
 import { useOrders } from '@/hooks/useOrders';
 import { useDriverPosition } from '@/hooks/useDriverPosition';
-import OperatorStockManager from '@/components/operator/OperatorStockManager';
+
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, getDeliveryPriority, extractNeighborhood } from '@/utils/distance';
 import { OrderRouteMap } from '@/components/operator/OrderRouteMap';
@@ -30,7 +30,6 @@ export default function OperatorDashboard() {
   const { orders: allOrders, loading, updateOrderStatus, confirmPayment } = useOrders();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
-  const [stockManagerOpen, setStockManagerOpen] = useState(false);
   const [mapOrderId, setMapOrderId] = useState<string | null>(null);
   const { isTracking, startTracking, stopTracking } = useDriverPosition();
   const { stores } = useStores();
@@ -160,15 +159,6 @@ export default function OperatorDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setStockManagerOpen(true)}
-              className="gap-1"
-            >
-              <Boxes className="w-4 h-4" />
-              <span className="hidden sm:inline">Stock</span>
-            </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
             </Button>
@@ -470,15 +460,6 @@ export default function OperatorDashboard() {
         )}
       </div>
 
-      {/* Stock Manager Modal */}
-      <AnimatePresence>
-        {stockManagerOpen && (
-          <OperatorStockManager
-            isOpen={stockManagerOpen}
-            onClose={() => setStockManagerOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
