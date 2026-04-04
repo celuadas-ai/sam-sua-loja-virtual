@@ -159,15 +159,6 @@ export default function OperatorDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setStockManagerOpen(true)}
-              className="gap-1"
-            >
-              <Boxes className="w-4 h-4" />
-              <span className="hidden sm:inline">Stock</span>
-            </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
             </Button>
