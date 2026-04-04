@@ -10,7 +10,7 @@ import samLogo from '@/assets/sam-logo.png';
 import { toast } from 'sonner';
 import { useOrders } from '@/hooks/useOrders';
 import { useDriverPosition } from '@/hooks/useDriverPosition';
-import OperatorStockManager from '@/components/operator/OperatorStockManager';
+
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, getDeliveryPriority, extractNeighborhood } from '@/utils/distance';
 import { OrderRouteMap } from '@/components/operator/OrderRouteMap';
