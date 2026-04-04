@@ -30,7 +30,6 @@ export default function OperatorDashboard() {
   const { orders: allOrders, loading, updateOrderStatus, confirmPayment } = useOrders();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
-  const [stockManagerOpen, setStockManagerOpen] = useState(false);
   const [mapOrderId, setMapOrderId] = useState<string | null>(null);
   const { isTracking, startTracking, stopTracking } = useDriverPosition();
   const { stores } = useStores();
