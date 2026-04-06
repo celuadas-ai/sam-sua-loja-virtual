@@ -118,11 +118,7 @@ export default function AuthPage() {
       );
 
       if (error) {
-        let errorMessage = error;
-        if (error.includes('already registered')) {
-          errorMessage = t.auth.emailAlreadyRegistered;
-        }
-        toast({ title: t.auth.error, description: errorMessage, variant: 'destructive' });
+        toast({ title: t.auth.error, description: error, variant: 'destructive' });
       } else {
         toast({ title: t.auth.accountCreated, description: t.auth.redirecting });
         setShowOtpModal(false);
