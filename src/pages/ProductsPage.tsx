@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, ArrowRight, Menu, Loader2 } from 'lucide-react';
+import { Search, ShoppingCart, ArrowRight, Menu, Loader2, WifiOff, RefreshCw } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { ProductCard } from '@/components/ProductCard';
 import { useProducts, brands } from '@/hooks/useProducts';
@@ -32,7 +32,7 @@ export default function ProductsPage() {
   const { itemCount, total } = useCart();
   const { t } = useLanguage();
   const { user, logout } = useAuth();
-  const { products, isLoading } = useProducts();
+  const { products, isLoading, error, refetch } = useProducts();
   const [selectedBrand, setSelectedBrand] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -175,7 +175,24 @@ export default function ProductsPage() {
         <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div> :
-
+        error ?
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <WifiOff className="w-16 h-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">Sem conexão</h3>
+            <p className="text-muted-foreground mb-6 max-w-xs">
+              Não foi possível carregar os produtos. Verifique a sua ligação à internet e tente novamente.
+            </p>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => refetch()}
+              className="sam-button-accent px-6 py-3 rounded-xl flex items-center gap-2">
+              <RefreshCw className="w-5 h-5" />
+              Tentar novamente
+            </motion.button>
+          </motion.div> :
         <>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               {filteredProducts.map((product, index) =>

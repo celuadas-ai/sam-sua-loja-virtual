@@ -87,6 +87,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message || null };
   };
 
+  const translateAuthError = (error: string): string => {
+    if (error.includes('already registered') || error.includes('already been registered')) {
+      return 'Este email já está registado. Tente iniciar sessão ou use outro email.';
+    }
+    if (error.includes('Password should be at least')) {
+      const match = error.match(/at least (\d+)/);
+      const min = match ? match[1] : '6';
+      return `A palavra-passe deve ter pelo menos ${min} caracteres.`;
+    }
+    if (error.includes('Unable to validate email')) {
+      return 'O email introduzido não é válido. Verifique e tente novamente.';
+    }
+    if (error.includes('Email rate limit exceeded') || error.includes('rate limit')) {
+      return 'Demasiadas tentativas. Aguarde alguns minutos antes de tentar novamente.';
+    }
+    if (error.includes('Signup is disabled')) {
+      return 'O registo de novas contas está temporariamente desactivado.';
+    }
+    if (error.includes('weak_password') || error.includes('too common') || error.includes('easily guessable')) {
+      return 'A palavra-passe é demasiado fraca. Use uma combinação de letras, números e símbolos.';
+    }
+    if (error.includes('invalid') && error.includes('email')) {
+      return 'O formato do email não é válido.';
+    }
+    return error;
+  };
+
   const signup = async (email: string, password: string, name: string, phone: string): Promise<{ error: string | null }> => {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -103,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      return { error: error.message };
+      return { error: translateAuthError(error.message) };
     }
 
     if (data.user) {
