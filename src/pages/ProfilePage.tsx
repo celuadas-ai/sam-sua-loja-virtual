@@ -152,6 +152,52 @@ export default function ProfilePage() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-24 sm:pb-20">
+        <Header title={t.profile.title} />
+        <div className="px-4 py-6 flex flex-col items-center justify-center gap-6 mt-12">
+          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center">
+            <User className="w-10 h-10 text-muted-foreground" />
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-xl font-bold text-foreground">Sem sessão iniciada</h2>
+            <p className="text-muted-foreground text-sm">Inicie sessão para aceder ao seu perfil</p>
+          </div>
+          <Button onClick={() => navigate('/auth')} className="w-full max-w-xs">
+            Iniciar Sessão
+          </Button>
+        </div>
+
+        <div className="px-4 space-y-2 mt-6">
+          {menuItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <motion.button
+                key={item.path}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => navigate(item.path)}
+                className="w-full sam-card p-4 flex items-center gap-4"
+              >
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-foreground" />
+                </div>
+                <span className="flex-1 text-left font-medium text-foreground">
+                  {item.label}
+                </span>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24 sm:pb-20">
       <Header title={t.profile.title} />
