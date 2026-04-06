@@ -32,7 +32,7 @@ export default function ProductsPage() {
   const { itemCount, total } = useCart();
   const { t } = useLanguage();
   const { user, logout } = useAuth();
-  const { products, isLoading } = useProducts();
+  const { products, isLoading, error, refetch } = useProducts();
   const [selectedBrand, setSelectedBrand] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
