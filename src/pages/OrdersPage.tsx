@@ -106,20 +106,21 @@ export default function OrdersPage() {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(order.createdAt), "dd MMM yyyy", { locale: pt })} • {order.items.length} {order.items.length === 1 ? t.cart.item : t.cart.items}
+                  {format(new Date(order.createdAt), "dd MMM yyyy", { locale: pt })} • {order.items.length} {order.items.length === 1 ? t.cart.item : t.cart.items} • {order.total.toLocaleString()} MT
                 </p>
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-sm font-semibold text-primary">
-                    {order.total.toLocaleString()} MT
-                  </p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    order.paymentStatus === 'paid'
-                      ? 'bg-green-500/10 text-green-600'
-                      : 'bg-amber-500/10 text-amber-600'
+                <p className="text-xs mt-1 font-medium text-muted-foreground">
+                  <span className={`${
+                    order.status === 'delivered' ? 'text-sam-success' :
+                    order.status === 'on_the_way' || order.status === 'almost_there' ? 'text-orange-500' :
+                    order.status === 'preparing' ? 'text-yellow-600' : 'text-blue-500'
                   }`}>
-                    {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
+                    {t.status[order.status as keyof typeof t.status] || order.status}
                   </span>
-                </div>
+                  {' • '}
+                  <span className={order.paymentStatus === 'paid' ? 'text-sam-success' : 'text-amber-500'}>
+                    Pagamento {order.paymentStatus === 'paid' ? 'confirmado' : 'pendente'}
+                  </span>
+                </p>
               </div>
 
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
