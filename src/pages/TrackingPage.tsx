@@ -122,13 +122,13 @@ export default function TrackingPage() {
 
   const handleCall = () => {
     if (operatorInfo?.phone) {
-      window.open(`tel:${operatorInfo.phone}`, '_self');
+      window.location.href = `tel:${operatorInfo.phone}`;
     }
   };
 
   const handleSms = () => {
     if (operatorInfo?.phone) {
-      window.open(`sms:${operatorInfo.phone}`, '_self');
+      window.location.href = `sms:${operatorInfo.phone}`;
     }
   };
 
