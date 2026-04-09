@@ -28,18 +28,22 @@ export default function AndroidBackHandler() {
     let isMounted = true;
     let listener: PluginListenerHandle | undefined;
 
-    void NativeApp.addListener('backButton', ({ canGoBack }) => {
-      const hasBrowserHistory = window.history.length > 1;
-
-      if (canGoBack || hasBrowserHistory) {
-        navigate(-1);
+    void NativeApp.addListener('backButton', () => {
+      // On products page → exit app
+      if (location.pathname === '/products') {
+        (navigator as any).app?.exitApp?.();
         return;
       }
 
+      // Use logical parent route
       const parentRoute = getBackRoute(location.pathname);
-      if (parentRoute && parentRoute !== location.pathname) {
+      if (parentRoute) {
         navigate(parentRoute, { replace: true });
+        return;
       }
+
+      // Fallback: go to products
+      navigate('/products', { replace: true });
     }).then((handle) => {
       if (!isMounted) {
         void handle.remove();
