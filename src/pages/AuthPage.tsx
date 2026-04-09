@@ -83,21 +83,18 @@ export default function AuthPage() {
           toast({ title: `${t.auth.welcomeBack}!`, description: t.auth.redirecting });
         }
       } else {
-        // Signup: first send OTP to verify phone
-        setPendingSignupData({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          phone: formData.phone,
-        });
-        setOtpPhone(formData.phone);
+        // Signup directly without OTP verification (temporarily disabled)
+        const { error } = await signup(
+          formData.email,
+          formData.password,
+          formData.name,
+          formData.phone
+        );
 
-        const { error } = await sendOtp(formData.phone);
         if (error) {
           toast({ title: t.auth.error, description: error, variant: 'destructive' });
         } else {
-          setShowOtpModal(true);
-          toast({ title: t.auth.otpSent, description: t.auth.otpSentDesc });
+          toast({ title: t.auth.accountCreated, description: t.auth.redirecting });
         }
       }
     } finally {
