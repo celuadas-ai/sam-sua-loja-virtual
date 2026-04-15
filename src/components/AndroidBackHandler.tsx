@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getBackRoute } from '@/utils/navigation';
@@ -19,6 +19,12 @@ const NativeApp = registerPlugin<NativeAppPlugin>('App');
 export default function AndroidBackHandler() {
   const location = useLocation();
   const navigate = useNavigate();
+  const pathnameRef = useRef(location.pathname);
+
+  // Keep ref in sync
+  useEffect(() => {
+    pathnameRef.current = location.pathname;
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) {
@@ -29,14 +35,16 @@ export default function AndroidBackHandler() {
     let listener: PluginListenerHandle | undefined;
 
     void NativeApp.addListener('backButton', () => {
+      const current = pathnameRef.current;
+
       // On products page → exit app
-      if (location.pathname === '/products') {
+      if (current === '/products') {
         (navigator as any).app?.exitApp?.();
         return;
       }
 
       // Use logical parent route
-      const parentRoute = getBackRoute(location.pathname);
+      const parentRoute = getBackRoute(current);
       if (parentRoute) {
         navigate(parentRoute, { replace: true });
         return;
@@ -49,18 +57,16 @@ export default function AndroidBackHandler() {
         void handle.remove();
         return;
       }
-
       listener = handle;
     });
 
     return () => {
       isMounted = false;
-
       if (listener) {
         void listener.remove();
       }
     };
-  }, [location.pathname, navigate]);
+  }, [navigate]);
 
   return null;
 }
