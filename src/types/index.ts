@@ -32,6 +32,7 @@ export interface Order {
   customerLatitude?: number;
   customerLongitude?: number;
   operatorId?: string;
+  validationCode?: string;
 }
 
 export type PaymentStatus = 'pending' | 'paid';

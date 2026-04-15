@@ -18,6 +18,7 @@ interface DbOrder {
   operator_id: string | null;
   estimated_delivery: string | null;
   order_number: number;
+  validation_code: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -54,6 +55,7 @@ function mapDbOrderToOrder(dbOrder: DbOrder, items: CartItem[]): Order {
     customerLatitude: dbOrder.customer_latitude ? Number(dbOrder.customer_latitude) : undefined,
     customerLongitude: dbOrder.customer_longitude ? Number(dbOrder.customer_longitude) : undefined,
     operatorId: dbOrder.operator_id || undefined,
+    validationCode: dbOrder.validation_code || undefined,
   };
 }
 
