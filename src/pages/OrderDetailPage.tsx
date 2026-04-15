@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, MapPin, Phone, Truck, CreditCard, Clock, ArrowLeft, Loader2 } from 'lucide-react';
+import { Package, MapPin, Phone, Truck, CreditCard, Clock, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -72,6 +72,7 @@ export default function OrderDetailPage() {
           customerName: orderData.customer_name || undefined,
           customerPhone: orderData.customer_phone || undefined,
           customerAddress: orderData.customer_address || undefined,
+          validationCode: (orderData as any).validation_code || undefined,
         });
       } catch (err) {
         console.error('Error fetching order:', err);
@@ -135,6 +136,14 @@ export default function OrderDetailPage() {
               {status.label}
             </span>
           </div>
+
+          {order.validationCode && (
+            <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-accent/10 border border-accent/20">
+              <ShieldCheck className="w-4 h-4 text-accent" />
+              <span className="text-xs text-muted-foreground">Código:</span>
+              <span className="font-mono font-bold tracking-widest text-accent">{order.validationCode}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">
