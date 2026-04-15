@@ -1,4 +1,5 @@
 const logicalParentRoutes: Record<string, string> = {
+  '/': '/products',
   '/auth': '/',
   '/forgot-password': '/auth',
   '/reset-password': '/auth',
@@ -13,6 +14,10 @@ const logicalParentRoutes: Record<string, string> = {
   '/payment-methods': '/profile',
   '/help': '/profile',
   '/notifications': '/products',
+  '/privacy': '/profile',
+  '/terms': '/profile',
+  '/operator': '/products',
+  '/admin': '/products',
   '/admin/products': '/admin',
   '/admin/operators': '/admin',
   '/admin/profiles': '/admin',
