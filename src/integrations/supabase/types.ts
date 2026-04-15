@@ -227,6 +227,7 @@ export type Database = {
           transaction_id_external: string | null
           updated_at: string
           user_id: string | null
+          validation_code: string | null
         }
         Insert: {
           created_at?: string
@@ -248,6 +249,7 @@ export type Database = {
           transaction_id_external?: string | null
           updated_at?: string
           user_id?: string | null
+          validation_code?: string | null
         }
         Update: {
           created_at?: string
@@ -269,6 +271,7 @@ export type Database = {
           transaction_id_external?: string | null
           updated_at?: string
           user_id?: string | null
+          validation_code?: string | null
         }
         Relationships: [
           {
