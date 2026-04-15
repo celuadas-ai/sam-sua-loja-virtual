@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Phone, MessageCircle, MapPin, Package, ChevronRight, User } from 'lucide-react';
+import { Clock, Phone, MessageCircle, MapPin, Package, ChevronRight, User, ShieldCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
@@ -267,8 +267,21 @@ export default function TrackingPage() {
         </motion.div>
       </div>
 
-      {/* Order ID */}
-      <div className="px-4 py-4">
+      {/* Validation Code + Order ID */}
+      <div className="px-4 py-4 space-y-2">
+        {activeOrder.validationCode && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-3 p-3 rounded-xl bg-accent/10 border border-accent/20"
+          >
+            <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Código de validação</p>
+              <p className="text-lg font-mono font-bold tracking-widest text-accent">{activeOrder.validationCode}</p>
+            </div>
+          </motion.div>
+        )}
         <p className="text-sm text-muted-foreground">
           {t.tracking.order}: <span className="font-mono font-semibold text-foreground">{activeOrder.id.slice(0, 8)}...</span>
         </p>
