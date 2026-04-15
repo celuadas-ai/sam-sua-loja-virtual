@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Route, MapPinned, Map } from 'lucide-react';
+import { Package, MapPin, Phone, CheckCircle, Clock, Truck, LogOut, ChevronDown, ChevronUp, CreditCard, ShoppingBag, Loader2, Navigation, Route, MapPinned, Map, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -214,6 +214,12 @@ export default function OperatorDashboard() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="font-mono font-semibold text-foreground text-sm">{order.id.slice(0, 8)}...</p>
+                      {order.validationCode && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+                          <span className="text-xs font-mono font-bold tracking-widest text-accent">{order.validationCode}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs text-white ${status.color}`}>
                           {status.label}
