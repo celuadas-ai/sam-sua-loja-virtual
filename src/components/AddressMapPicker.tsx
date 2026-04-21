@@ -5,6 +5,8 @@ import { MapPin, Navigation, Search, Crosshair } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentLocation as getDeviceLocation, GeolocationError } from '@/utils/geolocation';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddressMapPickerProps {
   initialAddress?: string;
