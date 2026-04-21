@@ -10,9 +10,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useStores } from '@/hooks/useStores';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, isPointInPolygon } from '@/utils/distance';
+import { getCurrentLocation, getAddressFromCoordinates } from '@/utils/geolocation';
 
 interface Address {
   id: string;
@@ -121,50 +122,22 @@ export default function PaymentPage() {
     hasAutoDetected.current = true;
 
     const autoDetectLocation = async () => {
-      if (!navigator.geolocation) return;
-
       try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
-          });
-        });
+        const { latitude, longitude } = await getCurrentLocation();
+        const address = await getAddressFromCoordinates({ latitude, longitude });
 
-        const { latitude, longitude } = position.coords;
+        const currentLocationAddress: Address = {
+          id: `current-${Date.now()}`,
+          label: 'Localização Atual',
+          address,
+          isDefault: false,
+          coords: { lat: latitude, lng: longitude },
+        };
 
-        // Get API key from edge function
-        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-maps-key');
-        
-        if (keyError || !keyData?.apiKey) {
-          console.error('Failed to get API key');
-          return;
-        }
-
-        // Reverse geocoding
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${keyData.apiKey}&language=pt`
-        );
-        const data = await response.json();
-
-        if (data.status === 'OK' && data.results.length > 0) {
-          const address = data.results[0].formatted_address;
-          
-          const currentLocationAddress: Address = {
-            id: `current-${Date.now()}`,
-            label: 'Localização Atual',
-            address: address,
-            isDefault: false,
-            coords: { lat: latitude, lng: longitude },
-          };
-
-          setSelectedAddress(currentLocationAddress);
-          toast({ title: '📍 Localização detectada automaticamente!' });
-        }
+        setSelectedAddress(currentLocationAddress);
+        toast({ title: '📍 Localização detectada automaticamente!' });
       } catch (error) {
         console.log('Auto-detect location skipped:', error);
-        // Silent fail - user can still select manually
       }
     };
 
