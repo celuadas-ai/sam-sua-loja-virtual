@@ -25,7 +25,6 @@ const faqItems = [
 
 const contactOptions = [
   { icon: Phone, label: 'Ligar', value: '+258 84 000 0000', action: 'tel:+25884000000' },
-  { icon: MessageCircle, label: 'WhatsApp', value: '+258 84 000 0000', action: 'https://wa.me/25884000000' },
   { icon: Mail, label: 'Email', value: 'suporte@sam.mz', action: 'mailto:suporte@sam.mz' },
 ];
 
