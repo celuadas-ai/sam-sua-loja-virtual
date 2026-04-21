@@ -145,26 +145,24 @@ export function ProductCard({ product, index }: ProductCardProps) {
       </div>
     </motion.div>
 
-    <AlertDialog open={depositDialogOpen} onOpenChange={(open) => {
-      if (!open) setDepositDialogOpen(false);
-    }}>
-      <AlertDialogContent onPointerDownOutside={() => setDepositDialogOpen(false)}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Garrafão Natura / Ges20</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Garrafão Natura / Ges20</DialogTitle>
+          <DialogDescription>
             Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na próxima troca).
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel onClick={() => confirmDeposit(false)}>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => confirmDeposit(false)}>
             Já tenho o garrafão
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={() => confirmDeposit(true)}>
+          </Button>
+          <Button onClick={() => confirmDeposit(true)}>
             Preciso de garrafão (+1.000 MT)
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
