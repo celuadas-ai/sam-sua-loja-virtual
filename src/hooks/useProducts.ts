@@ -14,6 +14,7 @@ import aguaGas330ml from '@/assets/agua-gas-330ml.png';
 import ff500ml from '@/assets/ff-500ml.png';
 import ff15l from '@/assets/ff-1.5l.png';
 import ff7l from '@/assets/ff-7l.png';
+import ff2x7l from '@/assets/ff-2x7l-caixa.png';
 import natura189l from '@/assets/natura-18.9l.png';
 import escolhaCerta7l from '@/assets/escolha-certa-7l.png';
 
@@ -30,6 +31,7 @@ const imageMap: Record<string, string> = {
   '/assets/ff-500ml.png': ff500ml,
   '/assets/ff-1.5l.png': ff15l,
   '/assets/ff-7l.png': ff7l,
+  '/assets/ff-2x7l-caixa.png': ff2x7l,
   '/assets/natura-18.9l.png': natura189l,
   '/assets/escolha-certa-7l.png': escolhaCerta7l,
 };
