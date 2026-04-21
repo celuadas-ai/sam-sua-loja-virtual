@@ -13,8 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
 import { MapsHealthGuard } from './MapsHealthGuard';
-import { supabase } from '@/integrations/supabase/client';
-import { getCurrentLocation, GeolocationError } from '@/utils/geolocation';
+import { getCurrentLocation, GeolocationError, getAddressFromCoordinates } from '@/utils/geolocation';
 
 interface Address {
   id: string;
@@ -107,42 +106,24 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
 
     try {
       const { latitude, longitude } = await getCurrentLocation();
+      const address = await getAddressFromCoordinates({ latitude, longitude });
 
-      // Get API key from edge function
-      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-maps-key');
+      const currentLocationAddress: Address = {
+        id: `current-${Date.now()}`,
+        label: 'Localização Atual',
+        address,
+        isDefault: false,
+        coords: { lat: latitude, lng: longitude },
+      };
 
-      if (keyError || !keyData?.apiKey) {
-        throw new Error('Não foi possível obter a chave da API');
-      }
+      setAddresses(prev => {
+        const filtered = prev.filter(a => !a.id.startsWith('current-'));
+        return [...filtered, currentLocationAddress];
+      });
 
-      // Reverse geocoding
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${keyData.apiKey}&language=pt`
-      );
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results.length > 0) {
-        const address = data.results[0].formatted_address;
-
-        const currentLocationAddress: Address = {
-          id: `current-${Date.now()}`,
-          label: 'Localização Atual',
-          address: address,
-          isDefault: false,
-          coords: { lat: latitude, lng: longitude },
-        };
-
-        setAddresses(prev => {
-          const filtered = prev.filter(a => !a.id.startsWith('current-'));
-          return [...filtered, currentLocationAddress];
-        });
-
-        onAddressSelect(currentLocationAddress);
-        setIsOpen(false);
-        toast({ title: 'Localização atual detectada!' });
-      } else {
-        throw new Error('Não foi possível obter o endereço');
-      }
+      onAddressSelect(currentLocationAddress);
+      setIsOpen(false);
+      toast({ title: 'Localização atual detectada!' });
     } catch (error: any) {
       console.error('Error getting location:', error);
       const message = error instanceof GeolocationError

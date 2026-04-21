@@ -1,8 +1,4 @@
-/**
- * Unified geolocation helper.
- * Works on web browsers and on Capacitor native (Android/iOS).
- * Provides detailed, user-friendly error messages.
- */
+import { supabase } from '@/integrations/supabase/client';
 
 export interface GeoCoords {
   latitude: number;
@@ -12,6 +8,7 @@ export interface GeoCoords {
 
 export class GeolocationError extends Error {
   code: 'unsupported' | 'permission_denied' | 'unavailable' | 'timeout' | 'insecure' | 'iframe_blocked' | 'unknown';
+
   constructor(code: GeolocationError['code'], message: string) {
     super(message);
     this.code = code;
@@ -20,12 +17,10 @@ export class GeolocationError extends Error {
 }
 
 const isCapacitorNative = (): boolean => {
-  // @ts-ignore
   return !!(window as any).Capacitor?.isNativePlatform?.();
 };
 
 const isInsecureContext = (): boolean => {
-  // Geolocation requires HTTPS (or localhost)
   return typeof window !== 'undefined' && !window.isSecureContext;
 };
 
@@ -58,27 +53,27 @@ const getWebPosition = (): Promise<GeoCoords> => {
         });
       },
       (err) => {
-        // PositionError codes: 1=denied, 2=unavailable, 3=timeout
         if (err.code === 1) {
-          // In iframes, permission errors often mean the parent didn't grant geolocation
           if (isInIframe()) {
-            reject(new GeolocationError(
-              'iframe_blocked',
-              'O acesso à localização está bloqueado nesta pré-visualização. Abra a app em janela completa ou no telemóvel para usar a sua localização.'
-            ));
-          } else {
-            reject(new GeolocationError(
-              'permission_denied',
-              'Permissão de localização negada. Active a localização nas definições do navegador.'
-            ));
+            reject(new GeolocationError('iframe_blocked', 'O acesso à localização está bloqueado nesta pré-visualização. Abra a app em janela completa ou no telemóvel para usar a sua localização.'));
+            return;
           }
-        } else if (err.code === 2) {
-          reject(new GeolocationError('unavailable', 'Localização indisponível. Verifique se o GPS está ativado.'));
-        } else if (err.code === 3) {
-          reject(new GeolocationError('timeout', 'Tempo esgotado ao obter a localização. Tente novamente.'));
-        } else {
-          reject(new GeolocationError('unknown', err.message || 'Erro ao obter localização.'));
+
+          reject(new GeolocationError('permission_denied', 'Permissão de localização negada. Active a localização nas definições do navegador.'));
+          return;
         }
+
+        if (err.code === 2) {
+          reject(new GeolocationError('unavailable', 'Localização indisponível. Verifique se o GPS está ativado.'));
+          return;
+        }
+
+        if (err.code === 3) {
+          reject(new GeolocationError('timeout', 'Tempo esgotado ao obter a localização. Tente novamente.'));
+          return;
+        }
+
+        reject(new GeolocationError('unknown', err.message || 'Erro ao obter localização.'));
       },
       {
         enableHighAccuracy: true,
@@ -89,24 +84,15 @@ const getWebPosition = (): Promise<GeoCoords> => {
   });
 };
 
-/**
- * Get the current device location.
- * Throws a `GeolocationError` with a user-friendly message on failure.
- *
- * IMPORTANT: Call this synchronously inside a user gesture handler
- * (button click). Do NOT await other async work before invoking this.
- */
 export async function getCurrentLocation(): Promise<GeoCoords> {
   if (isCapacitorNative()) {
     try {
-      // Dynamic import so web bundles don't break if plugin missing
       const { Geolocation } = await import('@capacitor/geolocation');
+      const permissions = await Geolocation.checkPermissions();
 
-      // Ensure permissions
-      const perm = await Geolocation.checkPermissions();
-      if (perm.location !== 'granted') {
-        const req = await Geolocation.requestPermissions();
-        if (req.location !== 'granted') {
+      if (permissions.location !== 'granted') {
+        const requested = await Geolocation.requestPermissions();
+        if (requested.location !== 'granted') {
           throw new GeolocationError('permission_denied', 'Permissão de localização negada nas definições do dispositivo.');
         }
       }
@@ -129,4 +115,28 @@ export async function getCurrentLocation(): Promise<GeoCoords> {
   }
 
   return getWebPosition();
+}
+
+export async function getAddressFromCoordinates(
+  coords: Pick<GeoCoords, 'latitude' | 'longitude'>,
+  language = 'pt'
+): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('reverse-geocode', {
+    body: {
+      lat: coords.latitude,
+      lng: coords.longitude,
+      language,
+    },
+  });
+
+  if (error) {
+    throw new Error((data as { error?: string } | null)?.error || error.message || 'Não foi possível obter o endereço');
+  }
+
+  const address = (data as { address?: string } | null)?.address;
+  if (!address) {
+    throw new Error('Não foi possível obter o endereço');
+  }
+
+  return address;
 }
