@@ -8,6 +8,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
 import { DeliveryMap } from '@/components/DeliveryMap';
+import { MapsHealthGuard } from '@/components/MapsHealthGuard';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrders } from '@/hooks/useOrders';
@@ -196,16 +197,20 @@ export default function TrackingPage() {
       <Header title={t.tracking.title} showBack />
 
       {/* Google Maps with Realtime Tracking */}
-      <DeliveryMap 
-        status={activeOrder.status} 
-        destinationAddress={activeOrder.customerAddress}
-        destinationCoords={
-          activeOrder.customerLatitude && activeOrder.customerLongitude
-            ? { lat: activeOrder.customerLatitude, lng: activeOrder.customerLongitude }
-            : undefined
-        }
-        orderId={activeOrder.id}
-      />
+      <div className="px-4 pt-3">
+        <MapsHealthGuard>
+          <DeliveryMap 
+            status={activeOrder.status} 
+            destinationAddress={activeOrder.customerAddress}
+            destinationCoords={
+              activeOrder.customerLatitude && activeOrder.customerLongitude
+                ? { lat: activeOrder.customerLatitude, lng: activeOrder.customerLongitude }
+                : undefined
+            }
+            orderId={activeOrder.id}
+          />
+        </MapsHealthGuard>
+      </div>
 
       {/* ETA Card */}
       <div className="px-4 -mt-8 relative z-10">

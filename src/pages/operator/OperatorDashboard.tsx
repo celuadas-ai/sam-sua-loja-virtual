@@ -14,6 +14,7 @@ import { useDriverPosition } from '@/hooks/useDriverPosition';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, getDeliveryPriority, extractNeighborhood } from '@/utils/distance';
 import { OrderRouteMap } from '@/components/operator/OrderRouteMap';
+import { MapsHealthGuard } from '@/components/MapsHealthGuard';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; next?: OrderStatus }> = {
   received: { label: 'Recebido', color: 'bg-blue-500', next: 'preparing' },
@@ -336,11 +337,13 @@ export default function OperatorDashboard() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <OrderRouteMap
-                              storeCoords={distInfo.storeCoords}
-                              customerCoords={distInfo.customerCoords}
-                              storeName={distInfo.storeName}
-                            />
+                            <MapsHealthGuard>
+                              <OrderRouteMap
+                                storeCoords={distInfo.storeCoords}
+                                customerCoords={distInfo.customerCoords}
+                                storeName={distInfo.storeName}
+                              />
+                            </MapsHealthGuard>
                           </motion.div>
                         )}
                       </AnimatePresence>

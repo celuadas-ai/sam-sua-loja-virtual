@@ -320,10 +320,12 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                 </div>
                 
                 {showMapPicker ? (
-                  <AddressMapPicker
-                    initialAddress={formData.address}
-                    onAddressSelect={handleMapAddressSelect}
-                  />
+                  <MapsHealthGuard>
+                    <AddressMapPicker
+                      initialAddress={formData.address}
+                      onAddressSelect={handleMapAddressSelect}
+                    />
+                  </MapsHealthGuard>
                 ) : (
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">
