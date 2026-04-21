@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
+import { MapsHealthGuard } from './MapsHealthGuard';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Address {
@@ -320,10 +321,12 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
                 </div>
                 
                 {showMapPicker ? (
-                  <AddressMapPicker
-                    initialAddress={formData.address}
-                    onAddressSelect={handleMapAddressSelect}
-                  />
+                  <MapsHealthGuard>
+                    <AddressMapPicker
+                      initialAddress={formData.address}
+                      onAddressSelect={handleMapAddressSelect}
+                    />
+                  </MapsHealthGuard>
                 ) : (
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">

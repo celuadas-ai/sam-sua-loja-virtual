@@ -28,6 +28,7 @@ import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import StoreMapPicker from '@/components/admin/StoreMapPicker';
+import { MapsHealthGuard } from '@/components/MapsHealthGuard';
 
 interface LatLng { lat: number; lng: number; }
 
@@ -259,18 +260,20 @@ export default function AdminStores() {
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-3">
-                <StoreMapPicker
-                  latitude={form.latitude ? parseFloat(form.latitude) : undefined}
-                  longitude={form.longitude ? parseFloat(form.longitude) : undefined}
-                  radiusKm={parseFloat(form.max_delivery_radius_km) || 15}
-                  deliveryZone={form.delivery_zone ?? undefined}
-                  onLocationChange={(lat, lng, address) => {
-                    setForm(f => ({ ...f, latitude: lat.toString(), longitude: lng.toString(), address: address || f.address }));
-                  }}
-                  onDeliveryZoneChange={(zone) => {
-                    setForm(f => ({ ...f, delivery_zone: zone }));
-                  }}
-                />
+                <MapsHealthGuard>
+                  <StoreMapPicker
+                    latitude={form.latitude ? parseFloat(form.latitude) : undefined}
+                    longitude={form.longitude ? parseFloat(form.longitude) : undefined}
+                    radiusKm={parseFloat(form.max_delivery_radius_km) || 15}
+                    deliveryZone={form.delivery_zone ?? undefined}
+                    onLocationChange={(lat, lng, address) => {
+                      setForm(f => ({ ...f, latitude: lat.toString(), longitude: lng.toString(), address: address || f.address }));
+                    }}
+                    onDeliveryZoneChange={(zone) => {
+                      setForm(f => ({ ...f, delivery_zone: zone }));
+                    }}
+                  />
+                </MapsHealthGuard>
               </CollapsibleContent>
             </Collapsible>
 
