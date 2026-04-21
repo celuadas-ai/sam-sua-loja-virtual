@@ -83,6 +83,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
   const packPrice = product.price * product.minQuantity;
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -144,5 +145,25 @@ export function ProductCard({ product, index }: ProductCardProps) {
         </div>
       </div>
     </motion.div>
+
+    <AlertDialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Garrafão Natura / Ges20</AlertDialogTitle>
+          <AlertDialogDescription>
+            Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na próxima troca).
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => confirmDeposit(false)}>
+            Já tenho o garrafão
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => confirmDeposit(true)}>
+            Preciso de garrafão (+1.000 MT)
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
