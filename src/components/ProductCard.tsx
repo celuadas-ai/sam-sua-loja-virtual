@@ -150,7 +150,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
         <DialogHeader>
           <DialogTitle>Garrafão Natura / Ges20</DialogTitle>
           <DialogDescription>
-            Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na próxima troca).
+            Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na devolução dos garrafões).
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-row gap-2">
