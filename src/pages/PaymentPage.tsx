@@ -331,44 +331,6 @@ export default function PaymentPage() {
         </motion.div>
       </div>
 
-      {/* Bottle deposit notice (Gas20/Natura) */}
-      {hasGes20Item && (
-        <div className="px-4 mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="sam-card p-4 border border-amber-500/30 bg-amber-500/5"
-          >
-            <p className="font-semibold text-foreground mb-1 text-sm">Garrafão Natura / Ges20</p>
-            <p className="text-xs text-muted-foreground mb-3">
-              Já possui o garrafão? Caso contrário, será adicionada uma caução de 1.000 MT por garrafão (devolvido na próxima troca).
-            </p>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-muted/30">
-                <input
-                  type="radio"
-                  name="bottleDeposit"
-                  checked={!needsBottleDeposit}
-                  onChange={() => setNeedsBottleDeposit(false)}
-                  className="accent-primary"
-                />
-                <span className="text-sm text-foreground">Já tenho o garrafão (troca)</span>
-              </label>
-              <label className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-muted/30">
-                <input
-                  type="radio"
-                  name="bottleDeposit"
-                  checked={needsBottleDeposit}
-                  onChange={() => setNeedsBottleDeposit(true)}
-                  className="accent-primary"
-                />
-                <span className="text-sm text-foreground">Preciso de garrafão novo (+1.000 MT cada)</span>
-              </label>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
       {/* Payment Methods */}
       <div className="px-4">
         <h3 className="font-semibold text-foreground mb-3">
