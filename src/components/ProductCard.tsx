@@ -155,6 +155,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => setDepositDialogOpen(false)}>
+            Voltar
+          </AlertDialogCancel>
           <AlertDialogCancel onClick={() => confirmDeposit(false)}>
             Já tenho o garrafão
           </AlertDialogCancel>
