@@ -127,12 +127,14 @@ export default function OrderDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="sam-card p-4"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-start justify-between mb-4 gap-3">
             <div>
-              <p className="text-sm text-muted-foreground">Pedido</p>
-              <p className="font-mono font-bold text-foreground">{order.id.slice(0, 8)}...</p>
+              <p className="text-sm text-muted-foreground">Encomenda</p>
+              <p className="font-bold text-foreground">
+                {format(order.createdAt, "dd/MM/yyyy HH:mm", { locale: pt })}
+              </p>
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm text-white ${status.color}`}>
+            <span className={`px-3 py-1 rounded-full text-sm text-white ${status.color} flex-shrink-0`}>
               {status.label}
             </span>
           </div>
@@ -145,17 +147,20 @@ export default function OrderDetailPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm mt-3">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {format(order.createdAt, "dd MMM yyyy 'às' HH:mm", { locale: pt })}
+              <span className={`${
+                order.status === 'received' ? 'text-blue-500' :
+                order.status === 'delivered' ? 'text-sam-success' : 'text-orange-500'
+              }`}>
+                Pedido {order.status === 'received' ? 'recebido' : status.label.toLowerCase()}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-muted-foreground" />
-              <span className={`${order.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>
-                {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
+              <span className={`${order.paymentStatus === 'paid' ? 'text-sam-success' : 'text-amber-600'}`}>
+                Pagamento {order.paymentStatus === 'paid' ? 'confirmado' : 'pendente'}
               </span>
             </div>
           </div>

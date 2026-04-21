@@ -99,14 +99,14 @@ export default function OrdersPage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-semibold text-foreground text-sm">
-                    {order.id.slice(0, 8)}...
+                    Encomenda {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm", { locale: pt })}
                   </p>
                   <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
                     {t.status[order.status as keyof typeof t.status] || order.status}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(order.createdAt), "dd MMM yyyy", { locale: pt })} • {order.items.length} {order.items.length === 1 ? t.cart.item : t.cart.items} • {order.total.toLocaleString()} MT
+                  {order.items.length} {order.items.length === 1 ? t.cart.item : t.cart.items} • {order.total.toLocaleString()} MT
                 </p>
                 <p className="text-xs mt-1 font-medium text-muted-foreground">
                   <span className={`${
