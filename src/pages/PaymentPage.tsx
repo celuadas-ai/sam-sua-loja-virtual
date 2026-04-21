@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PaymentMethod } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useStores } from '@/hooks/useStores';
+import { supabase } from '@/integrations/supabase/client';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, isPointInPolygon } from '@/utils/distance';
 import { getCurrentLocation, getAddressFromCoordinates } from '@/utils/geolocation';

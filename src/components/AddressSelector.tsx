@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
 import { MapsHealthGuard } from './MapsHealthGuard';
-import { supabase } from '@/integrations/supabase/client';
 import { getCurrentLocation, GeolocationError, getAddressFromCoordinates } from '@/utils/geolocation';
 
 interface Address {
