@@ -16,6 +16,7 @@ interface AddressMapPickerProps {
 const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
 export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMapPickerProps) {
+  const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
