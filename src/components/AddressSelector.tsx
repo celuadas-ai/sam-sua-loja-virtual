@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
+import { MapsHealthGuard } from './MapsHealthGuard';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Address {

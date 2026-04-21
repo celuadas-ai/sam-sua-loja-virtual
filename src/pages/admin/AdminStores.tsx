@@ -28,6 +28,7 @@ import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import StoreMapPicker from '@/components/admin/StoreMapPicker';
+import { MapsHealthGuard } from '@/components/MapsHealthGuard';
 
 interface LatLng { lat: number; lng: number; }
 
