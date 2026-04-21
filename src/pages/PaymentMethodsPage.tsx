@@ -1,26 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Plus, Edit2, Trash2, Check, Smartphone, Banknote } from 'lucide-react';
+import { CreditCard, Plus, Edit2, Trash2, Smartphone } from 'lucide-react';
 import mpesaLogo from '@/assets/mpesa-logo.png';
 import emolaLogo from '@/assets/emola-logo.png';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
@@ -169,71 +154,13 @@ export default function PaymentMethodsPage() {
           );
         })}
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={openNew}
-              className="w-full sam-card p-4 flex items-center justify-center gap-2 border-dashed border-2"
-            >
-              <Plus className="w-5 h-5 text-primary" />
-              <span className="font-medium text-primary">Adicionar Método</span>
-            </motion.button>
-          </DialogTrigger>
-
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingMethod ? 'Editar Método' : 'Novo Método de Pagamento'}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  Tipo
-                </label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: PaymentMethod['type']) => setFormData(prev => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mpesa">M-Pesa</SelectItem>
-                    <SelectItem value="emola">e-Mola</SelectItem>
-                    <SelectItem value="card">Cartão</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  Nome
-                </label>
-                <Input
-                  value={formData.label}
-                  onChange={e => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                  placeholder="M-Pesa Principal"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  {formData.type === 'card' ? 'Últimos 4 dígitos' : 'Número de telefone'}
-                </label>
-                <Input
-                  value={formData.details}
-                  onChange={e => setFormData(prev => ({ ...prev, details: e.target.value }))}
-                  placeholder={formData.type === 'card' ? '4567' : '84 123 4567'}
-                />
-              </div>
-            </div>
-
-            <Button onClick={handleSave} className="w-full">
-              {editingMethod ? 'Guardar Alterações' : 'Adicionar'}
-            </Button>
-          </DialogContent>
-        </Dialog>
+        <div className="w-full sam-card p-4 flex flex-col items-center justify-center gap-1 border-dashed border-2 opacity-60">
+          <div className="flex items-center gap-2">
+            <Plus className="w-5 h-5 text-muted-foreground" />
+            <span className="font-medium text-muted-foreground">Adicionar Método</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Em breve disponível</span>
+        </div>
       </div>
 
       <BottomNav />
