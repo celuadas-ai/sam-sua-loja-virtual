@@ -13,6 +13,10 @@ interface CartContextType {
   iva: number;
   total: number;
   itemCount: number;
+  bottleDeposit: number;
+  needsBottleDeposit: boolean;
+  hasGes20Item: boolean;
+  setNeedsBottleDeposit: (value: boolean) => void;
   currentOrder: Order | null;
   createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string, customerCoords?: { lat: number; lng: number }, customerNuit?: string, transactionIdExternal?: string) => Promise<void>;
   updateOrderStatus: (status: OrderStatus) => void;
@@ -20,12 +24,15 @@ interface CartContextType {
   completeOrder: () => void;
 }
 
+const BOTTLE_DEPOSIT_PRICE = 1000; // MZN per Gas20/Natura bottle
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [needsBottleDeposit, setNeedsBottleDeposit] = useState<boolean>(false);
 
   const addItem = (product: Product) => {
     setItems(prev => {
@@ -62,7 +69,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const IVA_RATE = 0.16;
-  const total = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
+  const itemsTotal = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
+  // Detect Gas20/Natura bottles requiring deposit
+  const ges20Items = items.filter(i => i.brand === 'Natura / Ges20');
+  const hasGes20Item = ges20Items.length > 0;
+  const bottleQty = ges20Items.reduce((sum, i) => sum + i.quantity, 0);
+  const bottleDeposit = needsBottleDeposit && hasGes20Item ? BOTTLE_DEPOSIT_PRICE * bottleQty : 0;
+  const total = itemsTotal + bottleDeposit;
   const subtotal = Math.round((total / (1 + IVA_RATE)) * 100) / 100;
   const iva = Math.round((total - subtotal) * 100) / 100;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
