@@ -146,8 +146,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
       </div>
     </motion.div>
 
-    <AlertDialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
-      <AlertDialogContent>
+    <AlertDialog open={depositDialogOpen} onOpenChange={(open) => {
+      if (!open) setDepositDialogOpen(false);
+    }}>
+      <AlertDialogContent onPointerDownOutside={() => setDepositDialogOpen(false)}>
         <AlertDialogHeader>
           <AlertDialogTitle>Garrafão Natura / Ges20</AlertDialogTitle>
           <AlertDialogDescription>
@@ -155,9 +157,6 @@ export function ProductCard({ product, index }: ProductCardProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel onClick={() => setDepositDialogOpen(false)}>
-            Voltar
-          </AlertDialogCancel>
           <AlertDialogCancel onClick={() => confirmDeposit(false)}>
             Já tenho o garrafão
           </AlertDialogCancel>
