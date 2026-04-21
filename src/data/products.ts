@@ -23,7 +23,7 @@ export const products: Product[] = [
     price: 25,
     image: namaacha500mlPack6,
     minQuantity: 6,
-    unitLabel: '1 pack (6un)',
+    unitLabel: '0.5L x 6',
   },
   {
     id: 'namaacha-05-pack12',
