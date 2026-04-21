@@ -169,27 +169,28 @@ export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMap
   }, []);
 
   // Get current location
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) return;
-
+  const getCurrentLocation = async () => {
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        setSelectedCoords(coords);
-        mapInstanceRef.current?.panTo(coords);
-        markerRef.current?.setPosition(coords);
-        reverseGeocode(coords);
-        setIsLocating(false);
-      },
-      () => {
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true }
-    );
+    try {
+      const { latitude, longitude } = await getDeviceLocation();
+      const coords = { lat: latitude, lng: longitude };
+      setSelectedCoords(coords);
+      mapInstanceRef.current?.panTo(coords);
+      markerRef.current?.setPosition(coords);
+      reverseGeocode(coords);
+    } catch (error: any) {
+      const message = error instanceof GeolocationError
+        ? error.message
+        : 'Erro ao obter localização';
+      toast({
+        title: 'Não foi possível obter a localização',
+        description: message,
+        variant: 'destructive',
+        duration: 6000,
+      });
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   // Confirm selection
