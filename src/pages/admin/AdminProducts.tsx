@@ -386,10 +386,14 @@ export default function AdminProducts() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="1 pack (6un)">Pack 6 (1 pack / 6un)</SelectItem>
+                  <SelectItem value="1 pack (12un)">Pack 12 (1 pack / 12un)</SelectItem>
+                  <SelectItem value="1 caixa (12un)">Caixa 1 x 12 (12un)</SelectItem>
+                  <SelectItem value="1 caixa (24un)">Caixa 1 x 24 (24un)</SelectItem>
+                  <SelectItem value="Caixa 2x7L (14L)">Caixa 2 x 7L (14L)</SelectItem>
+                  <SelectItem value="Mín. 1 galão">Garrafão (Mín. 1 galão)</SelectItem>
+                  <SelectItem value="Mín. 5 garrafões">Garrafão (Mín. 5 garrafões)</SelectItem>
                   <SelectItem value="unidade">Unidade</SelectItem>
-                  <SelectItem value="pack">Pack</SelectItem>
-                  <SelectItem value="caixa">Caixa</SelectItem>
-                  <SelectItem value="garrafão">Garrafão</SelectItem>
                 </SelectContent>
               </Select>
             </div>
