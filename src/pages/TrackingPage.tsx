@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Phone, MessageCircle, MapPin, Package, ChevronRight, User, ShieldCheck } from 'lucide-react';
+import { Clock, Phone, MessageCircle, MapPin, Package, ChevronRight, User, ShieldCheck, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { OrderTracker } from '@/components/OrderTracker';
@@ -283,8 +285,16 @@ export default function TrackingPage() {
           </motion.div>
         )}
         <p className="text-sm text-muted-foreground">
-          {t.tracking.order}: <span className="font-mono font-semibold text-foreground">{activeOrder.id.slice(0, 8)}...</span>
+          Encomenda: <span className="font-semibold text-foreground">{format(new Date(activeOrder.createdAt), "dd/MM/yyyy HH:mm", { locale: pt })}</span>
         </p>
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate(`/orders/${activeOrder.id}`)}
+          className="w-full mt-2 sam-card p-3 flex items-center justify-center gap-2 text-sm font-medium text-primary hover:bg-muted/50 transition-colors"
+        >
+          <FileText className="w-4 h-4" />
+          Ver detalhes da encomenda
+        </motion.button>
       </div>
 
       {/* Tracker */}
@@ -318,7 +328,7 @@ export default function TrackingPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      #{order.id.slice(0, 8)}
+                      {format(new Date(order.createdAt), "dd/MM HH:mm", { locale: pt })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {getStatusLabel(order.status)}
