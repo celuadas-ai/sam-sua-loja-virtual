@@ -5,15 +5,14 @@ import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ProductCardProps {
   product: Product;
@@ -146,27 +145,24 @@ export function ProductCard({ product, index }: ProductCardProps) {
       </div>
     </motion.div>
 
-    <AlertDialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Garrafão Natura / Ges20</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Garrafão Natura / Ges20</DialogTitle>
+          <DialogDescription>
             Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na próxima troca).
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel onClick={() => setDepositDialogOpen(false)}>
-            Voltar
-          </AlertDialogCancel>
-          <AlertDialogCancel onClick={() => confirmDeposit(false)}>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => confirmDeposit(false)}>
             Já tenho o garrafão
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={() => confirmDeposit(true)}>
+          </Button>
+          <Button onClick={() => confirmDeposit(true)}>
             Preciso de garrafão (+1.000 MT)
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
