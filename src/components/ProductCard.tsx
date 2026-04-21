@@ -1,8 +1,19 @@
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
+import { useState } from 'react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ProductCardProps {
   product: Product;
@@ -10,17 +21,28 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index }: ProductCardProps) {
-  const { addItem, items, updateQuantity, removeItem } = useCart();
-  
+  const { addItem, items, updateQuantity, removeItem, hasGes20Item, setNeedsBottleDeposit } = useCart();
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
+
   const cartItem = items.find(item => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
-  const handleAdd = () => {
+  const isGes20 = product.brand === 'Natura / Ges20';
+
+  const performAdd = () => {
     if (quantity === 0) {
       addItem(product);
     } else {
       updateQuantity(product.id, quantity + 1);
     }
+  };
+
+  const handleAdd = () => {
+    if (isGes20 && !hasGes20Item && quantity === 0) {
+      setDepositDialogOpen(true);
+      return;
+    }
+    performAdd();
   };
 
   const handleRemove = () => {
@@ -37,6 +59,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
       removeItem(product.id);
     } else {
       if (quantity === 0) {
+        if (isGes20 && !hasGes20Item) {
+          setDepositDialogOpen(true);
+          return;
+        }
         addItem(product);
         if (numValue > 1) {
           updateQuantity(product.id, numValue);
@@ -47,10 +73,17 @@ export function ProductCard({ product, index }: ProductCardProps) {
     }
   };
 
+  const confirmDeposit = (needsNew: boolean) => {
+    setNeedsBottleDeposit(needsNew);
+    setDepositDialogOpen(false);
+    performAdd();
+  };
+
   // Price per pack/box = unit price × minQuantity
   const packPrice = product.price * product.minQuantity;
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -112,5 +145,25 @@ export function ProductCard({ product, index }: ProductCardProps) {
         </div>
       </div>
     </motion.div>
+
+    <AlertDialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Garrafão Natura / Ges20</AlertDialogTitle>
+          <AlertDialogDescription>
+            Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na próxima troca).
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => confirmDeposit(false)}>
+            Já tenho o garrafão
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => confirmDeposit(true)}>
+            Preciso de garrafão (+1.000 MT)
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
