@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
 import { MapsHealthGuard } from './MapsHealthGuard';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentLocation, GeolocationError } from '@/utils/geolocation';
 
 interface Address {
   id: string;
@@ -102,27 +103,14 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
   };
 
   const handleUseCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      toast({ title: 'Geolocalização não suportada pelo navegador', variant: 'destructive' });
-      return;
-    }
-
     setIsLoadingLocation(true);
 
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude } = await getCurrentLocation();
 
       // Get API key from edge function
       const { data: keyData, error: keyError } = await supabase.functions.invoke('get-maps-key');
-      
+
       if (keyError || !keyData?.apiKey) {
         throw new Error('Não foi possível obter a chave da API');
       }
@@ -135,7 +123,7 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
 
       if (data.status === 'OK' && data.results.length > 0) {
         const address = data.results[0].formatted_address;
-        
+
         const currentLocationAddress: Address = {
           id: `current-${Date.now()}`,
           label: 'Localização Atual',
@@ -144,12 +132,11 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
           coords: { lat: latitude, lng: longitude },
         };
 
-        // Add to addresses if not exists
         setAddresses(prev => {
           const filtered = prev.filter(a => !a.id.startsWith('current-'));
           return [...filtered, currentLocationAddress];
         });
-        
+
         onAddressSelect(currentLocationAddress);
         setIsOpen(false);
         toast({ title: 'Localização atual detectada!' });
@@ -158,11 +145,15 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
       }
     } catch (error: any) {
       console.error('Error getting location:', error);
-      let message = 'Erro ao obter localização';
-      if (error.code === 1) message = 'Permissão de localização negada';
-      if (error.code === 2) message = 'Localização indisponível';
-      if (error.code === 3) message = 'Tempo esgotado ao obter localização';
-      toast({ title: message, variant: 'destructive' });
+      const message = error instanceof GeolocationError
+        ? error.message
+        : (error?.message || 'Erro ao obter localização');
+      toast({
+        title: 'Não foi possível obter a localização',
+        description: message,
+        variant: 'destructive',
+        duration: 6000,
+      });
     } finally {
       setIsLoadingLocation(false);
     }

@@ -5,6 +5,8 @@ import { MapPin, Navigation, Search, Crosshair } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentLocation as getDeviceLocation, GeolocationError } from '@/utils/geolocation';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddressMapPickerProps {
   initialAddress?: string;
@@ -14,6 +16,7 @@ interface AddressMapPickerProps {
 const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
 export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMapPickerProps) {
+  const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
@@ -167,27 +170,28 @@ export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMap
   }, []);
 
   // Get current location
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) return;
-
+  const getCurrentLocation = async () => {
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        setSelectedCoords(coords);
-        mapInstanceRef.current?.panTo(coords);
-        markerRef.current?.setPosition(coords);
-        reverseGeocode(coords);
-        setIsLocating(false);
-      },
-      () => {
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true }
-    );
+    try {
+      const { latitude, longitude } = await getDeviceLocation();
+      const coords = { lat: latitude, lng: longitude };
+      setSelectedCoords(coords);
+      mapInstanceRef.current?.panTo(coords);
+      markerRef.current?.setPosition(coords);
+      reverseGeocode(coords);
+    } catch (error: any) {
+      const message = error instanceof GeolocationError
+        ? error.message
+        : 'Erro ao obter localização';
+      toast({
+        title: 'Não foi possível obter a localização',
+        description: message,
+        variant: 'destructive',
+        duration: 6000,
+      });
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   // Confirm selection
