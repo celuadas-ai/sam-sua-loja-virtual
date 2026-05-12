@@ -37,7 +37,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
   };
 
   const handleAdd = () => {
-    if (isGes20 && !hasGes20Item && quantity === 0) {
+    if (isGes20) {
       setDepositDialogOpen(true);
       return;
     }
@@ -58,7 +58,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
       removeItem(product.id);
     } else {
       if (quantity === 0) {
-        if (isGes20 && !hasGes20Item) {
+        if (isGes20) {
           setDepositDialogOpen(true);
           return;
         }

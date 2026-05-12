@@ -33,10 +33,10 @@ export default function SplashScreen() {
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}>
 
           <img
-
+            src={logoSam}
             alt="SAM - Sociedade de Águas de Moçambique"
-            className="w-72 h-auto object-contain shadow-sm opacity-100" src="/lovable-uploads/2b3a2a2f-08a0-42f4-89fb-8bf864a828d6.png" />
-
+            className="w-72 h-auto object-contain shadow-sm opacity-100"
+          />
         </motion.div>
       </motion.div>
 

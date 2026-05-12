@@ -150,7 +150,6 @@ export default function PaymentPage() {
     description: string;
   }[] = [
     { method: 'mpesa', label: 'M-Pesa', description: t.payment.payWithMpesa },
-    { method: 'emola', label: 'e-Mola', description: t.payment.payWithEmola },
     { method: 'pos', label: 'POS', description: t.payment.cardOnDelivery },
     { method: 'cash', label: t.payment.cash, description: t.payment.payCash },
   ];

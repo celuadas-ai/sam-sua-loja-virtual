@@ -6,7 +6,8 @@ export function Footer() {
       <p className="font-semibold text-foreground text-sm">SAM - Sua Loja Virtual</p>
       <p>Sociedade de Águas de Moçambique, Lda. · NUIT: 400115041</p>
       <p>Av. 3 de Fevereiro, Parcela 5.611, Q.43, Bedene, Matola, Moçambique</p>
-      <p>Tel: +258 84 325 3910 / +258 82 325 3910 · geral@sam.co.mz</p>
+      <p>Tel: (+258) 84 32 53 910 · geral@sam.co.mz</p>
+      <p>Horário: Seg. a Sex. 8h às 18h · Sáb. 8h às 13h</p>
       <p>sam.co.mz · aguadanamaacha.co.mz</p>
       <div className="flex justify-center gap-4 pt-2">
         <Link to="/termos-e-condicoes" className="text-accent hover:underline">
