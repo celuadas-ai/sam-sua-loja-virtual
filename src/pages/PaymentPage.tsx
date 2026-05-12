@@ -34,7 +34,7 @@ export default function PaymentPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { items, subtotal, iva, total, createOrder, hasGes20Item, needsBottleDeposit, setNeedsBottleDeposit, bottleDeposit } = useCart();
+  const { items, subtotal, iva, total, createOrder, bottleDeposit } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
