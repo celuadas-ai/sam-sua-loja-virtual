@@ -28,7 +28,6 @@ export default function PaymentMethodsPage() {
     const saved = localStorage.getItem('payment-methods');
     return saved ? JSON.parse(saved) : [
       { id: '1', type: 'mpesa', label: 'M-Pesa Principal', details: '84 123 4567', isDefault: true },
-      { id: '2', type: 'emola', label: 'e-Mola', details: '85 987 6543', isDefault: false },
     ];
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);

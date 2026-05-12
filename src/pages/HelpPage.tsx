@@ -24,8 +24,8 @@ const faqItems = [
 ];
 
 const contactOptions = [
-  { icon: Phone, label: 'Ligar', value: '+258 84 000 0000', action: 'tel:+25884000000' },
-  { icon: Mail, label: 'Email', value: 'suporte@sam.mz', action: 'mailto:suporte@sam.mz' },
+  { icon: Phone, label: 'Ligar', value: '(+258) 84 32 53 910', action: 'tel:+258843253910' },
+  { icon: Mail, label: 'Email', value: 'geral@sam.co.mz', action: 'mailto:geral@sam.co.mz' },
 ];
 
 export default function HelpPage() {
@@ -116,7 +116,8 @@ export default function HelpPage() {
           className="sam-card p-4 text-center"
         >
           <p className="text-sm text-muted-foreground">Horário de atendimento</p>
-          <p className="font-semibold text-foreground">Segunda a Sábado, 7h às 20h</p>
+          <p className="font-semibold text-foreground">Seg. a Sex. das 8h às 18h</p>
+          <p className="font-semibold text-foreground">Sáb. 8h às 13h</p>
         </motion.div>
       </div>
 

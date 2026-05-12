@@ -5,7 +5,7 @@ export const translations = {
       products: 'Produtos',
       cart: 'Carrinho',
       track: 'Rastrear',
-      orders: 'Entregas',
+      orders: 'Encomendas',
       profile: 'Perfil',
     },
     
