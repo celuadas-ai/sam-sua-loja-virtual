@@ -47,21 +47,31 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
           <Trash2 className="w-4 h-4" />
         </motion.button>
 
-        <div className="flex items-center gap-2 bg-secondary rounded-xl p-1">
+        <div className="flex items-center gap-1 bg-secondary rounded-xl p-1">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-            className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+            className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-foreground hover:bg-muted transition-colors flex-shrink-0"
           >
             <Minus className="w-4 h-4" />
           </motion.button>
-          
-          <span className="w-8 text-center font-semibold">{item.quantity}</span>
-          
+
+          <Input
+            type="number"
+            value={item.quantity}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              if (isNaN(n) || n <= 0) removeItem(item.id);
+              else updateQuantity(item.id, n);
+            }}
+            className="h-8 w-14 text-center text-sm font-semibold px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min={1}
+          />
+
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center hover:shadow-sam transition-colors"
+            className="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center hover:shadow-sam transition-colors flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
           </motion.button>
