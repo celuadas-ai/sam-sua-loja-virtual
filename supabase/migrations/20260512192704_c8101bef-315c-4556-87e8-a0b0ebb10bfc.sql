@@ -1,0 +1,1 @@
+UPDATE public.products SET volume = REPLACE(volume, '0.5L', '500ml') WHERE volume LIKE '%0.5L%';
