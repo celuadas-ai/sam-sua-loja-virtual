@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { Product } from '@/types';
-import { useCart } from '@/contexts/CartContext';
+import { useCart, BOTTLE_DEPOSIT_PRODUCT, BOTTLE_DEPOSIT_ID } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -20,28 +20,28 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index }: ProductCardProps) {
-  const { addItem, items, updateQuantity, removeItem, hasGes20Item, setNeedsBottleDeposit } = useCart();
+  const { addItem, items, updateQuantity, removeItem, setItemQuantity } = useCart();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
+  // pendingQty: null = single-click "+1", number = manual input replacing total qty
+  const [pendingQty, setPendingQty] = useState<number | null>(null);
 
   const cartItem = items.find(item => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
   const isGes20 = product.brand === 'Natura / Ges20';
 
-  const performAdd = () => {
-    if (quantity === 0) {
-      addItem(product);
-    } else {
-      updateQuantity(product.id, quantity + 1);
-    }
+  const openDeposit = (qty: number | null) => {
+    setPendingQty(qty);
+    setDepositDialogOpen(true);
   };
 
   const handleAdd = () => {
     if (isGes20) {
-      setDepositDialogOpen(true);
+      openDeposit(null);
       return;
     }
-    performAdd();
+    if (quantity === 0) addItem(product);
+    else updateQuantity(product.id, quantity + 1);
   };
 
   const handleRemove = () => {
@@ -56,29 +56,41 @@ export function ProductCard({ product, index }: ProductCardProps) {
     const numValue = parseInt(value, 10);
     if (isNaN(numValue) || numValue <= 0) {
       removeItem(product.id);
+      return;
+    }
+    if (isGes20) {
+      openDeposit(numValue);
+      return;
+    }
+    if (quantity === 0) {
+      addItem(product, numValue);
     } else {
-      if (quantity === 0) {
-        if (isGes20) {
-          setDepositDialogOpen(true);
-          return;
-        }
-        addItem(product);
-        if (numValue > 1) {
-          updateQuantity(product.id, numValue);
-        }
-      } else {
-        updateQuantity(product.id, numValue);
-      }
+      updateQuantity(product.id, numValue);
     }
   };
 
-  const confirmDeposit = (needsNew: boolean) => {
-    setNeedsBottleDeposit(needsNew);
+  // Resolve dialog choice:
+  // wantsDeposit=false → adds N water bottles (220 MT each)
+  // wantsDeposit=true  → adds N deposit slots (1000 MT each), separate cart line
+  const confirmChoice = (wantsDeposit: boolean) => {
+    const n = pendingQty;
+    if (wantsDeposit) {
+      if (n != null) {
+        setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, n);
+      } else {
+        addItem(BOTTLE_DEPOSIT_PRODUCT, 1);
+      }
+    } else {
+      if (n != null) {
+        setItemQuantity(product, n);
+      } else {
+        addItem(product, 1);
+      }
+    }
     setDepositDialogOpen(false);
-    performAdd();
+    setPendingQty(null);
   };
 
-  // Price per pack/box = unit price × minQuantity
   const packPrice = product.price * product.minQuantity;
 
   return (
@@ -145,20 +157,22 @@ export function ProductCard({ product, index }: ProductCardProps) {
       </div>
     </motion.div>
 
-    <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+    <Dialog open={depositDialogOpen} onOpenChange={(o) => { setDepositDialogOpen(o); if (!o) setPendingQty(null); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Garrafão Natura / Ges20</DialogTitle>
           <DialogDescription>
-            Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de <strong>1.000 MT</strong> por garrafão (reembolsável na devolução dos garrafões).
+            {pendingQty != null
+              ? `Vai registar ${pendingQty} unidade(s). Já possui o garrafão para troca? Caso contrário, registaremos ${pendingQty} caução(ões) de 1.000 MT (reembolsáveis na devolução).`
+              : 'Já possui o garrafão para troca? Caso contrário, será adicionada uma caução de 1.000 MT por garrafão (reembolsável na devolução).'}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={() => confirmDeposit(false)}>
-            Já tenho o garrafão
+          <Button variant="outline" onClick={() => confirmChoice(false)}>
+            Já tenho o garrafão (+{(pendingQty ?? 1) * 220} MT)
           </Button>
-          <Button onClick={() => confirmDeposit(true)}>
-            Preciso de garrafão (+1.000 MT)
+          <Button onClick={() => confirmChoice(true)}>
+            Preciso de garrafão (+{(pendingQty ?? 1) * 1000} MT)
           </Button>
         </DialogFooter>
       </DialogContent>
