@@ -76,12 +76,6 @@ export default function CartPage() {
             <span>IVA (16%)</span>
             <span>{iva.toFixed(2)} MT</span>
           </div>
-          {bottleDeposit > 0 && (
-            <div className="flex justify-between text-amber-600 text-xs">
-              <span>Inclui caução de garrafão ({ges20Qty}x)</span>
-              <span>{bottleDeposit.toFixed(2)} MT</span>
-            </div>
-          )}
           <div className="flex justify-between text-muted-foreground">
             <span>{t.cart.deliveryFee}</span>
             <span className="text-sam-success">{t.common.free}</span>
