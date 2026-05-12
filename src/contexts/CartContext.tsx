@@ -42,17 +42,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
-  const addItem = (product: Product) => {
+  const addItem = (product: Product, qty: number = 1) => {
     setItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         return prev.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + qty }
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, quantity: qty }];
+    });
+  };
+
+  const setItemQuantity = (product: Product, qty: number) => {
+    if (qty < 1) {
+      setItems(prev => prev.filter(i => i.id !== product.id));
+      return;
+    }
+    setItems(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(i => i.id === product.id ? { ...i, quantity: qty } : i);
+      }
+      return [...prev, { ...product, quantity: qty }];
     });
   };
 
@@ -78,12 +92,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const IVA_RATE = 0.16;
   const itemsTotal = items.reduce((sum, item) => sum + item.price * item.minQuantity * item.quantity, 0);
-  // Detect Gas20/Natura bottles requiring deposit
-  const ges20Items = items.filter(i => i.brand === 'Natura / Ges20');
-  const hasGes20Item = ges20Items.length > 0;
-  const bottleQty = ges20Items.reduce((sum, i) => sum + i.quantity, 0);
-  const bottleDeposit = needsBottleDeposit && hasGes20Item ? BOTTLE_DEPOSIT_PRICE * bottleQty : 0;
-  const total = itemsTotal + bottleDeposit;
+  const depositItem = items.find(i => i.id === BOTTLE_DEPOSIT_ID);
+  const bottleDeposit = depositItem ? depositItem.price * depositItem.quantity : 0;
+  const total = itemsTotal;
   const subtotal = Math.round((total / (1 + IVA_RATE)) * 100) / 100;
   const iva = Math.round((total - subtotal) * 100) / 100;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
