@@ -228,6 +228,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         addItem,
+        setItemQuantity,
         removeItem,
         updateQuantity,
         clearCart,
@@ -236,9 +237,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         total,
         itemCount,
         bottleDeposit,
-        needsBottleDeposit,
-        hasGes20Item,
-        setNeedsBottleDeposit,
         currentOrder,
         createOrder,
         updateOrderStatus,
