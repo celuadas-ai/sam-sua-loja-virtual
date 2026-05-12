@@ -11,7 +11,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const { items, subtotal, iva, total, itemCount, bottleDeposit } = useCart();
+  const { items, subtotal, iva, total, itemCount, bottleDeposit, needsBottleDeposit, hasGes20Item, setNeedsBottleDeposit } = useCart();
+  const ges20Qty = items.filter(i => i.brand === 'Natura / Ges20').reduce((s, i) => s + i.quantity, 0);
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
 
