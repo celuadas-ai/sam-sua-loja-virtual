@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem } from '@/types';
 import { useCart } from '@/contexts/CartContext';
+import { Input } from '@/components/ui/input';
 
 interface CartItemCardProps {
   item: CartItem;
