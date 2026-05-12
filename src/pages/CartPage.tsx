@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { CartItemCard } from '@/components/CartItemCard';
 import { useCart } from '@/contexts/CartContext';
+import { Trash2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 
