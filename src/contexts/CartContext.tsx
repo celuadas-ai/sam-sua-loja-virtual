@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => void;
+  addItem: (product: Product, qty?: number) => void;
+  setItemQuantity: (product: Product, qty: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -14,9 +15,6 @@ interface CartContextType {
   total: number;
   itemCount: number;
   bottleDeposit: number;
-  needsBottleDeposit: boolean;
-  hasGes20Item: boolean;
-  setNeedsBottleDeposit: (value: boolean) => void;
   currentOrder: Order | null;
   createOrder: (paymentMethod: PaymentMethod, customerName?: string, customerPhone?: string, customerAddress?: string, customerCoords?: { lat: number; lng: number }, customerNuit?: string, transactionIdExternal?: string) => Promise<void>;
   updateOrderStatus: (status: OrderStatus) => void;
@@ -24,7 +22,18 @@ interface CartContextType {
   completeOrder: () => void;
 }
 
-const BOTTLE_DEPOSIT_PRICE = 1000; // MZN per Gas20/Natura bottle
+export const BOTTLE_DEPOSIT_ID = 'bottle-deposit-ges20';
+export const BOTTLE_DEPOSIT_PRICE = 1000;
+export const BOTTLE_DEPOSIT_PRODUCT: Product = {
+  id: BOTTLE_DEPOSIT_ID,
+  name: 'Caução de garrafão',
+  brand: 'Caução',
+  volume: '20L',
+  price: BOTTLE_DEPOSIT_PRICE,
+  image: '/placeholder.svg',
+  minQuantity: 1,
+  unitLabel: 'Garrafão',
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -32,7 +41,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const [needsBottleDeposit, setNeedsBottleDeposit] = useState<boolean>(false);
 
   const addItem = (product: Product) => {
     setItems(prev => {
