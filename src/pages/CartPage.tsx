@@ -112,9 +112,9 @@ export default function CartPage() {
             <span>{iva.toFixed(2)} MT</span>
           </div>
           {bottleDeposit > 0 && (
-            <div className="flex justify-between text-amber-600">
-              <span>Caução do garrafão</span>
-              <span>+{bottleDeposit.toFixed(2)} MT</span>
+            <div className="flex justify-between text-amber-600 text-xs">
+              <span>Inclui caução de garrafão ({ges20Qty}x)</span>
+              <span>{bottleDeposit.toFixed(2)} MT</span>
             </div>
           )}
           <div className="flex justify-between text-muted-foreground">
