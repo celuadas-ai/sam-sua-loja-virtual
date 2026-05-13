@@ -60,11 +60,12 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
             type="number"
             value={item.quantity}
             onChange={(e) => {
-              const n = parseInt(e.target.value, 10);
-              if (isNaN(n) || n <= 0) removeItem(item.id);
-              else updateQuantity(item.id, n);
+              const v = e.target.value;
+              if (v === '') return;
+              const n = parseInt(v, 10);
+              if (!isNaN(n) && n >= 1) updateQuantity(item.id, n);
             }}
-            className="h-8 w-14 text-center text-sm font-semibold px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="h-8 w-16 text-center text-sm font-semibold px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             min={1}
           />
 
