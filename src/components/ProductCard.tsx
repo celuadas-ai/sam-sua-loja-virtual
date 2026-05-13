@@ -53,11 +53,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
   };
 
   const handleQuantityChange = (value: string) => {
+    if (value === '') return;
     const numValue = parseInt(value, 10);
-    if (isNaN(numValue) || numValue <= 0) {
-      removeItem(product.id);
-      return;
-    }
+    if (isNaN(numValue) || numValue < 1) return;
     if (isGes20) {
       openDeposit(numValue);
       return;
@@ -65,7 +63,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
     if (quantity === 0) {
       addItem(product, numValue);
     } else {
-      updateQuantity(product.id, numValue);
+      setItemQuantity(product, numValue);
     }
   };
 
