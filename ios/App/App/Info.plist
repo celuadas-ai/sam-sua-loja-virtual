@@ -47,5 +47,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>A SAM Água precisa da sua localização para encontrar a loja mais próxima e entregar os seus pedidos no endereço correto.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>A SAM Água usa a sua localização para acompanhar a entrega dos seus pedidos em tempo real.</string>
 </dict>
 </plist>
