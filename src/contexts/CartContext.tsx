@@ -31,7 +31,7 @@ export const BOTTLE_DEPOSIT_PRODUCT: Product = {
   brand: 'Natura / Ges20',
   volume: '18.9L x 1',
   price: BOTTLE_DEPOSIT_PRICE,
-  image: '/assets/natura-18.9l.png',
+  image: natura189l,
   minQuantity: 1,
   unitLabel: 'Mín. 1 galão',
 };
