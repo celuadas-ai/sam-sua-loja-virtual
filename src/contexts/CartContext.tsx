@@ -27,12 +27,12 @@ export const BOTTLE_DEPOSIT_PRICE = 1000;
 export const BOTTLE_DEPOSIT_PRODUCT: Product = {
   id: BOTTLE_DEPOSIT_ID,
   name: 'Caução de garrafão',
-  brand: 'Caução',
-  volume: '20L',
+  brand: 'Natura / Ges20',
+  volume: '18.9L x 1',
   price: BOTTLE_DEPOSIT_PRICE,
-  image: '/placeholder.svg',
+  image: '/assets/natura-18.9l.png',
   minQuantity: 1,
-  unitLabel: 'Garrafão',
+  unitLabel: 'Mín. 1 galão',
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
