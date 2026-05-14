@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AddressMapPicker } from './AddressMapPicker';
 import { MapsHealthGuard } from './MapsHealthGuard';
-import { getCurrentLocation, GeolocationError, getAddressFromCoordinates } from '@/utils/geolocation';
+import { requestLocationWithFeedback, getAddressFromCoordinates } from '@/utils/geolocation';
 
 interface Address {
   id: string;
