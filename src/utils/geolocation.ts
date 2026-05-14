@@ -118,6 +118,72 @@ export async function getCurrentLocation(): Promise<GeoCoords> {
   return getWebPosition();
 }
 
+/**
+ * Mensagem amigável e accionável a apresentar ao utilizador para cada tipo de erro.
+ */
+export function getLocationErrorMessage(error: unknown): { title: string; description: string } {
+  const isNative = !!(window as any).Capacitor?.isNativePlatform?.();
+
+  if (error instanceof GeolocationError) {
+    switch (error.code) {
+      case 'permission_denied':
+        return {
+          title: 'Permissão de localização negada',
+          description: isNative
+            ? 'Active a localização em Definições > Aplicações > SAM Água > Permissões e tente novamente.'
+            : 'Active a localização nas definições do navegador (ícone do cadeado junto ao endereço) e recarregue a página.',
+        };
+      case 'unavailable':
+        return {
+          title: 'Localização indisponível',
+          description: 'Verifique se o GPS está ativado e se está num local com sinal.',
+        };
+      case 'timeout':
+        return {
+          title: 'Tempo esgotado',
+          description: 'Não foi possível obter a sua localização a tempo. Tente novamente.',
+        };
+      case 'insecure':
+        return {
+          title: 'Ligação insegura',
+          description: 'A geolocalização requer HTTPS. Abra a app numa ligação segura.',
+        };
+      case 'iframe_blocked':
+        return {
+          title: 'Pré-visualização bloqueia localização',
+          description: 'Abra a app em janela completa ou no telemóvel para usar a sua localização.',
+        };
+      case 'unsupported':
+        return {
+          title: 'Geolocalização não suportada',
+          description: 'O seu dispositivo ou navegador não suporta geolocalização.',
+        };
+      default:
+        return { title: 'Erro de localização', description: error.message };
+    }
+  }
+
+  return {
+    title: 'Erro ao obter localização',
+    description: (error as any)?.message || 'Tente novamente dentro de instantes.',
+  };
+}
+
+/**
+ * Fluxo único: pede permissão, obtém coordenadas e mostra toast claro em caso de falha.
+ * Devolve `null` quando falha (já notificou o utilizador).
+ */
+export async function requestLocationWithFeedback(): Promise<GeoCoords | null> {
+  try {
+    return await getCurrentLocation();
+  } catch (error) {
+    const { title, description } = getLocationErrorMessage(error);
+    sonnerToast.error(title, { description, duration: 6000 });
+    console.warn('[geolocation] request failed:', error);
+    return null;
+  }
+}
+
 export async function getAddressFromCoordinates(
   coords: Pick<GeoCoords, 'latitude' | 'longitude'>,
   language = 'pt'
