@@ -103,17 +103,21 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
 
   const handleUseCurrentLocation = async () => {
     setIsLoadingLocation(true);
-
     try {
-      const { latitude, longitude } = await getCurrentLocation();
-      const address = await getAddressFromCoordinates({ latitude, longitude });
+      const coords = await requestLocationWithFeedback();
+      if (!coords) return;
+
+      const address = await getAddressFromCoordinates({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
 
       const currentLocationAddress: Address = {
         id: `current-${Date.now()}`,
         label: 'Localização Atual',
         address,
         isDefault: false,
-        coords: { lat: latitude, lng: longitude },
+        coords: { lat: coords.latitude, lng: coords.longitude },
       };
 
       setAddresses(prev => {
@@ -125,13 +129,10 @@ export function AddressSelector({ selectedAddress, onAddressSelect }: AddressSel
       setIsOpen(false);
       toast({ title: 'Localização atual detectada!' });
     } catch (error: any) {
-      console.error('Error getting location:', error);
-      const message = error instanceof GeolocationError
-        ? error.message
-        : (error?.message || 'Erro ao obter localização');
+      console.error('Error resolving address:', error);
       toast({
-        title: 'Não foi possível obter a localização',
-        description: message,
+        title: 'Não foi possível obter o endereço',
+        description: error?.message || 'Tente novamente.',
         variant: 'destructive',
         duration: 6000,
       });
