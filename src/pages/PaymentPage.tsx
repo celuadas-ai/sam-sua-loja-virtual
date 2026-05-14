@@ -13,7 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useStores } from '@/hooks/useStores';
 import { haversineDistance, isPointInPolygon } from '@/utils/distance';
-import { getCurrentLocation, getAddressFromCoordinates } from '@/utils/geolocation';
+import { getCurrentLocation, getAddressFromCoordinates, GeolocationError } from '@/utils/geolocation';
 
 interface Address {
   id: string;
@@ -137,7 +137,11 @@ export default function PaymentPage() {
         setSelectedAddress(currentLocationAddress);
         toast({ title: '📍 Localização detectada automaticamente!' });
       } catch (error) {
-        console.log('Auto-detect location skipped:', error);
+        // Auto-detect silencioso: erros aqui não interrompem o checkout.
+        // O utilizador pode usar o botão "Usar localização atual" para ver mensagens claras.
+        if (error instanceof GeolocationError && error.code !== 'permission_denied') {
+          console.log('Auto-detect location skipped:', error.message);
+        }
       }
     };
 

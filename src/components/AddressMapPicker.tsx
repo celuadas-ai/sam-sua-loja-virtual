@@ -5,8 +5,8 @@ import { MapPin, Navigation, Search, Crosshair } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { getCurrentLocation as getDeviceLocation, GeolocationError } from '@/utils/geolocation';
-import { useToast } from '@/hooks/use-toast';
+import { requestLocationWithFeedback } from '@/utils/geolocation';
+
 
 interface AddressMapPickerProps {
   initialAddress?: string;
@@ -16,7 +16,7 @@ interface AddressMapPickerProps {
 const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
 export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMapPickerProps) {
-  const { toast } = useToast();
+  
   const mapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
@@ -169,26 +169,17 @@ export function AddressMapPicker({ initialAddress, onAddressSelect }: AddressMap
     });
   }, []);
 
-  // Get current location
+  // Get current location (fluxo unificado, com toast em caso de erro)
   const getCurrentLocation = async () => {
     setIsLocating(true);
     try {
-      const { latitude, longitude } = await getDeviceLocation();
-      const coords = { lat: latitude, lng: longitude };
+      const result = await requestLocationWithFeedback();
+      if (!result) return;
+      const coords = { lat: result.latitude, lng: result.longitude };
       setSelectedCoords(coords);
       mapInstanceRef.current?.panTo(coords);
       markerRef.current?.setPosition(coords);
       reverseGeocode(coords);
-    } catch (error: any) {
-      const message = error instanceof GeolocationError
-        ? error.message
-        : 'Erro ao obter localização';
-      toast({
-        title: 'Não foi possível obter a localização',
-        description: message,
-        variant: 'destructive',
-        duration: 6000,
-      });
     } finally {
       setIsLocating(false);
     }

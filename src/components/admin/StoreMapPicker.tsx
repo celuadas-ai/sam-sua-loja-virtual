@@ -4,6 +4,7 @@ import { Navigation, Search, Crosshair, Pencil, Trash2, Maximize2, Minimize2, Mo
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { requestLocationWithFeedback } from '@/utils/geolocation';
 
 const MAPUTO_CENTER = { lat: -25.9692, lng: 32.5732 };
 
@@ -356,21 +357,19 @@ export default function StoreMapPicker({
     onDeliveryZoneChange(null);
   };
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) return;
+  const getCurrentLocation = async () => {
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        mapInstance.current?.panTo(c);
-        markerRef.current?.setPosition(c);
-        circleRef.current?.setCenter(c);
-        reverseGeocode(c);
-        setIsLocating(false);
-      },
-      () => setIsLocating(false),
-      { enableHighAccuracy: true }
-    );
+    try {
+      const result = await requestLocationWithFeedback();
+      if (!result) return;
+      const c = { lat: result.latitude, lng: result.longitude };
+      mapInstance.current?.panTo(c);
+      markerRef.current?.setPosition(c);
+      circleRef.current?.setCenter(c);
+      reverseGeocode(c);
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   if (loadError) {
