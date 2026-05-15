@@ -89,20 +89,39 @@ export async function getCurrentLocation(): Promise<GeoCoords> {
   if (isCapacitorNative()) {
     try {
       const { Geolocation } = await import('@capacitor/geolocation');
-      const permissions = await Geolocation.checkPermissions();
 
-      if (permissions.location !== 'granted') {
-        const requested = await Geolocation.requestPermissions();
-        if (requested.location !== 'granted') {
+      // iOS: pedir explicitamente a permissão 'location' (alguns builds devolvem
+      // 'prompt' indefinidamente se não for solicitada com a chave correta).
+      let permissions = await Geolocation.checkPermissions();
+      console.log('[geolocation] iOS/Android permissions:', permissions);
+
+      if (permissions.location !== 'granted' && permissions.coarseLocation !== 'granted') {
+        const requested = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
+        console.log('[geolocation] permissions after request:', requested);
+        permissions = requested;
+
+        if (requested.location !== 'granted' && requested.coarseLocation !== 'granted') {
           throw new GeolocationError('permission_denied', 'Permissão de localização negada nas definições do dispositivo.');
         }
       }
 
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
-      });
+      const tryGet = async (highAccuracy: boolean, timeout: number) => {
+        return Geolocation.getCurrentPosition({
+          enableHighAccuracy: highAccuracy,
+          timeout,
+          maximumAge: highAccuracy ? 0 : 60000,
+        });
+      };
+
+      let pos;
+      try {
+        // 1ª tentativa: alta precisão (GPS)
+        pos = await tryGet(true, 12000);
+      } catch (firstErr: any) {
+        console.warn('[geolocation] high-accuracy falhou, retry com baixa precisão:', firstErr?.message);
+        // 2ª tentativa: baixa precisão (rede/Wi-Fi) — costuma funcionar em iOS quando GPS demora
+        pos = await tryGet(false, 20000);
+      }
 
       return {
         latitude: pos.coords.latitude,
@@ -110,8 +129,16 @@ export async function getCurrentLocation(): Promise<GeoCoords> {
         accuracy: pos.coords.accuracy,
       };
     } catch (err: any) {
+      console.error('[geolocation] native error:', err);
       if (err instanceof GeolocationError) throw err;
-      throw new GeolocationError('unknown', err?.message || 'Erro ao obter localização no dispositivo.');
+      const msg: string = err?.message || '';
+      if (/denied|denied access|kCLError.*1\b/i.test(msg)) {
+        throw new GeolocationError('permission_denied', msg);
+      }
+      if (/timeout/i.test(msg)) {
+        throw new GeolocationError('timeout', msg);
+      }
+      throw new GeolocationError('unknown', msg || 'Erro ao obter localização no dispositivo.');
     }
   }
 
