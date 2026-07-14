@@ -9,12 +9,15 @@ export function Footer() {
       <p>Tel: (+258) 84 32 53 910 · geral@sam.co.mz</p>
       <p>Horário: Seg. a Sex. 8h às 18h · Sáb. 8h às 13h</p>
       <p>sam.co.mz · aguadanamaacha.co.mz</p>
-      <div className="flex justify-center gap-4 pt-2">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-2">
         <Link to="/termos-e-condicoes" className="text-accent hover:underline">
           Termos e Condições
         </Link>
         <Link to="/privacidade" className="text-accent hover:underline">
           Política de Privacidade
+        </Link>
+        <Link to="/eliminar-conta" className="text-accent hover:underline">
+          Eliminar Conta
         </Link>
       </div>
       <p className="pt-2">© {new Date().getFullYear()} SAM. Todos os direitos reservados.</p>

@@ -26,6 +26,7 @@ import HelpPage from "./pages/HelpPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import DeleteAccountPage from "./pages/DeleteAccountPage";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -77,6 +78,7 @@ const App = () => (
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/termos-e-condicoes" element={<TermsPage />} />
                 <Route path="/privacidade" element={<PrivacyPage />} />
+                <Route path="/eliminar-conta" element={<DeleteAccountPage />} />
                 
                 {/* Admin */}
                 <Route path="/admin" element={<AdminDashboard />} />

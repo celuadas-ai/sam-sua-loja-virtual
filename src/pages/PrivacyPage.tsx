@@ -71,8 +71,12 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold">7. Direitos dos Titulares</h2>
           <p>
             Nos termos da legislação aplicável, o utilizador tem direito a aceder, retificar, apagar
-            e limitar o tratamento dos seus dados pessoais. Para exercer estes direitos, contacte-nos
-            através dos canais indicados na plataforma.
+            e limitar o tratamento dos seus dados pessoais, incluindo o direito à eliminação da conta.
+          </p>
+          <p>
+            Para exercer o direito à eliminação da conta e dos dados associados, utilize o link
+            <a href="/eliminar-conta" className="text-accent hover:underline mx-1">Eliminar Conta</a>
+            ou contacte-nos através dos canais indicados na plataforma.
           </p>
         </section>
 
