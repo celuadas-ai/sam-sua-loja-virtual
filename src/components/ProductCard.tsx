@@ -112,20 +112,8 @@ export function ProductCard({ product, index }: ProductCardProps) {
   // wantsDeposit=false → adds N water bottles (220 MT each)
   // wantsDeposit=true  → adds N deposit slots (1000 MT each), separate cart line
   const confirmChoice = (wantsDeposit: boolean) => {
-    const n = pendingQty;
-    if (wantsDeposit) {
-      if (n != null) {
-        setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, n);
-      } else {
-        addItem(BOTTLE_DEPOSIT_PRODUCT, 1);
-      }
-    } else {
-      if (n != null) {
-        setItemQuantity(product, n);
-      } else {
-        addItem(product, 1);
-      }
-    }
+    depositChoiceMemory.set(product.id, wantsDeposit);
+    applyChoice(wantsDeposit, pendingQty);
     setDepositDialogOpen(false);
     setPendingQty(null);
   };
