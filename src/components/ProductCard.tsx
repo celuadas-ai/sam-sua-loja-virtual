@@ -201,7 +201,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
             Já tenho o garrafão (+{(pendingQty ?? 1) * 220} MT)
           </Button>
           <Button onClick={() => confirmChoice(true)}>
-            Preciso de garrafão (+{(pendingQty ?? 1) * 1000} MT)
+            Preciso de garrafão (+{(pendingQty ?? 1) * 1220} MT)
           </Button>
         </DialogFooter>
       </DialogContent>
