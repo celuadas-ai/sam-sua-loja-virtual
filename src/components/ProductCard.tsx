@@ -19,6 +19,11 @@ interface ProductCardProps {
   index: number;
 }
 
+// Remembers user's deposit choice per Ges20 product across re-renders/session.
+// true  = user already owns the bottle (adds water item at 220 MT)
+// false = user needs a bottle deposit (adds BOTTLE_DEPOSIT_PRODUCT at 1000 MT)
+const depositChoiceMemory = new Map<string, boolean>();
+
 export function ProductCard({ product, index }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem, setItemQuantity } = useCart();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
@@ -26,9 +31,23 @@ export function ProductCard({ product, index }: ProductCardProps) {
   const [pendingQty, setPendingQty] = useState<number | null>(null);
 
   const cartItem = items.find(item => item.id === product.id);
-  const quantity = cartItem?.quantity || 0;
-
+  const depositItem = items.find(item => item.id === BOTTLE_DEPOSIT_ID);
   const isGes20 = product.brand === 'Natura / Ges20';
+  // For Ges20 with "needs deposit" choice, quantity reflects the deposit line.
+  const remembered = depositChoiceMemory.get(product.id);
+  const quantity = isGes20 && remembered === true && depositItem
+    ? depositItem.quantity
+    : cartItem?.quantity || 0;
+
+  const applyChoice = (wantsDeposit: boolean, qty: number | null) => {
+    if (wantsDeposit) {
+      if (qty != null) setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, qty);
+      else addItem(BOTTLE_DEPOSIT_PRODUCT, 1);
+    } else {
+      if (qty != null) setItemQuantity(product, qty);
+      else addItem(product, 1);
+    }
+  };
 
   const openDeposit = (qty: number | null) => {
     setPendingQty(qty);
@@ -37,6 +56,18 @@ export function ProductCard({ product, index }: ProductCardProps) {
 
   const handleAdd = () => {
     if (isGes20) {
+      if (remembered !== undefined) {
+        // Reuse previous choice: increment the correct line
+        if (remembered) {
+          const current = depositItem?.quantity || 0;
+          if (current === 0) addItem(BOTTLE_DEPOSIT_PRODUCT, 1);
+          else setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, current + 1);
+        } else {
+          if (quantity === 0) addItem(product);
+          else updateQuantity(product.id, quantity + 1);
+        }
+        return;
+      }
       openDeposit(null);
       return;
     }
@@ -45,6 +76,12 @@ export function ProductCard({ product, index }: ProductCardProps) {
   };
 
   const handleRemove = () => {
+    if (isGes20 && remembered === true) {
+      const current = depositItem?.quantity || 0;
+      if (current > 1) setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, current - 1);
+      else if (current === 1) removeItem(BOTTLE_DEPOSIT_ID);
+      return;
+    }
     if (quantity > 1) {
       updateQuantity(product.id, quantity - 1);
     } else if (quantity > 0) {
@@ -57,6 +94,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
     const numValue = parseInt(value, 10);
     if (isNaN(numValue) || numValue < 1) return;
     if (isGes20) {
+      if (remembered !== undefined) {
+        applyChoice(remembered, numValue);
+        return;
+      }
       openDeposit(numValue);
       return;
     }
@@ -71,20 +112,8 @@ export function ProductCard({ product, index }: ProductCardProps) {
   // wantsDeposit=false → adds N water bottles (220 MT each)
   // wantsDeposit=true  → adds N deposit slots (1000 MT each), separate cart line
   const confirmChoice = (wantsDeposit: boolean) => {
-    const n = pendingQty;
-    if (wantsDeposit) {
-      if (n != null) {
-        setItemQuantity(BOTTLE_DEPOSIT_PRODUCT, n);
-      } else {
-        addItem(BOTTLE_DEPOSIT_PRODUCT, 1);
-      }
-    } else {
-      if (n != null) {
-        setItemQuantity(product, n);
-      } else {
-        addItem(product, 1);
-      }
-    }
+    depositChoiceMemory.set(product.id, wantsDeposit);
+    applyChoice(wantsDeposit, pendingQty);
     setDepositDialogOpen(false);
     setPendingQty(null);
   };
