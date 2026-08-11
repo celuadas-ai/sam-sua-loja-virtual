@@ -3,6 +3,8 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateUnitLabel, unitAbbrev } from '@/utils/productLabels';
 
 interface CartItemCardProps {
   item: CartItem;
@@ -11,6 +13,7 @@ interface CartItemCardProps {
 
 export function CartItemCard({ item, index }: CartItemCardProps) {
   const { updateQuantity, removeItem } = useCart();
+  const { language } = useLanguage();
 
   return (
     <motion.div
