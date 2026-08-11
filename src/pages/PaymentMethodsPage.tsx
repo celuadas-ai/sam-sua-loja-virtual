@@ -26,9 +26,14 @@ export default function PaymentMethodsPage() {
   const { toast } = useToast();
   const [methods, setMethods] = useState<PaymentMethod[]>(() => {
     const saved = localStorage.getItem('payment-methods');
-    return saved ? JSON.parse(saved) : [
-      { id: '1', type: 'mpesa', label: 'M-Pesa Principal', details: '84 123 4567', isDefault: true },
-    ];
+    if (!saved) return [];
+    try {
+      const parsed: PaymentMethod[] = JSON.parse(saved);
+      // Remove o antigo número de demonstração que vinha pré-definido
+      return parsed.filter(m => m.details?.replace(/\D/g, '') !== '841234567');
+    } catch {
+      return [];
+    }
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
