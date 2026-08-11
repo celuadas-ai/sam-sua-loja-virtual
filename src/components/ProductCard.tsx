@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateUnitLabel, unitAbbrev } from '@/utils/productLabels';
 
 interface ProductCardProps {
   product: Product;
@@ -26,6 +28,7 @@ const depositChoiceMemory = new Map<string, boolean>();
 
 export function ProductCard({ product, index }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem, setItemQuantity } = useCart();
+  const { language } = useLanguage();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   // pendingQty: null = single-click "+1", number = manual input replacing total qty
   const [pendingQty, setPendingQty] = useState<number | null>(null);
@@ -143,17 +146,17 @@ export function ProductCard({ product, index }: ProductCardProps) {
           {product.brand}
         </p>
         <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-tight line-clamp-2">
-          {product.name}
+          {translateUnitLabel(product.name, language)}
         </h3>
         <p className="text-[10px] sm:text-xs text-muted-foreground">{product.volume}</p>
         <p className="text-[9px] sm:text-[10px] text-accent font-medium">
-          {product.unitLabel}
+          {translateUnitLabel(product.unitLabel, language)}
         </p>
       </div>
       
       <div className="mt-2 sm:mt-3 pt-2 border-t border-border/50 space-y-1.5 sm:space-y-2">
         <p className="text-sm sm:text-base font-bold text-primary">
-          {packPrice} <span className="text-[9px] sm:text-[10px] font-normal text-muted-foreground">MT/{product.minQuantity > 1 ? product.unitLabel.toLowerCase().includes('caixa') ? 'cx' : 'pack' : 'un'}</span>
+          {packPrice} <span className="text-[9px] sm:text-[10px] font-normal text-muted-foreground">MT/{unitAbbrev(product.unitLabel, product.minQuantity, language)}</span>
         </p>
         
         <div className="flex items-center gap-0.5 sm:gap-1">

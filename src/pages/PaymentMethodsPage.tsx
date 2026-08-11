@@ -6,6 +6,9 @@ import emolaLogo from '@/assets/emola-logo.png';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
@@ -26,9 +29,14 @@ export default function PaymentMethodsPage() {
   const { toast } = useToast();
   const [methods, setMethods] = useState<PaymentMethod[]>(() => {
     const saved = localStorage.getItem('payment-methods');
-    return saved ? JSON.parse(saved) : [
-      { id: '1', type: 'mpesa', label: 'M-Pesa Principal', details: '84 123 4567', isDefault: true },
-    ];
+    if (!saved) return [];
+    try {
+      const parsed: PaymentMethod[] = JSON.parse(saved);
+      // Remove o antigo número de demonstração que vinha pré-definido
+      return parsed.filter(m => m.details?.replace(/\D/g, '') !== '841234567');
+    } catch {
+      return [];
+    }
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
@@ -153,14 +161,53 @@ export default function PaymentMethodsPage() {
           );
         })}
 
-        <div className="w-full sam-card p-4 flex flex-col items-center justify-center gap-1 border-dashed border-2 opacity-60">
+        <button
+          onClick={openNew}
+          className="w-full sam-card p-4 flex flex-col items-center justify-center gap-1 border-dashed border-2"
+        >
           <div className="flex items-center gap-2">
             <Plus className="w-5 h-5 text-muted-foreground" />
             <span className="font-medium text-muted-foreground">Adicionar Método</span>
           </div>
-          <span className="text-xs text-muted-foreground">Em breve disponível</span>
-        </div>
+        </button>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingMethod ? 'Editar Método' : 'Adicionar Método'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="pm-label">Nome</Label>
+              <Input
+                id="pm-label"
+                placeholder="Ex: M-Pesa Principal"
+                maxLength={40}
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pm-details">Número de telemóvel</Label>
+              <Input
+                id="pm-details"
+                type="tel"
+                inputMode="tel"
+                placeholder="84 000 0000"
+                maxLength={20}
+                value={formData.details}
+                onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSave}>Guardar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <BottomNav />
     </div>

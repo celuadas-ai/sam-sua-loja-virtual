@@ -3,6 +3,8 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateUnitLabel, unitAbbrev } from '@/utils/productLabels';
 
 interface CartItemCardProps {
   item: CartItem;
@@ -11,6 +13,7 @@ interface CartItemCardProps {
 
 export function CartItemCard({ item, index }: CartItemCardProps) {
   const { updateQuantity, removeItem } = useCart();
+  const { language } = useLanguage();
 
   return (
     <motion.div
@@ -30,11 +33,11 @@ export function CartItemCard({ item, index }: CartItemCardProps) {
 
       <div className="flex-1 min-w-0">
         <p className="text-xs text-muted-foreground">{item.brand}</p>
-        <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
+        <h3 className="font-semibold text-foreground truncate">{translateUnitLabel(item.name, language)}</h3>
         <p className="text-xs text-muted-foreground">{item.volume}</p>
-        <p className="text-[10px] text-accent font-medium mb-1">{item.unitLabel}</p>
+        <p className="text-[10px] text-accent font-medium mb-1">{translateUnitLabel(item.unitLabel, language)}</p>
         <p className="font-bold text-primary">
-          {item.price * item.minQuantity} <span className="text-xs font-normal text-muted-foreground">MT/{item.minQuantity > 1 ? item.unitLabel.toLowerCase().includes('caixa') ? 'cx' : 'pack' : 'un'}</span>
+          {item.price * item.minQuantity} <span className="text-xs font-normal text-muted-foreground">MT/{unitAbbrev(item.unitLabel, item.minQuantity, language)}</span>
         </p>
       </div>
 
