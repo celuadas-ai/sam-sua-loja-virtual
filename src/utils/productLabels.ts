@@ -10,6 +10,8 @@ export function translateUnitLabel(label: string | undefined | null, language: L
 
   return label
     .replace(/Mín\./gi, 'Min.')
+    .replace(/caução de garrafão/gi, 'Bottle deposit')
+    .replace(/caução/gi, 'deposit')
     .replace(/garrafões/gi, 'bottles')
     .replace(/garrafão/gi, 'bottle')
     .replace(/galões/gi, 'gallons')
