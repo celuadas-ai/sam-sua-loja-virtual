@@ -28,6 +28,7 @@ const depositChoiceMemory = new Map<string, boolean>();
 
 export function ProductCard({ product, index }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem, setItemQuantity } = useCart();
+  const { language } = useLanguage();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   // pendingQty: null = single-click "+1", number = manual input replacing total qty
   const [pendingQty, setPendingQty] = useState<number | null>(null);
