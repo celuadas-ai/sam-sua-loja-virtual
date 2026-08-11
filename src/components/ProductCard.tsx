@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateUnitLabel, unitAbbrev } from '@/utils/productLabels';
 
 interface ProductCardProps {
   product: Product;
