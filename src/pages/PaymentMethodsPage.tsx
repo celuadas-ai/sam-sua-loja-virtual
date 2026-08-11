@@ -158,14 +158,53 @@ export default function PaymentMethodsPage() {
           );
         })}
 
-        <div className="w-full sam-card p-4 flex flex-col items-center justify-center gap-1 border-dashed border-2 opacity-60">
+        <button
+          onClick={openNew}
+          className="w-full sam-card p-4 flex flex-col items-center justify-center gap-1 border-dashed border-2"
+        >
           <div className="flex items-center gap-2">
             <Plus className="w-5 h-5 text-muted-foreground" />
             <span className="font-medium text-muted-foreground">Adicionar Método</span>
           </div>
-          <span className="text-xs text-muted-foreground">Em breve disponível</span>
-        </div>
+        </button>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingMethod ? 'Editar Método' : 'Adicionar Método'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="pm-label">Nome</Label>
+              <Input
+                id="pm-label"
+                placeholder="Ex: M-Pesa Principal"
+                maxLength={40}
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pm-details">Número de telemóvel</Label>
+              <Input
+                id="pm-details"
+                type="tel"
+                inputMode="tel"
+                placeholder="84 000 0000"
+                maxLength={20}
+                value={formData.details}
+                onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSave}>Guardar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <BottomNav />
     </div>
