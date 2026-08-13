@@ -83,18 +83,21 @@ export default function AuthPage() {
           toast({ title: `${t.auth.welcomeBack}!`, description: t.auth.redirecting });
         }
       } else {
-        // Signup directly without OTP verification (temporarily disabled)
-        const { error } = await signup(
-          formData.email,
-          formData.password,
-          formData.name,
-          formData.phone
-        );
+        // Verificação por SMS (OTP) antes de criar a conta
+        const { error } = await sendOtp(formData.phone);
 
         if (error) {
           toast({ title: t.auth.error, description: error, variant: 'destructive' });
         } else {
-          toast({ title: t.auth.accountCreated, description: t.auth.redirecting });
+          setPendingSignupData({
+            email: formData.email,
+            password: formData.password,
+            name: formData.name,
+            phone: formData.phone,
+          });
+          setOtpPhone(formData.phone);
+          setShowOtpModal(true);
+          toast({ title: t.auth.otpSent, description: t.auth.otpSentDesc });
         }
       }
     } finally {
